@@ -1,0 +1,11 @@
+Cube definitions:
+Corner order:
+0:ULF 1:URF 2:URB 3:ULB 4:DLF 5:DRF 6:DRB 7:DLB
+Edge order:
+0:UF 1:UR 2:UB 3:UL 4:LF 5:RF 6:RB 7:LB 8:DF 9:DR 10:DB 11:DL
+
+Coefficients binomiaux pour n=8:
+C_8,k={0:1, 1:8, 2:28, 3:56, 4:70, 5:56, 6:28, 7:8, 8:1}
+
+Coefficients binomiaux pour n=12:
+C_12,k={0:1, 1:12, 2:66, 3:220, 4:495, 5:792, 6:924, 7:792, 8:495, 9:220, 10:66, 11:12, 12:1}
