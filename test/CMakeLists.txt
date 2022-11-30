@@ -1,4 +1,4 @@
-list(APPEND UNIT_TESTS block)
+list(APPEND UNIT_TESTS block cubie_cube)
 
 foreach(f ${UNIT_TESTS})
   set(target ${f}_test)
