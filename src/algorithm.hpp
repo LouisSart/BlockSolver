@@ -1,6 +1,7 @@
+#include <vector>
+#include <iostream>
 #include <sstream>
 #include <map>
-#include "algorithm.hpp"
 
 const std::map<std::string, uint> move_string_to_int
 {{"U", 0}, {"U2", 1}, {"U'", 2},
@@ -10,8 +11,10 @@ const std::map<std::string, uint> move_string_to_int
  {"F", 12}, {"F2", 13}, {"F'", 14},
  {"B", 15}, {"B2", 16}, {"B'", 17}};
 
-Algorithm::Algorithm(std::string str_alg)
+struct Algorithm
 {
+  std::vector<uint> sequence;
+  Algorithm(std::string str_alg){
   std::string cur_move="";
   std::stringstream ss(str_alg);
 
@@ -20,3 +23,6 @@ Algorithm::Algorithm(std::string str_alg)
     sequence.push_back(move_string_to_int.at(cur_move));
   }
 }
+  uint operator[](uint i){return sequence[i];};
+  size_t size(){return sequence.size();};
+};
