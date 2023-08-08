@@ -1,14 +1,17 @@
 #include "algorithm.hpp"
 #include "block_cube.hpp"
+#include "coordinate_block_cube.hpp"
 #include "cubie_cube.hpp"
 
 int main() {
-    const Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
+    Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
     BlockCube bc(b);
     CubieCube cc;
     Algorithm alg({D2, L, R, F3, U});
     alg.apply(cc);
     bc.from_cubie_cube(cc);
     bc.show();
+    CoordinateBlockCube cbc(bc);
+    cbc.show();
     return 0;
 }
