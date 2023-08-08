@@ -74,7 +74,7 @@ struct BlockCube {
     uint ep[ne]{0};    // Permutation of the block edges
     uint co[nc]{0};    // Orientation of the block corners
     uint eo[ne]{0};    // Orientation of the block edges
-    Block<nc, ne> &b;  // Block object
+    Block<nc, ne> b;  // Block object
 
     BlockCube(){};
     BlockCube(Block<nc, ne> block) : b{block} {};
