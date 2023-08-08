@@ -1,16 +1,19 @@
 #pragma once
 #include <array>
-#include "block_cube.hpp"
 
 struct CoordinateBlockCube
 {
   uint ccl, cel, ccp, cep, cco, ceo ; // Coordinates for cp, co, ep, eo, corner layout and edge layout
 
   CoordinateBlockCube(){};
-  template <uint nc, uint ne>
-  CoordinateBlockCube(BlockCube<nc, ne> &bc){
-    bc.to_coordinates(ccl, cel, ccp, cep, cco, ceo);
+  template <typename BlockCube>
+  CoordinateBlockCube(BlockCube &bc){
+    from_block_cube(bc);
   };
+  template <typename BlockCube>
+  void from_block_cube(BlockCube &bc){
+    bc.to_coordinates(ccl, cel, ccp, cep, cco, ceo);
+  }
   // void twist(uint move){
   //   std::tie(ccl, ccp) = mt->get_new_ccl_ccp(ccl, ccp, move);
   //   std::tie(cel, cep) = mt->get_new_cel_cep(cel, cep, move);

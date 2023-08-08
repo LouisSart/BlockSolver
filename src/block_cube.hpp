@@ -120,17 +120,23 @@ struct BlockCube {
         }
     };
 
-    void from_coordinates(uint ccl, uint cel, uint ccp, uint cep, uint cco,
-                          uint ceo) {
-        layout_from_coord(ccl, 8, nc, cl);
-        perm_from_coord(ccp, nc, cp);
-        co_from_coord(cco, nc, co);
-        layout_from_coord(cel, 12, ne, el);
-        perm_from_coord(cep, ne, ep);
-        eo_from_coord(ceo, ne, eo);
+    template <typename CoordinateBlockCube>
+    void from_coordinate_block_cube(const CoordinateBlockCube& cbc) {
+        layout_from_coord(cbc.ccl, 8, nc, cl);
+        perm_from_coord(cbc.ccp, nc, cp);
+        co_from_coord(cbc.cco, nc, co);
+        layout_from_coord(cbc.cel, 12, ne, el);
+        perm_from_coord(cbc.cep, ne, ep);
+        eo_from_coord(cbc.ceo, ne, eo);
     }
 
     void to_cubie_cube(CubieCube &cc) {
+        // All pieces that do not belong to the block are set to
+        // default inconsistent values:
+        // 8 for CP, 12 for EP, 2 for Eo, 3 for CO
+        // This means that the resulting CubieCube cannot be used as a
+        // left multiplicator
+        // CHECKME: Remove this function ?
         uint k = 0;
         for (uint i = 0; i < 8; i++) {
             if (cl[i] == 1) {
