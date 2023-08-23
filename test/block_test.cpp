@@ -59,7 +59,8 @@ void test_corner_permutation_table() {
             bc.to_cubie_cube(cc);
             CubieCube cc_copy;
             std::cout << "Permutation coordinate " << cl * num_perm + cp << ": ";
-            for (auto move : elementary_transformations) {
+            for (auto move_idx : HTM_Moves) {
+                auto move = elementary_transformations[move_idx];
                 cc_copy = cc;
                 cc_copy.apply(move);
                 bc.from_cubie_cube(cc_copy);
