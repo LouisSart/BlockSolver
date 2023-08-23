@@ -43,7 +43,35 @@ void test_to_cbc_from_cc_and_back(){
     }
 }
 
+void test_corner_permutation_table() {
+    Block<1, 1> b("UFL corner", {0}, {0});
+    BlockCube bc(b);
+    CubieCube cc;
+    uint num_layout = 8;
+    uint num_perm = 1;
+    CoordinateBlockCube cbc;
+
+    for (uint cl=0; cl<num_layout; ++cl) {
+        for (uint cp=0; cp<num_perm; ++cp) {
+            cbc.ccl = cl;
+            cbc.ccp = cp;
+            bc.from_coordinate_block_cube(cbc);
+            bc.to_cubie_cube(cc);
+            std::cout << "Permutation coordinate " << cl * num_perm + cp << ": ";
+            for (auto move : elementary_transformations) {
+                CubieCube cc_copy(cc);
+                cc_copy.apply(move);
+                bc.from_cubie_cube(cc_copy);
+                cbc.from_block_cube(bc);
+                std::cout << cbc.ccl * num_perm + cbc.ccp << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+}
+
 int main() {
     test_to_cbc_from_cc_and_back();
+    test_corner_permutation_table();
     return 0;
 }
