@@ -57,9 +57,10 @@ void test_corner_permutation_table() {
             cbc.ccp = cp;
             bc.from_coordinate_block_cube(cbc);
             bc.to_cubie_cube(cc);
+            CubieCube cc_copy;
             std::cout << "Permutation coordinate " << cl * num_perm + cp << ": ";
             for (auto move : elementary_transformations) {
-                CubieCube cc_copy(cc);
+                cc_copy = cc;
                 cc_copy.apply(move);
                 bc.from_cubie_cube(cc_copy);
                 cbc.from_block_cube(bc);

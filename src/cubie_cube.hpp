@@ -92,6 +92,21 @@ struct CubieCube {
     }
     return true;
   }
+
+  CubieCube& operator=(const CubieCube& other){
+    if (this == &other) // self assignment guard
+      return *this;
+    
+    for (uint c = 0; c<8; ++c){
+      cp[c] = other.cp[c];
+      co[c] = other.co[c];
+    }
+    for (uint e = 0; e<12; ++e){
+      ep[e] = other.ep[e];
+      eo[e] = other.eo[e];
+    }
+    return *this;
+  }
 };
 
 std::array<CubieCube, 25> elementary_transformations{
