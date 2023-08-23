@@ -90,6 +90,16 @@ struct BlockCube {
         ceo = eo_coord(eo, ne);
     };
 
+    void from_coordinates(uint ccl, uint cel, uint ccp, uint cep, uint cco,
+                        uint ceo) {
+        layout_from_coord(ccl, 8, nc, cl);
+        perm_from_coord(ccp, nc, cp);
+        co_from_coord(cco, nc, co);
+        layout_from_coord(cel, 12, ne, el);
+        perm_from_coord(cep, ne, ep);
+        eo_from_coord(ceo, ne, eo);
+    }
+
     void from_cubie_cube(CubieCube &cc) {
         uint kl = 0, k = 0;
         for (uint &c : b.c_order) {

@@ -1,21 +1,15 @@
+#pragma once
 #include "block_cube.hpp"
 #include "algorithm.hpp"
 #include <tuple>
 #include <fstream>
 #include <filesystem>
 
-struct MoveTable
-{
-  virtual std::tuple<uint, uint> get_new_ccl_ccp(uint, uint, uint);
-  virtual std::tuple<uint, uint> get_new_cel_cep(uint, uint, uint);
-  virtual uint get_new_cco(uint, uint, uint);
-  virtual uint get_new_ceo(uint, uint, uint);
-};
+namespace fs = std::filesystem;
 
 template<uint nc, uint ne>
-class BlockMoveTable: public MoveTable
+struct BlockMoveTable
 {
-private:
   static constexpr uint n_cl = binomial(8, nc);
   static constexpr uint n_cp = factorial(nc);
   static constexpr uint cp_table_size = n_cp*n_cl*18;
@@ -34,12 +28,15 @@ private:
   static constexpr uint eo_table_size = n_el*n_eo*18;
   std::array<uint, eo_table_size> eo_table;
 
-  std::filesystem::path table_dir_path{"/home/epicier/Documents/Rubik's Cube/FirstCppProject/move_tables/"};
+  std::filesystem::path table_dir_path;
   std::filesystem::path block_table_path;
+  
 
-public:
-  void init(const Block<nc, ne> &b)
-  {
+  BlockMoveTable(const Block<nc, ne> &b) {
+
+    table_dir_path = fs::current_path() / "move_tables/";
+    fs::create_directories(table_dir_path);
+
     block_table_path = table_dir_path / b.name;
     if (std::filesystem::exists(block_table_path))
     {
@@ -122,7 +119,7 @@ public:
   void compute_edge_move_tables(const Block<nc,ne> &b)
   {
     BlockCube<nc,ne> bc(b);
-    CubieCube cc;
+    CubieCube cc, move;
     uint ccl=0, cel=0, ccp=0, cep=0, cco=0, ceo=0;
 
     uint p_idx=0, o_idx=0, m_idx=0;
@@ -131,8 +128,9 @@ public:
       for (uint ip=0;ip<n_ep;ip++) // Loop for the permutation coordinate
       {
         m_idx=0;
-        for (const CubieCube &move : moves)
+        for (auto&& move_idx : HTM_Moves)
         {
+          move = elementary_transformations[move_idx];
           bc.from_coordinates(0,il,0,ip,0,0);
           bc.to_cubie_cube(cc);
           cc.edge_apply(move);
@@ -146,8 +144,9 @@ public:
       for (uint io=0;io<n_eo;io++) // Loop for the orientation coordinate
       {
         m_idx=0;
-        for (const CubieCube &move : moves)
+        for (auto&& move_idx : HTM_Moves)
         {
+          move = elementary_transformations[move_idx];
           bc.from_coordinates(0,il,0,0,0,io);
           bc.to_cubie_cube(cc);
           cc.edge_apply(move);
@@ -164,7 +163,7 @@ public:
   void compute_corner_move_tables(const Block<nc,ne> &b)
   {
     BlockCube<nc,ne> bc(b);
-    CubieCube cc;
+    CubieCube cc, move;
     uint ccl=0, cel=0, ccp=0, cep=0, cco=0, ceo=0;
 
     uint p_idx=0, o_idx=0, m_idx=0;
@@ -173,8 +172,9 @@ public:
       for (uint ip=0;ip<n_cp;ip++)
       {
         m_idx=0;
-        for (const CubieCube &move : moves)
+        for (auto&& move_idx : HTM_Moves)
         {
+          move = elementary_transformations[move_idx];
           bc.from_coordinates(il,0,ip,0,0,0);
           bc.to_cubie_cube(cc);
           cc.corner_apply(move);
@@ -188,8 +188,9 @@ public:
       for (uint io=0;io<n_co;io++)
       {
         m_idx=0;
-        for (const CubieCube &move : moves)
+        for (auto&& move_idx : HTM_Moves)
         {
+          move = elementary_transformations[move_idx];
           bc.from_coordinates(il,0,0,0,io,0);
           bc.to_cubie_cube(cc);
           cc.corner_apply(move);

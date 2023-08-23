@@ -1,4 +1,4 @@
-list(APPEND UNIT_TESTS block cubie_cube)
+list(APPEND UNIT_TESTS block cubie_cube move_table)
 
 foreach(f ${UNIT_TESTS})
   set(target ${f}_test)
