@@ -119,7 +119,8 @@ struct BlockMoveTable
   void compute_edge_move_tables(const Block<nc,ne> &b)
   {
     BlockCube<nc,ne> bc(b);
-    CubieCube cc, move;
+    CubieCube cc, cc_copy;
+    CoordinateBlockCube cbc;
     uint ccl=0, cel=0, ccp=0, cep=0, cco=0, ceo=0;
 
     uint p_idx=0, o_idx=0, m_idx=0;
@@ -128,15 +129,15 @@ struct BlockMoveTable
       for (uint ip=0;ip<n_ep;ip++) // Loop for the permutation coordinate
       {
         m_idx=0;
+        cbc.set(0,il,0,ip,0,0);
+        cc = bc.to_cubie_cube(cbc);
         for (auto&& move_idx : HTM_Moves)
         {
-          move = elementary_transformations[move_idx];
-          bc.from_coordinates(0,il,0,ip,0,0);
-          bc.to_cubie_cube(cc);
-          cc.edge_apply(move);
-          bc.from_cubie_cube(cc);
-          bc.to_coordinates(ccl, cel, ccp, cep, cco, ceo);
-          ep_table[p_idx*18 + m_idx] = cel*n_ep + cep;
+          auto move = elementary_transformations[move_idx];
+          cc_copy = cc;
+          cc_copy.edge_apply(move);
+          cbc = bc.to_coordinate_block_cube(cc_copy);
+          ep_table[p_idx*18 + m_idx] = cbc.cel*n_ep + cbc.cep;
           m_idx++;
         }
         p_idx ++;
@@ -144,15 +145,15 @@ struct BlockMoveTable
       for (uint io=0;io<n_eo;io++) // Loop for the orientation coordinate
       {
         m_idx=0;
+        cbc.set(0,il,0,0,0,io);
+        cc = bc.to_cubie_cube(cbc);
         for (auto&& move_idx : HTM_Moves)
         {
-          move = elementary_transformations[move_idx];
-          bc.from_coordinates(0,il,0,0,0,io);
-          bc.to_cubie_cube(cc);
-          cc.edge_apply(move);
-          bc.from_cubie_cube(cc);
-          bc.to_coordinates(ccl, cel, ccp, cep, cco, ceo);
-          eo_table[o_idx*18 + m_idx] = ceo;
+          auto move = elementary_transformations[move_idx];
+          cc_copy = cc;
+          cc_copy.edge_apply(move);
+          cbc = bc.to_coordinate_block_cube(cc_copy);
+          eo_table[o_idx*18 + m_idx] =  cbc.cel*n_eo + cbc.ceo;
           m_idx++;
         }
         o_idx ++;
@@ -163,7 +164,8 @@ struct BlockMoveTable
   void compute_corner_move_tables(const Block<nc,ne> &b)
   {
     BlockCube<nc,ne> bc(b);
-    CubieCube cc, move;
+    CubieCube cc, cc_copy;
+    CoordinateBlockCube cbc;
     uint ccl=0, cel=0, ccp=0, cep=0, cco=0, ceo=0;
 
     uint p_idx=0, o_idx=0, m_idx=0;
@@ -172,31 +174,31 @@ struct BlockMoveTable
       for (uint ip=0;ip<n_cp;ip++)
       {
         m_idx=0;
+        cbc.set(il,0,ip,0,0,0);
+        cc = bc.to_cubie_cube(cbc);
         for (auto&& move_idx : HTM_Moves)
         {
-          move = elementary_transformations[move_idx];
-          bc.from_coordinates(il,0,ip,0,0,0);
-          bc.to_cubie_cube(cc);
-          cc.corner_apply(move);
-          bc.from_cubie_cube(cc);
-          bc.to_coordinates(ccl, cel, ccp, cep, cco, ceo);
-          cp_table[p_idx*18 + m_idx] = ccl*n_cp + ccp;
+          cc_copy = cc;
+          auto move = elementary_transformations[move_idx];
+          cc_copy.corner_apply(move);
+          cbc = bc.to_coordinate_block_cube(cc_copy);
+          cp_table[p_idx*18 + m_idx] = cbc.ccl*n_cp + cbc.ccp;
           m_idx++;
         }
-        p_idx ++;
+        p_idx++;
       }
       for (uint io=0;io<n_co;io++)
       {
         m_idx=0;
+        cbc.set(il,0,0,0,io,0);
+        cc = bc.to_cubie_cube(cbc);
         for (auto&& move_idx : HTM_Moves)
         {
-          move = elementary_transformations[move_idx];
-          bc.from_coordinates(il,0,0,0,io,0);
-          bc.to_cubie_cube(cc);
-          cc.corner_apply(move);
-          bc.from_cubie_cube(cc);
-          bc.to_coordinates(ccl, cel, ccp, cep, cco, ceo);
-          co_table[o_idx*18 + m_idx] = cco;
+          auto move = elementary_transformations[move_idx];
+          cc_copy = cc;
+          cc_copy.corner_apply(move);
+          cbc = bc.to_coordinate_block_cube(cc);
+          co_table[o_idx*18 + m_idx] = cbc.ccl*n_co + cbc.cco;
           m_idx++;
         }
         o_idx ++;

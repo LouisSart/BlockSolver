@@ -6,17 +6,15 @@
 #include <cassert>
 
 void test_to_cbc_from_cc_and_back(){
-    Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
-    BlockCube bc(b);
-    CubieCube cc;
-    Algorithm alg({D2, L, R, F3, U});
-    alg.apply(cc);
-    bc.from_cubie_cube(cc);
-    CoordinateBlockCube cbc(bc);
 
-    bc.from_coordinate_block_cube(cbc);
-    CubieCube return_cc;
-    bc.to_cubie_cube(return_cc);
+    BlockCube<1, 3> bc("DLB_222", {7}, {7, 10, 11});
+    CubieCube cc, return_cc;
+    CoordinateBlockCube cbc;
+    Algorithm alg({D2, L, R, F3, U});
+
+    alg.apply(cc);
+    cbc = bc.to_coordinate_block_cube(cc);
+    return_cc = bc.to_cubie_cube(cbc);
 
     // Assert cc and return_cc have the block
     // pieces in the same spots and orientation
@@ -44,9 +42,8 @@ void test_to_cbc_from_cc_and_back(){
 }
 
 void test_corner_permutation_table() {
-    Block<1, 1> b("UFL corner", {0}, {0});
-    BlockCube bc(b);
-    CubieCube cc;
+    BlockCube<1, 1> bc("UFL corner", {0}, {0});
+    CubieCube cc, cc_copy;
     uint num_layout = 8;
     uint num_perm = 1;
     CoordinateBlockCube cbc;
@@ -55,16 +52,13 @@ void test_corner_permutation_table() {
         for (uint cp=0; cp<num_perm; ++cp) {
             cbc.ccl = cl;
             cbc.ccp = cp;
-            bc.from_coordinate_block_cube(cbc);
-            bc.to_cubie_cube(cc);
-            CubieCube cc_copy;
+            cc = bc.to_cubie_cube(cbc);
             std::cout << "Permutation coordinate " << cl * num_perm + cp << ": ";
             for (auto move_idx : HTM_Moves) {
                 auto move = elementary_transformations[move_idx];
                 cc_copy = cc;
                 cc_copy.apply(move);
-                bc.from_cubie_cube(cc_copy);
-                cbc.from_block_cube(bc);
+                cbc = bc.to_coordinate_block_cube(cc_copy);
                 std::cout << cbc.ccl * num_perm + cbc.ccp << " ";
             }
             std::cout << std::endl;
