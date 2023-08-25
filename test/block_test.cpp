@@ -48,16 +48,19 @@ void test_corner_permutation_table() {
     uint num_perm = 1;
     CoordinateBlockCube cbc;
 
-    for (uint cl=0; cl<num_layout; ++cl) {
-        for (uint cp=0; cp<num_perm; ++cp) {
-            cbc.ccl = cl;
-            cbc.ccp = cp;
+    for (uint ccl=0; ccl<num_layout; ++ccl) {
+        for (uint ccp=0; ccp<num_perm; ++ccp) {
+            cbc.ccl = ccl;
+            cbc.ccp = ccp;
             cc = bc.to_cubie_cube(cbc);
-            std::cout << "Permutation coordinate " << cl * num_perm + cp << ": ";
+            std::cout << "Permutation coordinate " << ccl * num_perm + ccp << ": ";
             for (auto move_idx : HTM_Moves) {
                 auto move = elementary_transformations[move_idx];
                 cc_copy = cc;
+                assert(&cc_copy != &cc);
+                assert(cc_copy == cc);
                 cc_copy.apply(move);
+                assert(cc_copy != cc);
                 cbc = bc.to_coordinate_block_cube(cc_copy);
                 std::cout << cbc.ccl * num_perm + cbc.ccp << " ";
             }

@@ -81,7 +81,7 @@ struct CubieCube {
       this->corner_apply(cc);
   }
 
-  bool operator==(CubieCube& other){
+  bool operator==(const CubieCube& other){
     for (uint c = 0; c<8; ++c){
       if (cp[c] != other.cp[c]){return false;}
       if (co[c] != other.co[c]){return false;}
@@ -91,6 +91,10 @@ struct CubieCube {
       if (eo[e] != other.eo[e]){return false;}
     }
     return true;
+  }
+
+  bool operator!=(const CubieCube& other){
+    return !(*this == other);
   }
 
   CubieCube& operator=(const CubieCube& other){

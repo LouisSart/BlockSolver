@@ -2,6 +2,7 @@
 #include <array>
 #include <iostream>
 #include <list>
+#include <cassert>
 
 #include "coordinate.hpp"
 #include "cubie_cube.hpp"
@@ -111,6 +112,8 @@ struct BlockCube {
             el[kl] = 0;
             for (uint i = 0; i < ne; i++) {
                 if (cc.ep[e] == b.edges[i]) {
+                    assert(k < 12);
+                    assert(kl < 12);
                     el[kl] = 1;
                     ep[k] = i;
                     eo[k] = cc.eo[e];
@@ -150,6 +153,7 @@ struct BlockCube {
 
         uint k = 0;
         for (uint i = 0; i < 8; i++) {
+            assert(k < 8);
             if (cl[i] == 1) {
                 cc.cp[b.c_order[i]] = b.corners[cp[k]];
                 cc.co[b.c_order[i]] = co[k];
@@ -162,6 +166,7 @@ struct BlockCube {
 
         k = 0;
         for (uint i = 0; i < 12; i++) {
+            assert(k < 12);
             if (el[i] == 1) {
                 cc.ep[b.e_order[i]] = b.edges[ep[k]];
                 cc.eo[b.e_order[i]] = eo[k];
