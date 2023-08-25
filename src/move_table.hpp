@@ -52,6 +52,16 @@ struct BlockMoveTable
     }
   }
 
+  void apply(const uint move, CoordinateBlockCube &cbc){
+    auto&& [ccl, ccp] = get_new_ccl_ccp(cbc.ccl, cbc.ccp, move);
+    auto&& cco = get_new_cco(cbc.ccl, cbc.cco, move);
+    auto&& [cel, cep] = get_new_ccl_ccp(cbc.cel, cbc.cep, move);
+    auto&& ceo = get_new_ceo(cbc.cel, cbc.ceo, move);
+    // std::cout << ccl << cel << ccp << cep << cco << ceo << std::endl;
+    // std::cout << cbc.ccl << cbc.cel << cbc.ccp << cbc.cep << cbc.cco << cbc.ceo << std::endl;
+    cbc.set(ccl, cel, ccp, cep, cco, ceo);
+  }
+
   std::tuple<uint, uint> get_new_ccl_ccp(uint ccl, uint ccp, uint move)
   {
     uint new_cp_idx = cp_table[18*(ccl*n_cp + ccp) + move];
