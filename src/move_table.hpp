@@ -57,9 +57,13 @@ struct BlockMoveTable
     auto&& cco = get_new_cco(cbc.ccl, cbc.cco, move);
     auto&& [cel, cep] = get_new_cel_cep(cbc.cel, cbc.cep, move);
     auto&& ceo = get_new_ceo(cbc.cel, cbc.ceo, move);
-    // std::cout << ccl << cel << ccp << cep << cco << ceo << std::endl;
-    // std::cout << cbc.ccl << cbc.cel << cbc.ccp << cbc.cep << cbc.cco << cbc.ceo << std::endl;
     cbc.set(ccl, cel, ccp, cep, cco, ceo);
+  }
+
+  void apply(const Algorithm &alg, CoordinateBlockCube &cbc){
+    for (const auto& move : alg.sequence){
+      apply(move, cbc);
+    }
   }
 
   std::tuple<uint, uint> get_new_ccl_ccp(uint ccl, uint ccp, uint move)
@@ -80,6 +84,7 @@ struct BlockMoveTable
     assert(18*(ccl*n_co + cco) + move < co_table_size);
     return co_table[18*(ccl*n_co + cco) + move] % n_co;
   }
+  
   uint get_new_ceo(uint cel, uint ceo, uint move){
     assert(18*(cel*n_eo + ceo) + move < eo_table_size);
     return eo_table[18*(cel*n_eo + ceo) + move] % n_eo;
