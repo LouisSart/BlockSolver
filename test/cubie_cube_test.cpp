@@ -1,7 +1,5 @@
 #include "cubie_cube.hpp"
-
 #include <cassert>
-
 #include "algorithm.hpp"
 
 int main() {
