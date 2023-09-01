@@ -12,7 +12,7 @@ void test_to_cbc_from_cc_and_back(){
     CoordinateBlockCube cbc;
     Algorithm alg({D2, L, R, F3, U});
 
-    alg.apply(cc);
+    cc.apply(alg);
     cbc = bc.to_coordinate_block_cube(cc);
     return_cc = bc.to_cubie_cube(cbc);
 

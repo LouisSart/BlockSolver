@@ -8,10 +8,10 @@ int main() {
     auto cube = CubieCube();
     auto no_effect = Algorithm({R, U, R3, F3, U2, L3, U3, L, F, U2});
     auto Tperm = Algorithm({R, U, R3, U3, R3, F, R2, U3, R3, U3, R, U, R3, F3});
-    no_effect.apply(cube);
+    cube.apply(no_effect);
     assert(CubieCube() == cube);
-    Tperm.apply(cube);
-    Tperm.apply(cube);
+    cube.apply(Tperm);
+    cube.apply(Tperm);
 
     assert(CubieCube() == cube);
     cube.show();

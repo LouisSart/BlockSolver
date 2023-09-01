@@ -1,5 +1,4 @@
 #pragma once
-#include "cubie_cube.hpp"
 #include <vector>
 #include <iostream>
 
@@ -10,9 +9,4 @@ struct Algorithm{
 
   Algorithm(){};
   Algorithm(std::vector<Move> s): sequence{s}{};
-  void apply(CubieCube& cc){
-    for (Move& m : sequence){
-      cc.apply(elementary_transformations[m]);
-    }
-  }
 };

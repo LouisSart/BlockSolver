@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <iostream>
+#include "algorithm.hpp"
 
 
 struct CubieCube {
@@ -80,6 +81,8 @@ struct CubieCube {
       this->edge_apply(cc);
       this->corner_apply(cc);
   }
+
+  void apply(Algorithm& alg);
 
   bool operator==(const CubieCube& other){
     for (uint c = 0; c<8; ++c){
@@ -301,3 +304,9 @@ std::array<CubieCube, 25> elementary_transformations{
 
 // 0:U 1:U2 2:U' 3:D 4:D2 5:D' 6:R 7:R2 8:R' 9:L 10:L2 11:L' 12:F 13:F2 14:F' 15:B 16:B2 17:B' 18:S_URF 19:S_URF2 20:z2 21:y 22:y2 23:y' 24:S_LR
 std::array<uint, 18> HTM_Moves{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+
+void CubieCube::apply(Algorithm& alg){
+  for (Move& m : alg.sequence){
+    apply(elementary_transformations[m]);
+  }
+}
