@@ -46,7 +46,7 @@ void test_breadth_first_search() {
             queue.pop_back();
             auto children = node.expand(
                 [table](const Move& move, CoordinateBlockCube& CBC){table.apply(move,CBC);},
-                HTM_Moves
+                allowed_next(node.previous_move)
             );
             for (auto&& child : children) {
                 queue.push_front(child);

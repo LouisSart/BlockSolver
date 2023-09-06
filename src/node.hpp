@@ -8,12 +8,14 @@ struct Node
 {
   Cube cube;
   int depth;
+  Move previous_move;
 
-  Node(): depth{0} {}
-  Node(Cube c, int d): cube{c}, depth{d} {}
+  Node(): depth{0}, previous_move{NoneMove} {}
+  Node(Cube c, int d): cube{c}, depth{d}, previous_move{NoneMove} {}
+  Node(Cube c, int d, Move prev): cube{c}, depth{d}, previous_move{prev} {}
 
-  template<typename F, size_t metric_size>
-  std::vector<Node<Cube>> expand(F apply, std::array<Move, metric_size> directions) const {
+  template<typename F, typename MoveContainer>
+  std::vector<Node<Cube>> expand(F apply, MoveContainer directions) const {
     std::vector<Node<Cube>> children;
     Cube child;
 

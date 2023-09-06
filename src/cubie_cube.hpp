@@ -75,12 +75,13 @@ struct CubieCube {
       eo[i] = new_eo[i]%2;
     }
   };
-
   // Apply a transformation
   void apply(CubieCube& cc){
       this->edge_apply(cc);
       this->corner_apply(cc);
   }
+
+  void apply(const Move&);
 
   void apply(Algorithm& alg);
 
@@ -302,8 +303,12 @@ std::array<CubieCube, 25> elementary_transformations{
 
 };
 
+void CubieCube::apply(const Move& m){
+  apply(elementary_transformations[m]);
+}
+
 void CubieCube::apply(Algorithm& alg){
   for (Move& m : alg.sequence){
-    apply(elementary_transformations[m]);
+    apply(m);
   }
 }
