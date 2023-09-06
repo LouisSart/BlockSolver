@@ -23,11 +23,22 @@ void test_222_block_alg_apply(){
     CubieCube cc;
     CoordinateBlockCube cbc;
     Algorithm alg({D2, L, R, F3, U});
+    Algorithm no_effect({R, U, R3, F3, U2, L3, U3, L, F, U2});
+    Algorithm Tperm({R, U, R3, U3, R3, F, R2, U3, R3, U3, R, U, R3, F3});
 
     cc.apply(alg);
     table.apply(alg, cbc);
 
     assert(bc.to_coordinate_block_cube(cc) == cbc);
+
+    cbc.set(0, 0, 0, 0, 0, 0);
+    table.apply(Tperm, cbc);
+    table.apply(Tperm, cbc);
+    assert(cbc.is_solved());
+
+    cbc.set(0, 0, 0, 0, 0, 0);
+    table.apply(no_effect, cbc);
+    assert(cbc.is_solved());
 }
 
 int main() {

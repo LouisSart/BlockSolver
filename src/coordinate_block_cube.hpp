@@ -21,6 +21,15 @@ struct CoordinateBlockCube
           && ceo == other.ceo);
   }
 
+  bool is_solved() const {
+    return (ccl == 0
+          && cel == 0
+          && ccp == 0
+          && cep == 0
+          && cco == 0
+          && ceo == 0);
+  }
+
   void show() {
     std::cout << "CoordinateBlockCube:\n";
     std::cout << " Corner layout coordinate: " << ccl << '\n';
