@@ -12,16 +12,17 @@ struct Node
   Node(): depth{0} {}
   Node(Cube c, int d): cube{c}, depth{d} {}
 
-  template<typename F>
-  std::vector<Cube> expand(F apply, std::vector<Move> directions) const {
-    std::vector<Cube> children;
+  template<typename F, size_t metric_size>
+  std::vector<Node<Cube>> expand(F apply, std::array<Move, metric_size> directions) const {
+    std::vector<Node<Cube>> children;
+    Cube child;
 
     for (auto&& move : directions) {
-      Cube child;
       child = cube;
       apply(move, child);
-      children.push_back(child);
+      children.push_back(Node(child, depth + 1));
     }
+
      return children;
   };
 
