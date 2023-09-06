@@ -1,5 +1,8 @@
 #pragma once
 #include <array>
+#include <iostream>
+
+using uint = unsigned int;
 
 struct CoordinateBlockCube
 {
