@@ -82,12 +82,12 @@ struct BlockMoveTable
 
   uint get_new_cco(uint ccl, uint cco, uint move){
     assert(18*(ccl*n_co + cco) + move < co_table_size);
-    return co_table[18*(ccl*n_co + cco) + move] % n_co;
+    return co_table[18*(ccl*n_co + cco) + move];
   }
   
   uint get_new_ceo(uint cel, uint ceo, uint move){
     assert(18*(cel*n_eo + ceo) + move < eo_table_size);
-    return eo_table[18*(cel*n_eo + ceo) + move] % n_eo;
+    return eo_table[18*(cel*n_eo + ceo) + move];
   }
 
   void show()
@@ -180,7 +180,7 @@ struct BlockMoveTable
           cbc = bc.to_coordinate_block_cube(cc_copy);
           assert(18*(cbc.cel*n_eo + cbc.ceo) < eo_table_size);
           assert(o_idx*18 + m_idx < eo_table_size);
-          eo_table[o_idx*18 + m_idx] =  cbc.cel*n_eo + cbc.ceo;
+          eo_table[o_idx*18 + m_idx] = cbc.ceo;
           m_idx++;
         }
         o_idx ++;
@@ -226,10 +226,10 @@ struct BlockMoveTable
           auto move = elementary_transformations[move_idx];
           cc_copy = cc;
           cc_copy.corner_apply(move);
-          cbc = bc.to_coordinate_block_cube(cc);
+          cbc = bc.to_coordinate_block_cube(cc_copy);
           assert(18*(cbc.ccl*n_co + cbc.cco) < co_table_size);
           assert(o_idx*18 + m_idx < co_table_size);
-          co_table[o_idx*18 + m_idx] = cbc.ccl*n_co + cbc.cco;
+          co_table[o_idx*18 + m_idx] = cbc.cco;
           m_idx++;
         }
         o_idx ++;
