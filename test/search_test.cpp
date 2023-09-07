@@ -1,7 +1,7 @@
-#include <deque>
 #include "coordinate_block_cube.hpp"
 #include "move_table.hpp"
 #include "node.hpp"
+#include "search.hpp"
 #include "algorithm.hpp"
 
 void test_expand_cbc() {
@@ -30,31 +30,16 @@ void test_breadth_first_search() {
     Block<2, 3> b("RouxFirstBlock", {4, 7}, {4, 7, 11});
     CoordinateBlockCube cbc;
     BlockMoveTable table(b);
-    table.apply(Algorithm({L, U}), cbc);
+    table.apply(Algorithm({F2, D, R, U}), cbc);
 
     Node<CoordinateBlockCube> root(cbc, 0);
-    std::deque<Node<CoordinateBlockCube>> queue = {root};
-
-    while (queue.size() != 0) {
-        auto node = queue.back();
-        if (node.state.is_solved()) { 
-            std::cout << "Solution found :" << std::endl;
-            node.show();
-            Algorithm solution(node.sequence);
-            solution.show();
-            return;
-        }
-        else {
-            queue.pop_back();
-            auto children = node.expand(
-                [table](const Move& move, CoordinateBlockCube& CBC){table.apply(move,CBC);},
-                allowed_next(node.sequence.back())
-            );
-            for (auto&& child : children) {
-                queue.push_front(child);
-            }
-        }
-        assert(queue.size() < 10000); // Avoiding infinite loop
+    auto solutions = breadth_first_search(
+        root,
+        [table](const Move& move, CoordinateBlockCube& CBC){table.apply(move,CBC);},
+        4
+    );
+    for (auto&& s : solutions) {
+        s.show();
     }
 }
 
