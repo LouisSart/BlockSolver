@@ -40,10 +40,8 @@ void test_breadth_first_search() {
         if (node.state.is_solved()) { 
             std::cout << "Solution found :" << std::endl;
             node.show();
-            for (auto&& move : node.sequence) {
-                std::cout << move << " ";
-            }
-            std::cout << std::endl;
+            Algorithm solution(node.sequence);
+            solution.show();
             return;
         }
         else {
