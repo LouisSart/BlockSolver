@@ -43,8 +43,29 @@ void test_breadth_first_search() {
     }
 }
 
+void test_depth_first_search() {
+    Block<4, 4> b("TopLayer", {0, 1, 2, 3}, {0, 1, 2, 3});
+    CoordinateBlockCube cbc;
+    BlockMoveTable table(b);
+    table.apply(Algorithm({L2, D, F, R, U2, R3}), cbc);
+
+    Node<CoordinateBlockCube> root(cbc, 0);
+    auto solutions = depth_first_search(
+        root,
+        [table](const Move& move, CoordinateBlockCube& CBC){table.apply(move,CBC);},
+        6
+    );
+    for (auto&& s : solutions) {
+        s.show();
+    }
+}
+
 int main() {
+    std::cout << " --- Test expansion ---" << std::endl;
     test_expand_cbc();
+    std::cout << " --- Test breadth first ---" << std::endl;
     test_breadth_first_search();
+    std::cout << " --- Test depth first --- " << std::endl;
+    test_depth_first_search();
     return 0;
 }
