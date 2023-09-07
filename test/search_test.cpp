@@ -16,14 +16,14 @@ void test_expand_cbc() {
     );
     
     assert(children.size() == 18);
-    assert(!children[U].cube.is_solved());
-    assert(!children[D].cube.is_solved());
-    assert(!children[R].cube.is_solved());
-    assert(!children[L].cube.is_solved());
-    assert(!children[F].cube.is_solved());
-    assert(children[B].cube.is_solved());
-    assert(children[B2].cube.is_solved());
-    assert(children[B3].cube.is_solved());
+    assert(!children[U].state.is_solved());
+    assert(!children[D].state.is_solved());
+    assert(!children[R].state.is_solved());
+    assert(!children[L].state.is_solved());
+    assert(!children[F].state.is_solved());
+    assert(children[B].state.is_solved());
+    assert(children[B2].state.is_solved());
+    assert(children[B3].state.is_solved());
 }
 
 void test_breadth_first_search() {
@@ -37,16 +37,20 @@ void test_breadth_first_search() {
 
     while (queue.size() != 0) {
         auto node = queue.back();
-        if (node.cube.is_solved()) { 
+        if (node.state.is_solved()) { 
             std::cout << "Solution found :" << std::endl;
             node.show();
+            for (auto&& move : node.sequence) {
+                std::cout << move << " ";
+            }
+            std::cout << std::endl;
             return;
         }
         else {
             queue.pop_back();
             auto children = node.expand(
                 [table](const Move& move, CoordinateBlockCube& CBC){table.apply(move,CBC);},
-                allowed_next(node.previous_move)
+                allowed_next(node.sequence.back())
             );
             for (auto&& child : children) {
                 queue.push_front(child);

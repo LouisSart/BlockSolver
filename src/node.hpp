@@ -6,31 +6,32 @@
 template<typename Cube>
 struct Node
 {
-  Cube cube;
+  Cube state;
   int depth;
-  Move previous_move;
+  std::vector<Move> sequence; // The moves that were made to get there
 
-  Node(): depth{0}, previous_move{NoneMove} {}
-  Node(Cube c, int d): cube{c}, depth{d}, previous_move{NoneMove} {}
-  Node(Cube c, int d, Move prev): cube{c}, depth{d}, previous_move{prev} {}
+  Node(): state{Cube()}, depth{0}, sequence{NoneMove} {}
+  Node(Cube c, int d): state{c}, depth{d}, sequence{NoneMove} {}
+  Node(Cube c, int d, std::vector<Move> seq): state{c}, depth{d}, sequence{seq} {}
 
   template<typename F, typename MoveContainer>
   std::vector<Node<Cube>> expand(F apply, MoveContainer directions) const {
     std::vector<Node<Cube>> children;
-    Cube child;
+    Cube next;
 
     for (auto&& move : directions) {
-      child = cube;
-      apply(move, child);
-      children.push_back(Node(child, depth + 1));
+      next = state;
+      apply(move, next);
+      auto extended_sequence = sequence;
+      extended_sequence.push_back(move);
+      children.push_back(Node(next, depth + 1, extended_sequence));
     }
-
-     return children;
+    return children;
   };
 
   void show() const {
     std::cout << "Node object: " << std::endl;
     std::cout << " Depth: " << depth << std::endl;
-    std::cout << " Cube type: " << typeid(cube).name() << std::endl;
+    std::cout << " Cube type: " << typeid(state).name() << std::endl;
   }
 };
