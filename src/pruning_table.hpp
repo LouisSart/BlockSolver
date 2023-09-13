@@ -1,22 +1,23 @@
+#include <array>
+#include "coordinate.hpp"
 #include "move_table.hpp"
 
 template<uint nc, uint ne>
-class PruningTable
+struct OptimalPruningTable
 {
-private:
-  static constexpr uint c_table_size = binomial(8, nc)*factorial(nc)*ipow(3, nc);
+  static constexpr uint c_table_size = (factorial(8)/factorial(8 - nc))*ipow(3, nc);
   std::array<uint, c_table_size> c_table;
-  static constexpr uint e_table_size = binomial(12, ne)*factorial(ne)*ipow(2, ne);
+  static constexpr uint e_table_size = (factorial(12)/factorial(12 - ne))*ipow(2, ne);
   std::array<uint, e_table_size> e_table;
 
   std::string name;
-  std::filesystem::path table_dir_path{"/home/epicier/Documents/Rubik's Cube/FirstCppProject/pruning_tables/"};
+  std::filesystem::path table_dir_path{};
   std::filesystem::path block_table_path;
 
-public:
-  PruningTable(){};
-  PruningTable(const Block<nc,ne> &b)
+  OptimalPruningTable(){};
+  OptimalPruningTable(const Block<nc,ne> &b)
   {
+    table_dir_path = fs::current_path() / "pruning_tables/";
     block_table_path = table_dir_path / b.name;
     if (std::filesystem::exists(block_table_path))
     {
