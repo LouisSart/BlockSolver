@@ -81,34 +81,35 @@ struct OptimalPruningTable
 
     auto unassigned = std::numeric_limits<entry_type>::max();
     table.fill(unassigned);
-    auto queue = std::deque{Node<CoordinateBlockCube>()};
-    auto node = queue.back();
+    Node<CoordinateBlockCube> root, node;
+    auto queue = std::deque{root};
+    uint table_entry{0};
     std::vector<uint> state_counter{0};
+    assert(table_entry == index(root.state));
+    table[table_entry] = 0;
 
     while (queue.size() > 0){
       node = queue.back();
-      auto table_entry = index(node.state);
-      assert(table_entry < table_size);
-      if (table[table_entry] == unassigned){
-        // if (node.depth == 8) {
-        //   Algorithm(node.sequence).show();
-        // }
-        table[table_entry] = node.depth;
-        auto children = node.expand(
-            apply, allowed_next(node.sequence.back())
-        );
-        for (auto&& child : children) {
-            queue.push_front(child);
-        }
-
-        if (node.depth == state_counter.size() - 1){
-          ++state_counter.back();
-        }
-        else {
-          std::cout << "Depth: " << state_counter.size() - 1 << " " << state_counter.back() << std::endl;
-          state_counter.push_back(1);
+      assert(index(node.state) < table_size);
+      assert(table[index(node.state)] != unassigned);
+      auto children = node.expand(
+          apply, allowed_next(node.sequence.back())
+      );
+      for (auto&& child : children){
+        table_entry = index(child.state);
+        if (table[table_entry] == unassigned){
+          queue.push_front(child);
+          table[table_entry] = child.depth;
         }
       }
+      if (node.depth == state_counter.size() - 1){
+        ++state_counter.back();
+      }
+      else {
+        std::cout << "Depth: " << state_counter.size() - 1 << " " << state_counter.back() << std::endl;
+        state_counter.push_back(1);
+      }
+
       queue.pop_back();
     }
     std::cout << "Depth: " << state_counter.size() - 1 << " " << state_counter.back() << std::endl;
