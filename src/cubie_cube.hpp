@@ -1,7 +1,10 @@
 #pragma once
 #include <array>
+#include <vector>
 #include <set>
 #include <iostream>
+#include <cstdlib>
+#include <ctime>
 #include "algorithm.hpp"
 #include "coordinate.hpp"
 
@@ -167,7 +170,7 @@ struct CubieCube {
     for (int c = 0; c < 8; ++c){
       co_sum += co[c];
     }
-    if (co_sum == 0){
+    if (co_sum % 3 != 0){
       return false;
     }
     return true;
@@ -178,7 +181,7 @@ struct CubieCube {
     for (int e = 0; e < 12; ++e){
       eo_sum += eo[e];
     }
-    if (eo_sum == 0){
+    if (eo_sum % 2 != 0){
       return false;
     }
     return true;
@@ -195,6 +198,50 @@ struct CubieCube {
       return false;
     }
     return true;
+  }
+
+  static CubieCube random_state(){
+    CubieCube cube;
+    std::srand(std::time(nullptr));
+
+    std::vector<uint> corners_left{0, 1, 2, 3, 4, 5, 6, 7};
+    for(auto c = 0; c < 8; ++c){
+      auto random = std::rand();
+      auto next_idx = random % (8-c);
+      cube.cp[c] = corners_left[next_idx];
+      corners_left.erase(corners_left.begin() + next_idx);
+    }
+
+    std::vector<uint> edges_left{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    for(auto e = 0; e < 12; ++e){
+      auto random = std::rand();
+      auto next_idx = random % (12-e);
+      cube.ep[e] = edges_left[next_idx];
+      edges_left.erase(edges_left.begin() + next_idx);
+    }
+
+    int counter = 0;
+    for(auto c = 0; c < 7; ++c){
+      cube.co[c] = std::rand() % 3;
+      counter += cube.co[c];
+    }
+    cube.co[7] = (3 - (counter % 3)) % 3;
+
+    counter = 0;
+    for(auto e = 0; e < 8; ++e){
+      cube.eo[e] = std::rand() % 2;
+      counter += cube.eo[e];
+    }
+    cube.eo[11] = (2-(counter % 2)) % 2;
+
+    if (cube.corner_parity() != cube.edge_parity()) {
+      auto a = cube.cp[0];
+      auto b = cube.cp[1];
+      cube.cp[1] = a;
+      cube.cp[0] = b;
+    }
+
+    return cube;
   }
 };
 

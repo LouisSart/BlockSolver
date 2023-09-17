@@ -42,8 +42,16 @@ void test_parity(){
 
     assert(cube.is_solvable());
 }
+
+void test_random_state(){
+    auto cube = CubieCube::random_state();
+    cube.show();
+    assert(cube.is_solvable());
+}
+
 int main() {
     test_move_apply();
     test_parity();
+    test_random_state();
     return 0;
 }
