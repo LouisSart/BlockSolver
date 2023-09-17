@@ -1,7 +1,9 @@
 #pragma once
 #include <array>
+#include <set>
 #include <iostream>
 #include "algorithm.hpp"
+#include "coordinate.hpp"
 
 
 struct CubieCube {
@@ -114,6 +116,50 @@ struct CubieCube {
       eo[e] = other.eo[e];
     }
     return *this;
+  }
+
+  int corner_parity() const {
+    std::set<uint> checked;
+    std::vector<uint> cycle_sizes{0};
+
+    for (uint k = 0; k < 8; ++k) {
+      while (checked.find(k) == checked.end()) {
+        checked.insert(k);
+        ++cycle_sizes.back();
+        k = cp[k];
+      }
+      cycle_sizes.emplace_back(0);
+    }
+
+    uint number_of_swaps = 0;
+    for (auto k : cycle_sizes) {
+      if (k != 0) {
+        number_of_swaps += (k-1);
+      }
+    }
+    return ipow(-1, number_of_swaps);
+  }
+
+  int edge_parity() const {
+    std::set<uint> checked;
+    std::vector<uint> cycle_sizes{0};
+
+    for (uint k = 0; k < 12; ++k) {
+      while (checked.find(k) == checked.end()) {
+        checked.insert(k);
+        ++cycle_sizes.back();
+        k = ep[k];
+      }
+      cycle_sizes.emplace_back(0);
+    }
+
+    uint number_of_swaps = 0;
+    for (auto k : cycle_sizes) {
+      if (k != 0) {
+        number_of_swaps += (k-1);
+      }
+    }
+    return ipow(-1, number_of_swaps);
   }
 };
 

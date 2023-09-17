@@ -2,10 +2,11 @@
 #include <iostream>
 #include <vector>
 
-constexpr uint ipow(uint k, uint n)
+constexpr int ipow(int k, uint n)
 {
   // integer power
   // computes ret = k^n
+  // k can be negative hence using int
   uint ret{1};
   for (uint i=0;i<n;i++)
   {
