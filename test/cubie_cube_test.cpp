@@ -39,6 +39,8 @@ void test_parity(){
     cube.apply(random_moves);
     assert(cube.edge_parity() == -1);
     assert(cube.corner_parity() == -1);
+
+    assert(cube.is_solvable());
 }
 int main() {
     test_move_apply();

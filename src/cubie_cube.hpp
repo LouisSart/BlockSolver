@@ -161,6 +161,41 @@ struct CubieCube {
     }
     return ipow(-1, number_of_swaps);
   }
+
+  bool has_consistent_co() const {
+    uint co_sum = 0;
+    for (int c = 0; c < 8; ++c){
+      co_sum += co[c];
+    }
+    if (co_sum == 0){
+      return false;
+    }
+    return true;
+  }
+
+  bool has_consistent_eo() const {
+    uint eo_sum = 0;
+    for (int e = 0; e < 12; ++e){
+      eo_sum += eo[e];
+    }
+    if (eo_sum == 0){
+      return false;
+    }
+    return true;
+  }
+
+  bool is_solvable() const {
+    if (!has_consistent_co()){
+      return false;
+    }
+    if (!has_consistent_eo()){
+      return false;
+    }
+    if (corner_parity() != edge_parity()){
+      return false;
+    }
+    return true;
+  }
 };
 
 std::array<CubieCube, 25> elementary_transformations{
