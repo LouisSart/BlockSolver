@@ -13,8 +13,8 @@ struct Node
   int estimate; // The estimate on the number of moves needed to solve the state
 
   Node(): state{Cube()}, depth{0}, sequence{NoneMove} {}
-  Node(Cube c, int d): state{c}, depth{d}, sequence{NoneMove} {}
-  Node(Cube c, int d, std::vector<Move> seq): state{c}, depth{d}, sequence{seq} {}
+  Node(Cube c, int d): state{c}, depth{d}, sequence{NoneMove}, estimate{0} {}
+  Node(Cube c, int d, std::vector<Move> seq): state{c}, depth{d}, sequence{seq}, estimate{0} {}
 
   template<int sequence_generation = 1, typename F, typename MoveContainer>
   std::vector<Node<Cube>> expand(const F &apply, const MoveContainer &directions) const {

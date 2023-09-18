@@ -66,16 +66,36 @@ void test_breadth_first_search() {
 }
 
 void test_depth_first_search() {
-    Block<4, 4> b("TopLayer", {0, 1, 2, 3}, {0, 1, 2, 3});
+    Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
     CoordinateBlockCube cbc;
     BlockMoveTable table(b);
-    table.apply(Algorithm({L2, D, F, R, U2, R3}), cbc);
+    table.apply(Algorithm({R, L2, D, F}), cbc);
 
     Node<CoordinateBlockCube> root(cbc, 0);
     auto solutions = depth_first_search(
         root,
-        [table](const Move& move, CoordinateBlockCube& CBC){table.apply(move,CBC);},
-        6
+        table,
+        NullPruningTable(),
+        3
+    );
+    for (auto&& s : solutions) {
+        s.show();
+    }
+}
+
+void test_depth_first_search_with_heuristic() {
+    Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
+    CoordinateBlockCube cbc;
+    BlockMoveTable m_table(b);
+    OptimalPruningTable p_table(b);
+    m_table.apply(Algorithm({R, L2, D, F}), cbc);
+
+    Node<CoordinateBlockCube> root(cbc, 0);
+    auto solutions = depth_first_search(
+        root,
+        m_table,
+        p_table,
+        3
     );
     for (auto&& s : solutions) {
         s.show();
@@ -91,5 +111,7 @@ int main() {
     test_breadth_first_search();
     std::cout << " --- Test depth first --- " << std::endl;
     test_depth_first_search();
+    std::cout << " --- Test depth first with heuristic --- " << std::endl;
+    test_depth_first_search_with_heuristic();
     return 0;
 }

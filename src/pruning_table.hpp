@@ -59,20 +59,24 @@ struct OptimalPruningTable
     istrm.close();
   }
 
-  uint c_index(const CoordinateBlockCube &cbc){
+  uint c_index(const CoordinateBlockCube &cbc) const {
     uint index = cbc.ccl * n_cp * n_co + (cbc.ccp * n_co + cbc.cco);
     return index;
   }
 
-  uint e_index(const CoordinateBlockCube &cbc){
+  uint e_index(const CoordinateBlockCube &cbc) const {
     uint index = cbc.cel * n_ep * n_eo + (cbc.cep * n_eo + cbc.ceo);
     return index;
   }
 
-  uint index(const CoordinateBlockCube &cbc){
+  uint index(const CoordinateBlockCube &cbc) const {
     auto index = e_index(cbc) * n_corner_states + c_index(cbc);
     assert(index < table_size);
     return index;
+  }
+
+  uint get_estimate(const CoordinateBlockCube &cbc) const {
+    return table[index(cbc)];
   }
 
   void compute_table(const Block<nc,ne> &b){
@@ -119,4 +123,11 @@ struct OptimalPruningTable
     }
   }
 
+};
+
+struct NullPruningTable {
+  template<typename Cube>
+  uint get_estimate(const Cube& cube) const {
+    return 0;
+  }
 };
