@@ -55,7 +55,7 @@ struct OptimalPruningTable
     std::filesystem::path table_path = block_table_path / "table.dat";
 
     std::ifstream istrm(table_path, std::ios::binary);
-    istrm.read(reinterpret_cast<char*>(table.data()), sizeof(uint)*table_size);
+    istrm.read(reinterpret_cast<char*>(table.data()), sizeof(entry_type)*table_size);
     istrm.close();
   }
 
@@ -122,7 +122,6 @@ struct OptimalPruningTable
       assert(k != unassigned);
     }
   }
-
 };
 
 struct NullPruningTable {
