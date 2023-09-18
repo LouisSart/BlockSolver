@@ -1,5 +1,17 @@
 #include "pruning_table.hpp"
 
+void test_api(){
+    std::cout << "API test on the LF column:" << std::endl;
+    Block<2, 1> b("LF_column", {0, 4}, {4});
+    BlockCube bc(b);
+    auto cc = CubieCube::random_state();
+    auto cbc = bc.to_coordinate_block_cube(cc);
+
+    OptimalPruningTable table(b);
+    auto pruning_value = table.get_estimate(cbc);
+
+    assert(pruning_value != 0);
+}
 
 void one_corner_and_one_edge(){
     std::cout << "Solution lengths for one corner (UFL) and one edge (UF): " << std::endl;
@@ -37,14 +49,8 @@ void top_layer(){
     OptimalPruningTable TopLayer_table(Block<4, 4>("TopLayer", {0, 1, 2, 3}, {0, 1, 2, 3}));
 }
 
-void test_api(){
-    CubieCube cc;
-    
-    OptimalPruningTable DL_223(Block<2, 3>("DL_223", {4, 7}, {4, 7, 8, 10, 11}));
-
-}
-
 int main(){
+    test_api();
     one_corner_and_one_edge();
     DLB_2x2x2();
     roux_fb();
