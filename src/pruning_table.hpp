@@ -92,7 +92,7 @@ struct OptimalPruningTable
       node = queue.back();
       assert(index(node.state) < table_size);
       assert(table[index(node.state)] != unassigned);
-      auto children = node.expand(
+      auto children = node.expand<-1>( // -1 template parameter deactivates the move sequence copy at each move application
           apply, allowed_next(node.sequence.back())
       );
       for (auto&& child : children){

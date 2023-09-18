@@ -16,7 +16,7 @@ struct Node
   Node(Cube c, int d): state{c}, depth{d}, sequence{NoneMove} {}
   Node(Cube c, int d, std::vector<Move> seq): state{c}, depth{d}, sequence{seq} {}
 
-  template<typename F, typename MoveContainer, int sequence_generation = 1>
+  template<int sequence_generation = 1, typename F, typename MoveContainer>
   std::vector<Node<Cube>> expand(const F &apply, const MoveContainer &directions) const {
     // Generates the children nodes by using the apply function on all moves in the directions container
     std::vector<Node<Cube>> children;
