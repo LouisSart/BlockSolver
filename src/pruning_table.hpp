@@ -127,6 +127,11 @@ struct OptimalPruningTable
 struct NullPruningTable {
   template<typename Cube>
   uint get_estimate(const Cube& cube) const {
-    return 0;
+    if (cube.is_solved()){
+     return 0;
+    }
+    else {
+      return 1;
+    }
   }
 };
