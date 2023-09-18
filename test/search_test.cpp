@@ -102,6 +102,25 @@ void test_depth_first_search_with_heuristic() {
     }
 }
 
+void test_solve_223_on_wr_scramble() {
+    Block<2, 3> b("DL_223", {4, 7}, {4, 7, 8, 10, 11});
+    CoordinateBlockCube cbc;
+    BlockMoveTable m_table(b);
+    OptimalPruningTable p_table(b);
+    m_table.apply(Algorithm({R3, U3, F, D2, R2, F3, L2, D2, F3, L, U3, B, U3, D3, F2, B2, L2, D, F2, U2, D, R3, U3, F}), cbc);
+
+    Node<CoordinateBlockCube> root(cbc, 0);
+    auto solutions = depth_first_search(
+        root,
+        m_table,
+        p_table,
+        7
+    );
+    for (auto&& s : solutions) {
+        s.show();
+    }
+}
+
 int main() {
     std::cout << " --- Test expansion ---" << std::endl;
     test_expand_cbc();
@@ -113,5 +132,7 @@ int main() {
     test_depth_first_search();
     std::cout << " --- Test depth first with heuristic --- " << std::endl;
     test_depth_first_search_with_heuristic();
+    std::cout << " --- Test depth first 2x2x3 solve on Wen's WR scramble #1 --- " << std::endl;
+    test_solve_223_on_wr_scramble();
     return 0;
 }
