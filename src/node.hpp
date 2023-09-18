@@ -2,6 +2,7 @@
 #include "algorithm.hpp"
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 template<typename Cube>
 struct Node
@@ -9,23 +10,46 @@ struct Node
   Cube state;
   int depth;
   std::vector<Move> sequence; // The moves that were made to get there
+  int estimate; // The estimate on the number of moves needed to solve the state
 
   Node(): state{Cube()}, depth{0}, sequence{NoneMove} {}
   Node(Cube c, int d): state{c}, depth{d}, sequence{NoneMove} {}
   Node(Cube c, int d, std::vector<Move> seq): state{c}, depth{d}, sequence{seq} {}
 
-  template<typename F, typename MoveContainer>
-  std::vector<Node<Cube>> expand(F apply, MoveContainer directions) const {
+  template<typename F, typename MoveContainer, int sequence_generation = 1>
+  std::vector<Node<Cube>> expand(const F &apply, const MoveContainer &directions) const {
+    // Generates the children nodes by using the apply function on all moves in the directions container
     std::vector<Node<Cube>> children;
     Cube next;
 
     for (auto&& move : directions) {
       next = state;
       apply(move, next);
-      auto extended_sequence = sequence;
-      extended_sequence.push_back(move);
-      children.push_back(Node(next, depth + 1, extended_sequence));
+      children.push_back(Node(next, depth + 1));
+      if constexpr (sequence_generation > 0){
+        children.back().sequence = sequence;
+        children.back().sequence.push_back(move);
+      }
     }
+    return children;
+  }
+
+  template<typename F, typename H, typename MoveContainer>
+  std::vector<Node<Cube>> expand(const F &apply, const H &heuristic, const MoveContainer &directions) const {
+    // Generates the children nodes, computes their estimate using the heuristic function
+    // and then sorts them by decreasing pruning values (so that
+    // children.back() is the child with the lowest estimate.)
+    auto children = expand(apply, directions);
+    for (auto &child : children) {
+      child.estimate = heuristic(child.state);
+    }
+    std::sort(
+      children.begin(),
+      children.end(),
+      [](Node<Cube> node1, Node<Cube> node2){
+        return node1.estimate > node2.estimate;
+      }
+    );
     return children;
   };
 
@@ -33,5 +57,6 @@ struct Node
     std::cout << "Node object: " << std::endl;
     std::cout << " Depth: " << depth << std::endl;
     std::cout << " Cube type: " << typeid(state).name() << std::endl;
+    std::cout << " Pruning value: " << estimate << std::endl;
   }
 };

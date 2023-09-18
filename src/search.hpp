@@ -36,7 +36,7 @@ std::vector<Algorithm> breadth_first_search(const Node<Cube> &root, F &&apply, s
     return all_solutions;
 }
 template<typename Cube, typename F>
-std::vector<Algorithm> depth_first_search(const Node<Cube> &root, F &&apply, size_t max_depth = 4) {
+std::vector<Algorithm> depth_first_search(const Node<Cube> &root, const F &&apply, size_t max_depth = 4) {
 
     std::vector<Algorithm> all_solutions;
     std::deque<Node<CoordinateBlockCube>> queue = {root};
