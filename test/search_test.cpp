@@ -4,6 +4,17 @@
 #include "search.hpp"
 #include "algorithm.hpp"
 
+
+void test_object_sizes(){
+    std::cout << "size of CoordinateBlockCube: " << sizeof(CoordinateBlockCube) << std::endl;
+    std::cout << "size of 2 ints: " << 2*sizeof(int) << std::endl;
+    std::cout << "size of std::vector<Move>: " << sizeof(std::vector<Move>) << std::endl;
+    std::cout << "size of Node<CoordinateBlockCube>: " << sizeof(Node<CoordinateBlockCube>) << std::endl;
+
+    // Note: next assertion can fail if the compiler optimizes padding of the memory layout
+    assert(sizeof(Node<CoordinateBlockCube>) == sizeof(std::vector<Move>) + 2*sizeof(int) + sizeof(CoordinateBlockCube));
+}
+
 void test_expand_cbc() {
     CoordinateBlockCube cbc;
     Block<4, 2> b("FrontColumns", {0, 1, 4, 5}, {4, 5});
@@ -137,5 +148,7 @@ int main() {
     test_depth_first_search_with_heuristic();
     std::cout << " --- Test depth first 2x2 solve on Wen's WR scramble #1 --- " << std::endl;
     test_solve_222_on_wr_scramble();
+    std::cout << " --- Test object sizes --- " << std::endl;
+    test_object_sizes();
     return 0;
 }

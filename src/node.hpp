@@ -8,8 +8,8 @@ template<typename Cube>
 struct Node
 {
   Cube state;
-  int depth;
   std::vector<Move> sequence; // The moves that were made to get there
+  int depth;
   int estimate; // The estimate on the number of moves needed to solve the state
 
   Node(): state{Cube()}, depth{0}, sequence{NoneMove} {}
