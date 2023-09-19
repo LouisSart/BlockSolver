@@ -75,6 +75,17 @@ struct OptimalPruningTable
     return index;
   }
 
+  CoordinateBlockCube from_index(const uint &index) const {
+    return CoordinateBlockCube(
+      (index % n_corner_states) / (n_cp * n_co), // ccl
+      (index / n_corner_states) / (n_ep * n_eo), // cel
+      ((index % n_corner_states) % (n_cp * n_co)) / n_co, // ccp
+      ((index / n_corner_states) % (n_ep * n_eo)) / n_eo, // cep
+      ((index % n_corner_states) % (n_cp * n_co)) % n_co, // cco
+      ((index / n_corner_states) % (n_ep * n_eo)) % n_eo // ceo
+    );
+  }
+
   uint get_estimate(const CoordinateBlockCube &cbc) const {
     return table[index(cbc)];
   }

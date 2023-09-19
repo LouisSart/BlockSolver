@@ -6,11 +6,14 @@ using uint = unsigned int;
 
 struct CoordinateBlockCube
 {
-  uint ccl, cel, ccp, cep, cco, ceo ; // Coordinates for cp, co, ep, eo, corner layout and edge layout
+  uint ccl, cel, ccp, cep, cco, ceo; // Coordinates for cp, co, ep, eo, corner layout and edge layout
 
-  CoordinateBlockCube(){
-    set(0., 0., 0., 0., 0., 0.);
-  };
+  CoordinateBlockCube():
+    ccl{0}, cel{0}, ccp{}, cep{0}, cco{0}, ceo{0} {};
+  
+  CoordinateBlockCube(uint ccl, uint cel, uint ccp, uint cep, uint cco, uint ceo):
+    ccl{ccl}, cel{cel}, ccp{ccp}, cep{cep}, cco{cco}, ceo{ceo} {};
+  
   void set(uint ccl_in, uint cel_in, uint ccp_in, uint cep_in, uint cco_in, uint ceo_in){
     ccl=ccl_in; cel=cel_in; ccp=ccp_in; cep=cep_in; cco=cco_in; ceo=ceo_in;
   };

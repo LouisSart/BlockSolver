@@ -60,3 +60,9 @@ struct Node
     std::cout << " Pruning value: " << estimate << std::endl;
   }
 };
+
+template<typename index_type>
+struct CompressedNode {
+  index_type state; // single-digit representation of a cube state
+  uint8_t depth;
+};

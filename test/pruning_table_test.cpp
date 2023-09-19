@@ -11,6 +11,7 @@ void test_api(){
     auto pruning_value = table.get_estimate(cbc);
 
     assert(pruning_value != 0);
+    assert(table.from_index(table.index(cbc)) == cbc);
 }
 
 void one_corner_and_one_edge(){
