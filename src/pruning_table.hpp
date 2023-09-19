@@ -91,20 +91,29 @@ struct OptimalPruningTable
   }
 
   void compute_table(const Block<nc,ne> &b){
+    using StorageNode = CompressedNode<uint>;
+    using WorkNode = Node<CoordinateBlockCube>;
     BlockMoveTable m_table(b);
     auto apply = [m_table](const Move& move, CoordinateBlockCube& CBC){m_table.apply(move,CBC);};
+    auto compress = [this](const WorkNode& big){
+      return StorageNode(this->index(big.state), big.depth);
+    };
+    auto uncompress = [this](const StorageNode& archived){
+      return WorkNode(this->from_index(archived.state), archived.depth);
+    };
 
     auto unassigned = std::numeric_limits<entry_type>::max();
     table.fill(unassigned);
-    Node<CoordinateBlockCube> root, node;
+    StorageNode root;
+    WorkNode node;
     auto queue = std::deque{root};
     uint table_entry{0};
     std::vector<uint> state_counter{0};
-    assert(table_entry == index(root.state));
+    // assert(table_entry == index(root.state));
     table[table_entry] = 0;
 
     while (queue.size() > 0){
-      node = queue.back();
+      node = uncompress(queue.back());
       assert(index(node.state) < table_size);
       assert(table[index(node.state)] != unassigned);
       auto children = node.expand<-1>( // -1 template parameter deactivates the move sequence copy at each move application
@@ -113,7 +122,7 @@ struct OptimalPruningTable
       for (auto&& child : children){
         table_entry = index(child.state);
         if (table[table_entry] == unassigned){
-          queue.push_front(child);
+          queue.push_front(compress(child));
           table[table_entry] = child.depth;
         }
       }
