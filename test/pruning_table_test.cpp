@@ -42,6 +42,9 @@ void DL_2x2x3(){
     // Unable to run this on my computer. 5 edges and 2 corners is too big
     std::cout << "Solution lengths for DL 2x2x3 :" << std::endl;
     OptimalPruningTable DL_223(Block<2, 5>("DL_223", {4, 7}, {4, 7, 8, 10, 11}));
+    for (int i=0; i<DL_223.table_size;++i) {
+      assert(DL_223.table[i] != 255);
+    }
 }
 
 void top_layer(){
@@ -55,5 +58,6 @@ int main(){
     one_corner_and_one_edge();
     DLB_2x2x2();
     roux_fb();
+    DL_2x2x3();
     return 0;
 }

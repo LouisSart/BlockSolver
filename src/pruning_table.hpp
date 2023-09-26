@@ -1,7 +1,7 @@
-#include <array>
 #include <deque>
 #include <cstdint>
 #include <limits>
+#include <memory> // std::unique_ptr
 #include "coordinate.hpp"
 #include "move_table.hpp"
 #include "node.hpp"
@@ -17,7 +17,7 @@ struct OptimalPruningTable
   static constexpr uint n_corner_states = (factorial(8)/factorial(8 - nc))*ipow(3, nc);
   static constexpr uint n_edge_states = (factorial(12)/factorial(12 - ne))*ipow(2, ne);
   static constexpr uint table_size = n_corner_states * n_edge_states;
-  std::array<entry_type, table_size> table;
+  std::unique_ptr<entry_type[]> table{new entry_type[table_size]};
 
   std::string name;
   std::filesystem::path table_dir_path{};
@@ -45,7 +45,7 @@ struct OptimalPruningTable
     std::filesystem::path table_file = block_table_path / "table.dat";
     {
       std::ofstream file(table_file, std::ios::binary);
-      file.write(reinterpret_cast<char*>(table.data()), sizeof(entry_type)*table_size);
+      file.write(reinterpret_cast<char*>(table.get()), sizeof(entry_type)*table_size);
       file.close();
     }
   }
@@ -55,7 +55,7 @@ struct OptimalPruningTable
     std::filesystem::path table_path = block_table_path / "table.dat";
 
     std::ifstream istrm(table_path, std::ios::binary);
-    istrm.read(reinterpret_cast<char*>(table.data()), sizeof(entry_type)*table_size);
+    istrm.read(reinterpret_cast<char*>(table.get()), sizeof(entry_type)*table_size);
     istrm.close();
   }
 
@@ -103,7 +103,7 @@ struct OptimalPruningTable
     };
 
     auto unassigned = std::numeric_limits<entry_type>::max();
-    table.fill(unassigned);
+    this->fill(unassigned);
     StorageNode root;
     WorkNode node;
     auto queue = std::deque{root};
@@ -138,8 +138,16 @@ struct OptimalPruningTable
     }
     std::cout << "Depth: " << state_counter.size() - 1 << " " << state_counter.back() << std::endl;
     assert(table[0] == 0);
-    for (auto&& k : table) {
-      assert(k != unassigned);
+    int n_states = 0;
+    for(auto&& k : state_counter){
+      n_states+=k;
+    }
+    assert(n_states == table_size);
+  }
+
+  void fill(const entry_type value) const {
+    for (int i=0; i<table_size; ++i){
+      table[i] = value;
     }
   }
 };
