@@ -51,9 +51,24 @@ void test_big_move_table(){
     auto table = BlockMoveTable<2, 5>();
 }
 
+void test_load(){
+    BlockMoveTable<4, 4> table;
+    Block<4, 4> b("TopLayer", {0, 1, 2, 3}, {0, 1, 2, 3});
+    table.compute_corner_move_tables(b);
+    table.compute_edge_move_tables(b);
+    table.write();
+
+    BlockMoveTable<4, 4> table_loaded(b);
+
+    for (int i=0; i<table.cp_table_size; ++i){
+        assert(table.cp_table[i] == table_loaded.cp_table[i]);
+    }
+}
+
 int main() {
     test_cc_apply_and_move_table_are_equivalent();
     test_222_block_alg_apply();
     test_big_move_table();
+    test_load();
     return 0;
 }
