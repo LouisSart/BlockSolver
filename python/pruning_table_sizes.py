@@ -5,7 +5,7 @@ import numpy as np
 # Complete pruning value: the exact number of moves needed to solve the whole block
 print("--------------------------------------------------------------")
 print("  ###  Table sizes (MB) for different pruning value ideas  ###  ")
-print("       Number of corners in columns, number of edges in rows")
+print("Number of corners increases vertically, number of edges increases horizontally")
 print("--------------------------------------------------------------\n")
 
 
@@ -16,9 +16,9 @@ sizes = np.empty((nc_max, ne_max), dtype = np.int64)
 for nc in range(nc_max):
     for ne in range(ne_max):
         exact_pruning_table_size = 1
-        for c in range(nc):
+        for c in range(nc+1):
             exact_pruning_table_size *= (8-c)*3
-        for e in range(ne):
+        for e in range(ne+1):
             exact_pruning_table_size *= (12-e)*2
         sizes[nc, ne] = exact_pruning_table_size
 
@@ -32,12 +32,12 @@ nc_max, ne_max = 5, 6
 sizes = np.empty((nc_max, ne_max), dtype = np.int64)
 for nc in range(nc_max):
     for ne in range(ne_max):
-        exact_pruning_table_size = 1
-        for c in range(nc):
-            exact_pruning_table_size *= (8-c)
-        for e in range(ne):
-            exact_pruning_table_size *= (12-e)
-        sizes[nc, ne] = exact_pruning_table_size
+        permutation_pruning_table_size = 1
+        for c in range(nc+1):
+            permutation_pruning_table_size *= (8-c)
+        for e in range(ne+1):
+            permutation_pruning_table_size *= (12-e)
+        sizes[nc, ne] = permutation_pruning_table_size
 
 np.set_printoptions(precision=2, sign = " ")
 print(sizes / 1.e6, '\n')
@@ -49,33 +49,32 @@ nc_max, ne_max = 5, 6
 sizes = np.empty((nc_max, ne_max), dtype = np.int64)
 for nc in range(nc_max):
     for ne in range(ne_max):
-        exact_pruning_table_size = 1
-        for c in range(nc):
-            exact_pruning_table_size *= (8-c)*3
-        for e in range(ne):
-            exact_pruning_table_size *= (12-e)*2
-        exact_pruning_table_size /= math.factorial(nc) * math.factorial(ne)
-        sizes[nc, ne] = exact_pruning_table_size
+        orientation_pruning_table_size = 1
+        for c in range(nc+1):
+            orientation_pruning_table_size *= (8-c)*3
+        for e in range(ne+1):
+            orientation_pruning_table_size *= (12-e)*2
+        orientation_pruning_table_size /= math.factorial(nc) * math.factorial(ne)
+        sizes[nc, ne] = orientation_pruning_table_size
 
 np.set_printoptions(precision=2, sign = " ")
 print(sizes / 1.e6, '\n')
 
 
 print("""Layout pruning value : number of moves needed to restore the block pieces
-to their home positions but they can be permuted and misoriented
-(for 3 to 6 corners and 5 to 8 edges)""")
+to their home positions but they can be permuted and misoriented""")
       
-nc_max, ne_max = 6, 8
+nc_max, ne_max = 4, 6
 sizes = np.empty((nc_max, ne_max), dtype = np.int64)
 for nc in range(nc_max):
     for ne in range(ne_max):
-        exact_pruning_table_size = 1
-        for c in range(nc):
-            exact_pruning_table_size *= (8-c)
-        for e in range(ne):
-            exact_pruning_table_size *= (12-e)
-        exact_pruning_table_size /= math.factorial(nc) * math.factorial(ne)
-        sizes[nc, ne] = exact_pruning_table_size
+        layout_pruning_table_size = 1
+        for c in range(nc+1):
+            layout_pruning_table_size *= (8-c)
+        for e in range(ne+1):
+            layout_pruning_table_size *= (12-e)
+        layout_pruning_table_size /= math.factorial(nc) * math.factorial(ne)
+        sizes[nc, ne] = layout_pruning_table_size
 
 np.set_printoptions(precision=2, sign = " ")
-print(sizes[2:, 4:] / 1.e6)
+print(sizes / 1.e6)
