@@ -49,6 +49,12 @@ void DL_2x2x3(){
 
 void top_layer(){
     // Unable to run this on my computer. 4 edges and 4 corners is too big
+    // FIXME: This fails:
+    // pruning_table_test: /home/epicier/BlockSolver/src/pruning_table.hpp:74:
+    // uint OptimalPruningTable<nc, ne>::index(const CoordinateBlockCube&) const
+    // [with unsigned int nc = 4; unsigned int ne = 4; uint = unsigned int]: Assertion `index < table_size' failed.
+    // Aborted (core dumped)
+
     std::cout << "Solution lengths for the Top Layer :" << std::endl;
     OptimalPruningTable TopLayer_table(Block<4, 4>("TopLayer", {0, 1, 2, 3}, {0, 1, 2, 3}));
 }
