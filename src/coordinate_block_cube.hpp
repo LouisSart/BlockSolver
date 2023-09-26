@@ -36,7 +36,7 @@ struct CoordinateBlockCube
           && ceo == 0);
   }
 
-  void show() {
+  void show() const {
     std::cout << "CoordinateBlockCube:\n";
     std::cout << " Corner layout coordinate: " << ccl << '\n';
     std::cout << " CP coordinate: " << ccp << '\n';

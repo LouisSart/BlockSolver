@@ -31,7 +31,7 @@ struct BlockMoveTable
   std::filesystem::path table_dir_path;
   std::filesystem::path block_table_path;
   
-
+  BlockMoveTable(){};
   BlockMoveTable(const Block<nc, ne> &b) {
 
     table_dir_path = fs::current_path() / "move_tables/";
