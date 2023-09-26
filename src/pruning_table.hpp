@@ -94,7 +94,7 @@ struct OptimalPruningTable
     using StorageNode = CompressedNode<uint>;
     using WorkNode = Node<CoordinateBlockCube>;
     BlockMoveTable m_table(b);
-    auto apply = [m_table](const Move& move, CoordinateBlockCube& CBC){m_table.apply(move,CBC);};
+    auto apply = [&m_table](const Move& move, CoordinateBlockCube& CBC){m_table.apply(move,CBC);};
     auto compress = [this](const WorkNode& big){
       return StorageNode(this->index(big.state), big.depth);
     };

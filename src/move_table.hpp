@@ -4,6 +4,7 @@
 #include <tuple>
 #include <fstream>
 #include <filesystem>
+#include <memory> // std::unique_ptr
 
 namespace fs = std::filesystem;
 
@@ -13,20 +14,20 @@ struct BlockMoveTable
   static constexpr uint n_cl = binomial(8, nc);
   static constexpr uint n_cp = factorial(nc);
   static constexpr uint cp_table_size = n_cp*n_cl*18;
-  std::array<uint, cp_table_size> cp_table;
+  std::unique_ptr<uint[]> cp_table{ new uint[cp_table_size]};
 
   static constexpr uint n_co = ipow(3, nc);
   static constexpr uint co_table_size = n_cl*n_co*18;
-  std::array<uint, co_table_size> co_table;
+  std::unique_ptr<uint[]> co_table{ new uint[co_table_size]};
 
   static constexpr uint n_el = binomial(12, ne);
   static constexpr uint n_ep = factorial(ne);
   static constexpr uint ep_table_size = n_ep*n_el*18;
-  std::array<uint, ep_table_size> ep_table;
+  std::unique_ptr<uint[]> ep_table{ new uint[ep_table_size]};
 
   static constexpr uint n_eo = ipow(2, ne);
   static constexpr uint eo_table_size = n_el*n_eo*18;
-  std::array<uint, eo_table_size> eo_table;
+  std::unique_ptr<uint[]> eo_table{ new uint[eo_table_size]};
 
   std::filesystem::path table_dir_path;
   std::filesystem::path block_table_path;
@@ -104,16 +105,16 @@ struct BlockMoveTable
     std::filesystem::path eo_table_file = block_table_path / "eo_table.dat";
     {
       std::ofstream file(cp_table_file, std::ios::binary);
-      file.write(reinterpret_cast<char*>(cp_table.data()), sizeof(uint)*cp_table_size);
+      file.write(reinterpret_cast<char*>(cp_table.get()), sizeof(uint)*cp_table_size);
       file.close();
       file.open(co_table_file, std::ios::binary);
-      file.write(reinterpret_cast<char*>(co_table.data()), sizeof(uint)*co_table_size);
+      file.write(reinterpret_cast<char*>(co_table.get()), sizeof(uint)*co_table_size);
       file.close();
       file.open(ep_table_file, std::ios::binary);
-      file.write(reinterpret_cast<char*>(ep_table.data()), sizeof(uint)*ep_table_size);
+      file.write(reinterpret_cast<char*>(ep_table.get()), sizeof(uint)*ep_table_size);
       file.close();
       file.open(eo_table_file, std::ios::binary);
-      file.write(reinterpret_cast<char*>(eo_table.data()), sizeof(uint)*eo_table_size);
+      file.write(reinterpret_cast<char*>(eo_table.get()), sizeof(uint)*eo_table_size);
       file.close();
     }
   }
@@ -126,16 +127,16 @@ struct BlockMoveTable
     std::filesystem::path eo_table_path = block_table_path / "eo_table.dat";
 
     std::ifstream istrm(cp_table_path, std::ios::binary);
-    istrm.read(reinterpret_cast<char*>(cp_table.data()), sizeof(uint)*cp_table_size);
+    istrm.read(reinterpret_cast<char*>(cp_table.get()), sizeof(uint)*cp_table_size);
     istrm.close();
     istrm.open(co_table_path, std::ios::binary);
-    istrm.read(reinterpret_cast<char*>(co_table.data()), sizeof(uint)*co_table_size);
+    istrm.read(reinterpret_cast<char*>(co_table.get()), sizeof(uint)*co_table_size);
     istrm.close();
     istrm.open(ep_table_path, std::ios::binary);
-    istrm.read(reinterpret_cast<char*>(ep_table.data()), sizeof(uint)*ep_table_size);
+    istrm.read(reinterpret_cast<char*>(ep_table.get()), sizeof(uint)*ep_table_size);
     istrm.close();
     istrm.open(eo_table_path, std::ios::binary);
-    istrm.read(reinterpret_cast<char*>(eo_table.data()), sizeof(uint)*eo_table_size);
+    istrm.read(reinterpret_cast<char*>(eo_table.get()), sizeof(uint)*eo_table_size);
     istrm.close();
   }
 

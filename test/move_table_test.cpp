@@ -41,8 +41,19 @@ void test_222_block_alg_apply(){
     assert(cbc.is_solved());
 }
 
+
+void test_big_move_table(){
+    // Move tables used to be stored on the stack, and would sometime
+    // exceed stack size
+    // New implementation uses std::unique_pointer to make sure the data is
+    // stored on the "heap" and garbage collected when the table goes out of scope
+
+    auto table = BlockMoveTable<2, 5>();
+}
+
 int main() {
     test_cc_apply_and_move_table_are_equivalent();
     test_222_block_alg_apply();
+    test_big_move_table();
     return 0;
 }

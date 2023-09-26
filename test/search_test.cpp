@@ -22,7 +22,7 @@ void test_expand_cbc() {
 
     Node root(cbc, 0);
     auto children = root.expand(
-        [table](const Move& move, CoordinateBlockCube& CBC){table.apply(move,CBC);},
+        [&table](const Move& move, CoordinateBlockCube& CBC){table.apply(move,CBC);},
         HTM_Moves
     );
     
@@ -45,7 +45,7 @@ void test_expand_cbc_with_heuristic() {
 
     Node root(cbc, 0);
     auto children = root.expand(
-        [table](const Move& move, CoordinateBlockCube& CBC){table.apply(move,CBC);},
+        [&table](const Move& move, CoordinateBlockCube& CBC){table.apply(move,CBC);},
         [&k](const CoordinateBlockCube& CBC){++k; return 18 - k; },
         HTM_Moves
     );
@@ -68,7 +68,7 @@ void test_breadth_first_search() {
     Node<CoordinateBlockCube> root(cbc, 0);
     auto solutions = breadth_first_search(
         root,
-        [table](const Move& move, CoordinateBlockCube& CBC){table.apply(move,CBC);},
+        [&table](const Move& move, CoordinateBlockCube& CBC){table.apply(move,CBC);},
         4
     );
     for (auto&& s : solutions) {
