@@ -91,6 +91,20 @@ struct CubieCube {
 
     void apply(Algorithm& alg);
 
+    CubieCube inverse() const {
+        // return the inverse permutation
+        CubieCube inverse;
+        for (int c = 0; c < 8; ++c) {
+            inverse.cp[cp[c]] = c;
+            inverse.co[cp[c]] = (3 - co[c]) % 3;
+        };
+        for (int e = 0; e < 12; ++e) {
+            inverse.ep[ep[e]] = e;
+            inverse.eo[ep[e]] = (2 - eo[e]) % 2;
+        };
+        return inverse;
+    }
+
     bool operator==(const CubieCube& other) {
         for (uint c = 0; c < 8; ++c) {
             if (cp[c] != other.cp[c]) {

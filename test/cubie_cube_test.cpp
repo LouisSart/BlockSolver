@@ -51,9 +51,18 @@ void test_random_state() {
     assert(cube.is_solvable());
 }
 
+void test_inverse() {
+    auto solved = CubieCube();
+    auto cube = CubieCube::random_state();
+    auto inverse = cube.inverse();
+    cube.apply(inverse);
+    assert(cube == solved);
+}
+
 int main() {
     test_move_apply();
     test_parity();
     test_random_state();
+    test_inverse();
     return 0;
 }

@@ -22,6 +22,13 @@ enum Move {
     B,
     B2,
     B3,
+    S_URF,
+    S_URF2,
+    S_z2,
+    S_y,
+    S_y2,
+    S_y3,
+    S_LR,
     NoneMove = -1
 };
 
