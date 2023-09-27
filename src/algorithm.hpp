@@ -36,15 +36,15 @@ std::vector<Move> allowed_next(const Move m) {
   case U ... U3:
     return {D, D2, D3, R, R2, R3, L, L2, L3, F, F2, F3, B, B2, B3};
   case D ... D3:
-    return {U, U2, U3, R, R2, R3, L, L2, L3, F, F2, F3, B, B2, B3};
+    return {R, R2, R3, L, L2, L3, F, F2, F3, B, B2, B3};
   case R ... R3:
     return {U, U2, U3, D, D2, D3, L, L2, L3, F, F2, F3, B, B2, B3};
   case L ... L3:
-    return {U, U2, U3, D, D2, D3, R, R2, R3, F, F2, F3, B, B2, B3};
+    return {U, U2, U3, D, D2, D3, F, F2, F3, B, B2, B3};
   case F ... F3:
     return {U, U2, U3, D, D2, D3, R, R2, R3, L, L2, L3, B, B2, B3};
   case B ... B3:
-    return {U, U2, U3, D, D2, D3, R, R2, R3, L, L2, L3, F, F2, F3};
+    return {U, U2, U3, D, D2, D3, R, R2, R3, L, L2, L3};
   default:
     return {U, U2, U3, D, D2, D3, R, R2, R3, L, L2, L3, F, F2, F3, B, B2, B3};
   }
