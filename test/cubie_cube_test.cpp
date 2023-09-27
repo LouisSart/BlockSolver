@@ -47,8 +47,8 @@ void test_parity() {
 
 void test_random_state() {
     auto cube = CubieCube::random_state();
-    cube.show();
     assert(cube.is_solvable());
+    assert(!cube.is_solved());  // This could be true once in while tho...
 }
 
 void test_inverse() {
@@ -56,7 +56,22 @@ void test_inverse() {
     auto cube = CubieCube::random_state();
     auto inverse = cube.inverse();
     cube.apply(inverse);
-    assert(cube == solved);
+    assert(cube.is_solved());
+}
+
+void test_symmetries() {
+    CubieCube random = CubieCube::random_state();
+    for (int s = 18; s < 25; ++s) {
+        CubieCube cube;
+        auto sym = elementary_transformations[s];
+        cube.apply(sym);
+        cube.apply(random);
+        cube.apply(sym.inverse());
+        cube.apply(sym);
+        cube.apply(random.inverse());
+        cube.apply(sym.inverse());
+        assert(cube.is_solved());
+    }
 }
 
 int main() {
@@ -64,5 +79,6 @@ int main() {
     test_parity();
     test_random_state();
     test_inverse();
+    test_symmetries();
     return 0;
 }

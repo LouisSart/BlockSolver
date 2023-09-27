@@ -56,7 +56,7 @@ struct CubieCube {
     };
 
     // Apply the corner transformation of the given CubieCube
-    void corner_apply(CubieCube& cc) {
+    void corner_apply(const CubieCube& cc) {
         int new_cp[8], new_co[8];
         for (int i = 0; i < 8; i++) {
             new_cp[i] = cp[cc.cp[i]];
@@ -69,7 +69,7 @@ struct CubieCube {
     };
 
     // Apply the corner transformation of the given CubieCube
-    void edge_apply(CubieCube& cc) {
+    void edge_apply(const CubieCube& cc) {
         int new_ep[12], new_eo[12];
         for (int i = 0; i < 12; i++) {
             new_ep[i] = ep[cc.ep[i]];
@@ -81,11 +81,14 @@ struct CubieCube {
             eo[i] = new_eo[i] % 2;
         }
     };
+
     // Apply a transformation
-    void apply(CubieCube& cc) {
-        this->edge_apply(cc);
-        this->corner_apply(cc);
+    void apply(const CubieCube& cc) {
+        edge_apply(cc);
+        corner_apply(cc);
     }
+
+    void apply(const CubieCube&& cc) { apply(cc); }
 
     void apply(const Move&);
 
@@ -221,6 +224,19 @@ struct CubieCube {
         return true;
     }
 
+    bool is_solved() const {
+        for (int c = 0; c < 8; ++c) {
+            if (cp[c] != c || co[c] != 0) {
+                return false;
+            }
+        }
+        for (int e = 0; e < 12; ++e) {
+            if (ep[e] != e || eo[e] != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
     static CubieCube random_state() {
         CubieCube cube;
         std::srand(std::time(nullptr));
@@ -395,7 +411,7 @@ std::array<CubieCube, 25> elementary_transformations{
     // S_z2: The z2 cube rotation
     CubieCube{{5, 4, 7, 6, 1, 0, 3, 2},
               {0, 0, 0, 0, 0, 0, 0, 0},
-              {8, 9, 10, 11, 5, 4, 7, 6, 0, 1, 2, 3},
+              {8, 11, 10, 9, 5, 4, 7, 6, 0, 3, 2, 1},
               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
     // S_y: The y cube rotation
