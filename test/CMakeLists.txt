@@ -1,4 +1,4 @@
-list(APPEND UNIT_TESTS block cubie_cube move_table search pruning_table 223_pruning_table)
+list(APPEND UNIT_TESTS block cubie_cube move_table search pruning_table big_pruning_table_search)
 
 foreach(f ${UNIT_TESTS})
   set(target ${f}_test)
