@@ -13,7 +13,7 @@ int main() {
     m_table.apply(scramble, cbc);
 
     Node<CoordinateBlockCube> root(cbc, 0);
-    auto solutions = depth_first_search(root, m_table, p_table, 9);
+    auto solutions = IDAstar(root, m_table, p_table);
     for (auto&& s : solutions) {
         s.show();
     }
