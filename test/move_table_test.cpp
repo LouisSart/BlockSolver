@@ -1,23 +1,23 @@
 #include "move_table.hpp"
 
-void test_cc_apply_and_move_table_are_equivalent(){
+void test_cc_apply_and_move_table_are_equivalent() {
     auto b = Block<1, 1>("OneCornerAndOneEdge", {0}, {0});
     auto bc = BlockCube(b);
     BlockMoveTable<1, 1> table(b);
     CubieCube cc;
     CoordinateBlockCube cbc;
 
-    for (uint move : HTM_Moves){
+    for (uint move : HTM_Moves) {
         table.apply(move, cbc);
         cc.apply(elementary_transformations[move]);
-        
+
         auto cbc_check = bc.to_coordinate_block_cube(cc);
-        
+
         assert(cbc == cbc_check);
     }
 }
 
-void test_222_block_alg_apply(){
+void test_222_block_alg_apply() {
     BlockCube<1, 3> bc("DLB_222", {7}, {7, 10, 11});
     BlockMoveTable<1, 3> table(bc.b);
     CubieCube cc;
@@ -41,17 +41,17 @@ void test_222_block_alg_apply(){
     assert(cbc.is_solved());
 }
 
-
-void test_big_move_table(){
+void test_big_move_table() {
     // Move tables used to be stored on the stack, and would sometime
     // exceed stack size
     // New implementation uses std::unique_pointer to make sure the data is
-    // stored on the "heap" and garbage collected when the table goes out of scope
+    // stored on the "heap" and garbage collected when the table goes out of
+    // scope
 
     auto table = BlockMoveTable<2, 5>();
 }
 
-void test_load(){
+void test_load() {
     BlockMoveTable<4, 4> table;
     Block<4, 4> b("TopLayer", {0, 1, 2, 3}, {0, 1, 2, 3});
     table.compute_corner_move_tables(b);
@@ -60,7 +60,7 @@ void test_load(){
 
     BlockMoveTable<4, 4> table_loaded(b);
 
-    for (int i=0; i<table.cp_table_size; ++i){
+    for (int i = 0; i < table.cp_table_size; ++i) {
         assert(table.cp_table[i] == table_loaded.cp_table[i]);
     }
 }

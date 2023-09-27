@@ -1,24 +1,22 @@
 #pragma once
 #include <array>
+#include <cassert>
 #include <iostream>
 #include <list>
-#include <cassert>
 
 #include "coordinate.hpp"
-#include "cubie_cube.hpp"
 #include "coordinate_block_cube.hpp"
+#include "cubie_cube.hpp"
 
 template <uint nc, uint ne>
 struct Block {
     std::array<uint, nc> corners{0};  // corner indices
     std::array<uint, ne> edges{0};    // edge indices
 
-    std::array<uint, 8> c_order{
-        0, 1, 2, 3,
-        4, 5, 6, 7};  // map: [0,...,7]->[block corners,non-block corners]
-    std::array<uint, 12> e_order{
-        0, 1, 2, 3, 4,  5,
-        6, 7, 8, 9, 10, 11};  // map: [0,...,11]->[block edges,non-block edges]
+    // map: [0,...,7]->[block corners,non-block corners]
+    std::array<uint, 8> c_order{0, 1, 2, 3, 4, 5, 6, 7};
+    // map: [0,...,11]->[block edges,non-block edges]
+    std::array<uint, 12> e_order{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
     std::string name;
 
@@ -71,25 +69,26 @@ struct Block {
 
 template <uint nc, uint ne>
 struct BlockCube {
-    // This struct is responsible for all conversions from CubieCube to CoordinateBlockCube
-    // because we want to avoid reciprocal dependency between CubieCube and CoordinateBlockCube
+    // This struct is responsible for all conversions from CubieCube to
+    // CoordinateBlockCube because we want to avoid reciprocal dependency
+    // between CubieCube and CoordinateBlockCube
 
-    uint cl[8]{0};     // Corner layout
-    uint el[12]{0};    // Edge layout
-    uint cp[nc]{0};    // Permutation of the block corners
-    uint ep[ne]{0};    // Permutation of the block edges
-    uint co[nc]{0};    // Orientation of the block corners
-    uint eo[ne]{0};    // Orientation of the block edges
+    uint cl[8]{0};    // Corner layout
+    uint el[12]{0};   // Edge layout
+    uint cp[nc]{0};   // Permutation of the block corners
+    uint ep[ne]{0};   // Permutation of the block edges
+    uint co[nc]{0};   // Orientation of the block corners
+    uint eo[ne]{0};   // Orientation of the block edges
     Block<nc, ne> b;  // Block object
 
     BlockCube(){};
     BlockCube(std::string bname, const std::initializer_list<uint> bc,
-          const std::initializer_list<uint> be) : b(bname, bc, be) {};
-    BlockCube(Block<nc, ne> b) : b(b) {};
+              const std::initializer_list<uint> be)
+        : b(bname, bc, be){};
+    BlockCube(Block<nc, ne> b) : b(b){};
 
-    CoordinateBlockCube to_coordinate_block_cube(const CubieCube &cc){
-
-        // Returns the coordinate representation 
+    CoordinateBlockCube to_coordinate_block_cube(const CubieCube &cc) {
+        // Returns the coordinate representation
         // of the block state in the input CubieCube
 
         CoordinateBlockCube cbc;
@@ -122,7 +121,7 @@ struct BlockCube {
             }
             kl++;
         }
-        
+
         cbc.ccl = layout_coord(cl, 8);
         cbc.cel = layout_coord(el, 12);
         cbc.ccp = perm_coord(cp, nc);
@@ -134,9 +133,8 @@ struct BlockCube {
     }
 
     CubieCube to_cubie_cube(const CoordinateBlockCube &cbc) {
-
-        // Takes in a CoordinateBlockCube and returns the corresponding CubieCube
-        // All pieces that do not belong to the block are set to
+        // Takes in a CoordinateBlockCube and returns the corresponding
+        // CubieCube All pieces that do not belong to the block are set to
         // default inconsistent values:
         // 8 for CP, 12 for EP, 2 for Eo, 3 for CO
         // This means that the resulting CubieCube cannot be used as a
@@ -149,7 +147,6 @@ struct BlockCube {
         layout_from_coord(cbc.cel, 12, ne, el);
         perm_from_coord(cbc.cep, ne, ep);
         eo_from_coord(cbc.ceo, ne, eo);
-
 
         uint k = 0;
         for (uint i = 0; i < 8; i++) {

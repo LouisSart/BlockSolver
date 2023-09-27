@@ -1,5 +1,7 @@
 #include "cubie_cube.hpp"
+
 #include <cassert>
+
 #include "algorithm.hpp"
 
 auto no_effect = Algorithm({R, U, R3, F3, U2, L3, U3, L, F, U2});
@@ -8,7 +10,7 @@ auto corner_3_cycle = Algorithm({R, U, R3, D, R, U3, R3, D3});
 auto edge_3_cycle = Algorithm({R, L3, U2, R3, L, F2});
 auto random_moves = Algorithm({R, F3, U, D3, U, R, B3, U3, R3, D3, F2, L2});
 
-void test_move_apply(){
+void test_move_apply() {
     auto cube = CubieCube();
 
     cube.apply(no_effect);
@@ -19,7 +21,7 @@ void test_move_apply(){
     assert(CubieCube() == cube);
 }
 
-void test_parity(){
+void test_parity() {
     auto cube = CubieCube();
 
     cube.apply(corner_3_cycle);
@@ -43,7 +45,7 @@ void test_parity(){
     assert(cube.is_solvable());
 }
 
-void test_random_state(){
+void test_random_state() {
     auto cube = CubieCube::random_state();
     cube.show();
     assert(cube.is_solvable());
