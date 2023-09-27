@@ -7,7 +7,9 @@ int main(){
     OptimalPruningTable p_table(b);
     BlockMoveTable m_table(b);
     CoordinateBlockCube cbc;
+    std::cout << "Solving the DL 2x2x3 on Wen's WR scramble: " << std::endl;
     Algorithm scramble({R3, U3, F, D2, R2, F3, L2, D2, F3, L, U3, B, U3, D3, F2, B2, L2, D, F2, U2, D, R3, U3, F});
+    scramble.show();
     m_table.apply(scramble, cbc);
 
     Node<CoordinateBlockCube> root(cbc, 0);
