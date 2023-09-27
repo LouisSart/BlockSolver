@@ -1,8 +1,9 @@
 #pragma once
-#include <cstdint>
-#include <deque>
-#include <limits>
-#include <memory>  // std::unique_ptr
+#include <algorithm>  // std::fill(begin, end)
+#include <cstdint>    // uint8_t
+#include <deque>      // std::deque
+#include <limits>     // std::numeric_limits
+#include <memory>     // std::unique_ptr
 
 #include "coordinate.hpp"
 #include "move_table.hpp"
@@ -35,7 +36,8 @@ struct OptimalPruningTable {
             this->load();
         } else {
             std::cout
-                << "Pruning table directory not found, building the tables\n";
+                << "Pruning table directory not found, building the tables"
+                << std::endl;
             std::filesystem::create_directories(block_table_path);
             compute_table(b);
             this->write();
@@ -106,23 +108,23 @@ struct OptimalPruningTable {
         };
 
         auto unassigned = std::numeric_limits<entry_type>::max();
-        this->fill(unassigned);
+        std::fill(table.get(), table.get() + table_size, unassigned);
         StorageNode root;
         WorkNode node;
         auto queue = std::deque{root};
         uint table_entry{0};
         std::vector<uint> state_counter{0};
-        // assert(table_entry == index(root.state));
+        assert(table_entry == root.state);
         table[table_entry] = 0;
 
         while (queue.size() > 0) {
             node = uncompress(queue.back());
             assert(index(node.state) < table_size);
             assert(table[index(node.state)] != unassigned);
+            // -1 template parameter deactivates the move
+            // sequence copy at each move application
             auto children =
-                node.expand<-1>(  // -1 template parameter deactivates the move
-                                  // sequence copy at each move application
-                    apply, allowed_next(node.sequence.back()));
+                node.expand<-1>(apply, allowed_next(node.sequence.back()));
             for (auto&& child : children) {
                 table_entry = index(child.state);
                 if (table[table_entry] == unassigned) {
@@ -148,12 +150,6 @@ struct OptimalPruningTable {
             n_states += k;
         }
         assert(n_states == table_size);
-    }
-
-    void fill(const entry_type value) const {
-        for (int i = 0; i < table_size; ++i) {
-            table[i] = value;
-        }
     }
 };
 

@@ -44,7 +44,6 @@ void roux_fb() {
 }
 
 void DL_2x2x3() {
-    // Unable to run this on my computer. 5 edges and 2 corners is too big
     std::cout << "Solution lengths for DL 2x2x3 :" << std::endl;
     OptimalPruningTable DL_223(
         Block<2, 5>("DL_223", {4, 7}, {4, 7, 8, 10, 11}));
