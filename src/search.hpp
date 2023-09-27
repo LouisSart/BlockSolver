@@ -1,3 +1,4 @@
+#pragma once
 #include <deque>
 #include "node.hpp"
 #include "algorithm.hpp"
