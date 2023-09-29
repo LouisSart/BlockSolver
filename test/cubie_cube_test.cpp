@@ -14,11 +14,11 @@ void test_move_apply() {
     auto cube = CubieCube();
 
     cube.apply(no_effect);
-    assert(CubieCube() == cube);
+    assert(cube.is_solved());
     cube.apply(Tperm);
     cube.apply(Tperm);
 
-    assert(CubieCube() == cube);
+    assert(cube.is_solved());
 }
 
 void test_parity() {

@@ -37,18 +37,19 @@ struct CubieCube {
         }
     }
 
-    void show() const {
-        auto print_array = [](std::string name, int size, const uint* arr) {
-            std::cout << name << " {";
-            for (int i = 0; i < size; i++) {
-                std::cout << arr[i];
-                if (i < size - 1) {
-                    std::cout << ",";
-                }
+    template <typename Contents>
+    void print_array(std::string name, int size, const Contents* arr) const {
+        std::cout << name << " {";
+        for (int i = 0; i < size; i++) {
+            std::cout << static_cast<int>(arr[i]);
+            if (i < size - 1) {
+                std::cout << ",";
             }
-            std::cout << "}" << std::endl;
-        };
+        }
+        std::cout << "}" << std::endl;
+    };
 
+    void show() const {
         // Display the 4 arrays defining a cube at the cubie level
         std::cout << "CubieCube object:" << '\n';
         std::cout << "  ";
