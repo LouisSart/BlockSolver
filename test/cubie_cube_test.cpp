@@ -52,26 +52,40 @@ void test_random_state() {
 }
 
 void test_inverse() {
-    auto solved = CubieCube();
     auto cube = CubieCube::random_state();
-    auto inverse = cube.inverse();
+    cube.apply(cube.get_inverse());
+    assert(cube.is_solved());
+
+    auto inverse = cube;
+    inverse.inverse();
     cube.apply(inverse);
     assert(cube.is_solved());
 }
 
 void test_symmetries() {
     CubieCube random = CubieCube::random_state();
-    for (int s = 18; s < 25; ++s) {
-        CubieCube cube;
+    CubieCube cube;
+    for (int s = 18; s < 24; ++s) {
         auto sym = elementary_transformations[s];
-        cube.apply(sym);
+        cube.apply(sym.get_inverse());
         cube.apply(random);
-        cube.apply(sym.inverse());
         cube.apply(sym);
-        cube.apply(random.inverse());
-        cube.apply(sym.inverse());
+        cube.inverse();
+        cube.apply(sym.get_inverse());
+        cube.apply(random);
+        cube.apply(sym);
         assert(cube.is_solved());
-    }
+    };
+
+    // RL-mirror cannot be applied as a legal cube permutation
+    cube.RL_mirror();
+    cube.apply(random);
+    cube.RL_mirror();
+    cube.inverse();
+    cube.RL_mirror();
+    cube.apply(random);
+    cube.RL_mirror();
+    assert(cube.is_solved());
 }
 
 int main() {

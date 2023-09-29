@@ -94,7 +94,25 @@ struct CubieCube {
 
     void apply(Algorithm& alg);
 
-    CubieCube inverse() const {
+    void RL_mirror() {
+        // Apply the RL mirroring symmetry. This cannot be
+        // applied as a legal cube manipulation
+
+        CubieCube S_LR{{1, 0, 3, 2, 5, 4, 7, 6},
+                       {0, 0, 0, 0, 0, 0, 0, 0},
+                       {0, 3, 2, 1, 5, 4, 7, 6, 8, 11, 10, 9},
+                       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
+        apply(S_LR);
+        for (uint c = 0; c < 8; ++c) {
+            co[c] = (3 - co[c]) % 3;
+        }
+        for (uint e = 0; e < 12; ++e) {
+            eo[e] = (2 - eo[e]) % 2;
+        }
+    }
+
+    CubieCube get_inverse() const {
         // return the inverse permutation
         CubieCube inverse;
         for (int c = 0; c < 8; ++c) {
@@ -107,6 +125,8 @@ struct CubieCube {
         };
         return inverse;
     }
+
+    void inverse() { *this = get_inverse(); }
 
     bool operator==(const CubieCube& other) {
         for (uint c = 0; c < 8; ++c) {
@@ -282,7 +302,7 @@ struct CubieCube {
     }
 };
 
-std::array<CubieCube, 25> elementary_transformations{
+std::array<CubieCube, 24> elementary_transformations{
     CubieCube{// U
               {1, 2, 3, 0, 4, 5, 6, 7},
               {0, 0, 0, 0, 0, 0, 0, 0},
@@ -430,15 +450,7 @@ std::array<CubieCube, 25> elementary_transformations{
     CubieCube{{3, 0, 1, 2, 7, 4, 5, 6},
               {0, 0, 0, 0, 0, 0, 0, 0},
               {3, 0, 1, 2, 7, 4, 5, 6, 11, 8, 9, 10},
-              {0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0}},
-
-    // S_LR: A plane symmetry about the M-slice
-    CubieCube{{1, 0, 3, 2, 5, 4, 7, 6},
-              {0, 0, 0, 0, 0, 0, 0, 0},
-              {0, 3, 2, 1, 5, 4, 7, 6, 8, 11, 10, 9},
-              {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}
-
-};
+              {0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0}}};
 
 void CubieCube::apply(const Move& m) { apply(elementary_transformations[m]); }
 
