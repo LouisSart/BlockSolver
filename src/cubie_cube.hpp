@@ -9,25 +9,31 @@
 #include "algorithm.hpp"
 #include "coordinate.hpp"
 
+constexpr unsigned NC = 8, NE = 12;
+using Cubie = unsigned;
+using Orientation = unsigned;
+enum Corner : Cubie { ULF, URF, URB, ULB, DLF, DRF, DRB, DLB };
+enum Edge : Cubie { UF, UR, UB, UL, LF, RF, RB, LB, DF, DR, DB, DL };
+
 struct CubieCube {
-    uint cp[8]{0, 1, 2, 3, 4, 5, 6, 7};
-    uint co[8]{0, 0, 0, 0, 0, 0, 0, 0};
-    uint ep[12]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
-    uint eo[12]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    Cubie cp[NC]{ULF, URF, URB, ULB, DLF, DRF, DRB, DLB};
+    Orientation co[NC]{0, 0, 0, 0, 0, 0, 0, 0};
+    Cubie ep[NE]{UF, UR, UB, UL, LF, RF, RB, LB, DF, DR, DB, DL};
+    Orientation eo[NE]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     CubieCube(){};
-    CubieCube(std::initializer_list<uint> cp_in,
-              std::initializer_list<uint> co_in,
-              std::initializer_list<uint> ep_in,
-              std::initializer_list<uint> eo_in) {
-        for (int i = 0; i < 8; i++) {
-            cp[i] = *(cp_in.begin() + i);
-            co[i] = *(co_in.begin() + i);
+    CubieCube(std::initializer_list<Cubie> cp_in,
+              std::initializer_list<Orientation> co_in,
+              std::initializer_list<Cubie> ep_in,
+              std::initializer_list<Orientation> eo_in) {
+        for (Cubie c = ULF; c <= DLB; ++c) {
+            cp[c] = *(cp_in.begin() + c);
+            co[c] = *(co_in.begin() + c);
         }
 
-        for (int i = 0; i < 12; i++) {
-            ep[i] = *(ep_in.begin() + i);
-            eo[i] = *(eo_in.begin() + i);
+        for (Cubie e = UF; e <= DL; e++) {
+            ep[e] = *(ep_in.begin() + e);
+            eo[e] = *(eo_in.begin() + e);
         }
     }
 
@@ -46,39 +52,41 @@ struct CubieCube {
         // Display the 4 arrays defining a cube at the cubie level
         std::cout << "CubieCube object:" << '\n';
         std::cout << "  ";
-        print_array("CP", 8, cp);
+        print_array("CP", NC, cp);
         std::cout << "  ";
-        print_array("CO", 8, co);
+        print_array("CO", NC, co);
         std::cout << "  ";
-        print_array("EP", 12, ep);
+        print_array("EP", NE, ep);
         std::cout << "  ";
-        print_array("EO", 12, eo);
+        print_array("EO", NE, eo);
     };
 
     // Apply the corner transformation of the given CubieCube
     void corner_apply(const CubieCube& cc) {
-        int new_cp[8], new_co[8];
-        for (int i = 0; i < 8; i++) {
-            new_cp[i] = cp[cc.cp[i]];
-            new_co[i] = co[cc.cp[i]] + cc.co[i];
+        Cubie new_cp[NC];
+        Orientation new_co[NC];
+        for (Cubie c = ULF; c < NC; c++) {
+            new_cp[c] = cp[cc.cp[c]];
+            new_co[c] = co[cc.cp[c]] + cc.co[c];
         };
-        for (int i = 0; i < 8; i++) {
-            cp[i] = new_cp[i];
-            co[i] = new_co[i] % 3;
+        for (Cubie c = 0; c < NC; c++) {
+            cp[c] = new_cp[c];
+            co[c] = new_co[c] % 3;
         }
     };
 
     // Apply the corner transformation of the given CubieCube
     void edge_apply(const CubieCube& cc) {
-        int new_ep[12], new_eo[12];
-        for (int i = 0; i < 12; i++) {
-            new_ep[i] = ep[cc.ep[i]];
-            new_eo[i] = eo[cc.ep[i]] + cc.eo[i];
+        Cubie new_ep[NE];
+        Orientation new_eo[NE];
+        for (Cubie e = UF; e < NE; e++) {
+            new_ep[e] = ep[cc.ep[e]];
+            new_eo[e] = eo[cc.ep[e]] + cc.eo[e];
         };
 
-        for (int i = 0; i < 12; i++) {
-            ep[i] = new_ep[i];
-            eo[i] = new_eo[i] % 2;
+        for (Cubie e = UF; e < NE; e++) {
+            ep[e] = new_ep[e];
+            eo[e] = new_eo[e] % 2;
         }
     };
 
@@ -104,10 +112,10 @@ struct CubieCube {
                        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
         apply(S_LR);
-        for (uint c = 0; c < 8; ++c) {
+        for (Cubie c = ULF; c < NC; ++c) {
             co[c] = (3 - co[c]) % 3;
         }
-        for (uint e = 0; e < 12; ++e) {
+        for (Cubie e = UF; e < NE; ++e) {
             eo[e] = (2 - eo[e]) % 2;
         }
     }
@@ -115,11 +123,11 @@ struct CubieCube {
     CubieCube get_inverse() const {
         // return the inverse permutation
         CubieCube inverse;
-        for (int c = 0; c < 8; ++c) {
+        for (Cubie c = ULF; c < NC; ++c) {
             inverse.cp[cp[c]] = c;
             inverse.co[cp[c]] = (3 - co[c]) % 3;
         };
-        for (int e = 0; e < 12; ++e) {
+        for (Cubie e = UF; e < NE; ++e) {
             inverse.ep[ep[e]] = e;
             inverse.eo[ep[e]] = (2 - eo[e]) % 2;
         };
@@ -129,7 +137,7 @@ struct CubieCube {
     void inverse() { *this = get_inverse(); }
 
     bool operator==(const CubieCube& other) {
-        for (uint c = 0; c < 8; ++c) {
+        for (Cubie c = ULF; c < NC; ++c) {
             if (cp[c] != other.cp[c]) {
                 return false;
             }
@@ -137,7 +145,7 @@ struct CubieCube {
                 return false;
             }
         }
-        for (uint e = 0; e < 12; ++e) {
+        for (Cubie e = UF; e < NE; ++e) {
             if (ep[e] != other.ep[e]) {
                 return false;
             }
@@ -154,11 +162,11 @@ struct CubieCube {
         if (this == &other)  // self assignment guard
             return *this;
 
-        for (uint c = 0; c < 8; ++c) {
+        for (Cubie c = ULF; c < NC; ++c) {
             cp[c] = other.cp[c];
             co[c] = other.co[c];
         }
-        for (uint e = 0; e < 12; ++e) {
+        for (Cubie e = UF; e < NE; ++e) {
             ep[e] = other.ep[e];
             eo[e] = other.eo[e];
         }
@@ -166,10 +174,10 @@ struct CubieCube {
     }
 
     int corner_parity() const {
-        std::set<uint> checked;
-        std::vector<uint> cycle_sizes{0};
+        std::set<Cubie> checked;
+        std::vector<int> cycle_sizes{0};
 
-        for (uint k = 0; k < 8; ++k) {
+        for (Cubie k = ULF; k < NC; ++k) {
             while (checked.find(k) == checked.end()) {
                 checked.insert(k);
                 ++cycle_sizes.back();
@@ -178,7 +186,7 @@ struct CubieCube {
             cycle_sizes.emplace_back(0);
         }
 
-        uint number_of_swaps = 0;
+        unsigned number_of_swaps = 0;
         for (auto k : cycle_sizes) {
             if (k != 0) {
                 number_of_swaps += (k - 1);
@@ -188,10 +196,10 @@ struct CubieCube {
     }
 
     int edge_parity() const {
-        std::set<uint> checked;
-        std::vector<uint> cycle_sizes{0};
+        std::set<Cubie> checked;
+        std::vector<int> cycle_sizes{0};
 
-        for (uint k = 0; k < 12; ++k) {
+        for (Cubie k = UF; k < NE; ++k) {
             while (checked.find(k) == checked.end()) {
                 checked.insert(k);
                 ++cycle_sizes.back();
@@ -200,7 +208,7 @@ struct CubieCube {
             cycle_sizes.emplace_back(0);
         }
 
-        uint number_of_swaps = 0;
+        int number_of_swaps = 0;
         for (auto k : cycle_sizes) {
             if (k != 0) {
                 number_of_swaps += (k - 1);
@@ -210,8 +218,8 @@ struct CubieCube {
     }
 
     bool has_consistent_co() const {
-        uint co_sum = 0;
-        for (int c = 0; c < 8; ++c) {
+        int co_sum = 0;
+        for (Cubie c = ULF; c < NC; ++c) {
             co_sum += co[c];
         }
         if (co_sum % 3 != 0) {
@@ -221,8 +229,8 @@ struct CubieCube {
     }
 
     bool has_consistent_eo() const {
-        uint eo_sum = 0;
-        for (int e = 0; e < 12; ++e) {
+        int eo_sum = 0;
+        for (Cubie e = UF; e < NE; ++e) {
             eo_sum += eo[e];
         }
         if (eo_sum % 2 != 0) {
@@ -245,12 +253,12 @@ struct CubieCube {
     }
 
     bool is_solved() const {
-        for (int c = 0; c < 8; ++c) {
+        for (Cubie c = ULF; c < NC; ++c) {
             if (cp[c] != c || co[c] != 0) {
                 return false;
             }
         }
-        for (int e = 0; e < 12; ++e) {
+        for (Cubie e = UF; e < NE; ++e) {
             if (ep[e] != e || eo[e] != 0) {
                 return false;
             }
@@ -261,35 +269,35 @@ struct CubieCube {
         CubieCube cube;
         std::srand(std::time(nullptr));
 
-        std::vector<uint> corners_left{0, 1, 2, 3, 4, 5, 6, 7};
-        for (auto c = 0; c < 8; ++c) {
+        std::vector<Cubie> corners_left{0, 1, 2, 3, 4, 5, 6, 7};
+        for (Cubie c = ULF; c < NC; ++c) {
             auto random = std::rand();
-            auto next_idx = random % (8 - c);
+            auto next_idx = random % (NC - c);
             cube.cp[c] = corners_left[next_idx];
             corners_left.erase(corners_left.begin() + next_idx);
         }
 
-        std::vector<uint> edges_left{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
-        for (auto e = 0; e < 12; ++e) {
+        std::vector<Cubie> edges_left{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+        for (Cubie e = UF; e < NE; ++e) {
             auto random = std::rand();
-            auto next_idx = random % (12 - e);
+            auto next_idx = random % (NE - e);
             cube.ep[e] = edges_left[next_idx];
             edges_left.erase(edges_left.begin() + next_idx);
         }
 
         int counter = 0;
-        for (auto c = 0; c < 7; ++c) {
+        for (Cubie c = ULF; c < DLB; ++c) {
             cube.co[c] = std::rand() % 3;
             counter += cube.co[c];
         }
-        cube.co[7] = (3 - (counter % 3)) % 3;
+        cube.co[DLB] = (3 - (counter % 3)) % 3;
 
         counter = 0;
-        for (auto e = 0; e < 8; ++e) {
+        for (Cubie e = UF; e < DL; ++e) {
             cube.eo[e] = std::rand() % 2;
             counter += cube.eo[e];
         }
-        cube.eo[11] = (2 - (counter % 2)) % 2;
+        cube.eo[DL] = (2 - (counter % 2)) % 2;
 
         if (cube.corner_parity() != cube.edge_parity()) {
             auto a = cube.cp[0];
@@ -351,13 +359,11 @@ std::array<CubieCube, 24> elementary_transformations{
               {0, 9, 2, 3, 4, 6, 5, 7, 8, 1, 10, 11},
               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    CubieCube{
-        // R'
-        {0, 2, 6, 3, 4, 1, 5, 7},
-        {0, 2, 1, 0, 0, 1, 2, 0},
-        {0, 6, 2, 3, 4, 1, 9, 7, 8, 5, 10, 11},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    },
+    CubieCube{// R'
+              {0, 2, 6, 3, 4, 1, 5, 7},
+              {0, 2, 1, 0, 0, 1, 2, 0},
+              {0, 6, 2, 3, 4, 1, 9, 7, 8, 5, 10, 11},
+              {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
     CubieCube{// L
               {3, 1, 2, 7, 0, 5, 6, 4},
@@ -383,13 +389,11 @@ std::array<CubieCube, 24> elementary_transformations{
               {4, 1, 2, 3, 8, 0, 6, 7, 5, 9, 10, 11},
               {1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0}},
 
-    CubieCube{
-        // F2
-        {5, 4, 2, 3, 1, 0, 6, 7},
-        {0, 0, 0, 0, 0, 0, 0, 0},
-        {8, 1, 2, 3, 5, 4, 6, 7, 0, 9, 10, 11},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    },
+    CubieCube{// F2
+              {5, 4, 2, 3, 1, 0, 6, 7},
+              {0, 0, 0, 0, 0, 0, 0, 0},
+              {8, 1, 2, 3, 5, 4, 6, 7, 0, 9, 10, 11},
+              {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
     CubieCube{// F'
               {1, 5, 2, 3, 0, 4, 6, 7},
