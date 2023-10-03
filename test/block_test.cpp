@@ -5,8 +5,9 @@
 #include "coordinate_block_cube.hpp"
 #include "cubie_cube.hpp"
 
-void test_to_cbc_from_cc_and_back() {
-    BlockCube<1, 3> bc("DLB_222", {7}, {7, 10, 11});
+template <unsigned nc, unsigned ne>
+void test_to_cbc_from_cc_and_back(Block<nc, ne> b) {
+    BlockCube bc(b);
     CubieCube cc, return_cc;
     CoordinateBlockCube cbc;
     Algorithm alg({D2, L, R, F3, U});
@@ -68,7 +69,11 @@ void test_corner_permutation_table() {
 }
 
 int main() {
-    test_to_cbc_from_cc_and_back();
+    test_to_cbc_from_cc_and_back(Block<8, 0>(
+        "AllCorners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {}));
+    test_to_cbc_from_cc_and_back(
+        Block<0, 4>("BottomCross", {}, {DF, DR, DB, DL}));
+    test_to_cbc_from_cc_and_back(Block<1, 1>("OneCornerAndOneEdge", {0}, {0}));
     test_corner_permutation_table();
     return 0;
 }

@@ -1,9 +1,9 @@
 #include "move_table.hpp"
 
-void test_cc_apply_and_move_table_are_equivalent() {
-    auto b = Block<1, 1>("OneCornerAndOneEdge", {0}, {0});
-    auto bc = BlockCube(b);
-    BlockMoveTable<1, 1> table(b);
+template <unsigned nc, unsigned ne>
+void assert_move_table_is_correct(Block<nc, ne> b) {
+    BlockCube bc(b);
+    BlockMoveTable table(b);
     CubieCube cc;
     CoordinateBlockCube cbc;
 
@@ -66,7 +66,11 @@ void test_load() {
 }
 
 int main() {
-    test_cc_apply_and_move_table_are_equivalent();
+    assert_move_table_is_correct(Block<8, 0>(
+        "AllCorners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {}));
+    assert_move_table_is_correct(
+        Block<0, 4>("BottomCross", {}, {DF, DR, DB, DL}));
+    assert_move_table_is_correct(Block<1, 1>("OneCornerAndOneEdge", {0}, {0}));
     test_222_block_alg_apply();
     test_big_move_table();
     test_load();
