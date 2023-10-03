@@ -8,45 +8,45 @@
 #include "coordinate_block_cube.hpp"
 #include "cubie_cube.hpp"
 
-template <uint nc, uint ne>
+template <unsigned nc, unsigned ne>
 struct Block {
-    std::array<uint, nc> corners{0};  // corner indices
-    std::array<uint, ne> edges{0};    // edge indices
+    std::array<Cubie, nc> corners;  // corner indices
+    std::array<Cubie, ne> edges;    // edge indices
 
     // map: [0,...,7]->[block corners,non-block corners]
-    std::array<uint, 8> c_order{0, 1, 2, 3, 4, 5, 6, 7};
+    std::array<Cubie, NC> c_order;
     // map: [0,...,11]->[block edges,non-block edges]
-    std::array<uint, 12> e_order{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    std::array<Cubie, NE> e_order;
 
     std::string name;
 
     Block(){};
-    Block(std::string bname, const std::initializer_list<uint> bc,
-          const std::initializer_list<uint> be) {
+    Block(std::string bname, const std::initializer_list<Cubie> bc,
+          const std::initializer_list<Cubie> be) {
         name = bname;
-        for (uint i = 0; i < nc; i++) {
+        for (int i = 0; i < nc; i++) {
             corners[i] = *(bc.begin() + i);
         }
-        for (uint i = 0; i < ne; i++) {
+        for (int i = 0; i < ne; i++) {
             edges[i] = *(be.begin() + i);
         }
 
-        std::list<uint> c{0, 1, 2, 3, 4, 5, 6, 7};
-        std::list<uint> e{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
-        for (int i = nc - 1; i >= 0; i--) {
+        std::list<Cubie> c{ULF, URF, URB, ULB, DLF, DRF, DRB, DLB};
+        std::list<Cubie> e{UF, UR, UB, UL, LF, RF, RB, LB, DF, DR, DB, DL};
+        for (int i = nc - 1; i >= 0; i--) {  // has to be int because of i >= 0
             c.remove(corners[i]);
             c.push_front(corners[i]);
         }
-        for (int i = ne - 1; i >= 0; i--) {
+        for (int i = ne - 1; i >= 0; i--) {  // has to be int because of i >= 0
             e.remove(edges[i]);
             e.push_front(edges[i]);
         }
-        uint *ptr_c_order = c_order.begin();
+        Cubie *ptr_c_order = c_order.begin();
         for (auto ptr_c = c.begin(); ptr_c != c.end(); ptr_c++) {
             *ptr_c_order = *ptr_c;
             ptr_c_order++;
         }
-        uint *ptr_e_order = e_order.begin();
+        Cubie *ptr_e_order = e_order.begin();
         for (auto ptr_e = e.begin(); ptr_e != e.end(); ptr_e++) {
             *ptr_e_order = *ptr_e;
             ptr_e_order++;
@@ -67,23 +67,23 @@ struct Block {
     };
 };
 
-template <uint nc, uint ne>
+template <unsigned nc, unsigned ne>
 struct BlockCube {
-    // This struct is responsible for all conversions from CubieCube to
+    // This struct is responsible for all conversions between CubieCube and
     // CoordinateBlockCube because we want to avoid reciprocal dependency
     // between CubieCube and CoordinateBlockCube
 
-    uint cl[8]{0};    // Corner layout
-    uint el[12]{0};   // Edge layout
-    uint cp[nc]{0};   // Permutation of the block corners
-    uint ep[ne]{0};   // Permutation of the block edges
-    uint co[nc]{0};   // Orientation of the block corners
-    uint eo[ne]{0};   // Orientation of the block edges
+    unsigned cl[NC];  // Corner layout
+    unsigned el[NE];  // Edge layout
+    unsigned cp[nc];  // Permutation of the block corners
+    unsigned ep[ne];  // Permutation of the block edges
+    unsigned co[nc];  // Orientation of the block corners
+    unsigned eo[ne];  // Orientation of the block edges
     Block<nc, ne> b;  // Block object
 
     BlockCube(){};
-    BlockCube(std::string bname, const std::initializer_list<uint> bc,
-              const std::initializer_list<uint> be)
+    BlockCube(std::string bname, const std::initializer_list<Cubie> bc,
+              const std::initializer_list<Cubie> be)
         : b(bname, bc, be){};
     BlockCube(Block<nc, ne> b) : b(b){};
 
@@ -92,10 +92,10 @@ struct BlockCube {
         // of the block state in the input CubieCube
 
         CoordinateBlockCube cbc;
-        uint kl = 0, k = 0;
-        for (uint &c : b.c_order) {
+        unsigned kl = 0, k = 0;
+        for (auto &c : b.c_order) {
             cl[kl] = 0;
-            for (uint i = 0; i < nc; i++) {
+            for (Cubie i = 0; i < nc; i++) {
                 if (cc.cp[c] == b.corners[i]) {
                     cl[kl] = 1;
                     cp[k] = i;
@@ -107,9 +107,9 @@ struct BlockCube {
         }
 
         kl = 0, k = 0;
-        for (uint &e : b.e_order) {
+        for (auto &e : b.e_order) {
             el[kl] = 0;
-            for (uint i = 0; i < ne; i++) {
+            for (Cubie i = 0; i < ne; i++) {
                 if (cc.ep[e] == b.edges[i]) {
                     assert(k < 12);
                     assert(kl < 12);
@@ -122,8 +122,8 @@ struct BlockCube {
             kl++;
         }
 
-        cbc.ccl = layout_coord(cl, 8);
-        cbc.cel = layout_coord(el, 12);
+        cbc.ccl = layout_coord(cl, NC);
+        cbc.cel = layout_coord(el, NE);
         cbc.ccp = perm_coord(cp, nc);
         cbc.cep = perm_coord(ep, ne);
         cbc.cco = co_coord(co, nc);
@@ -141,35 +141,35 @@ struct BlockCube {
         // left multiplicator
 
         CubieCube cc;
-        layout_from_coord(cbc.ccl, 8, nc, cl);
+        layout_from_coord(cbc.ccl, NC, nc, cl);
         perm_from_coord(cbc.ccp, nc, cp);
         co_from_coord(cbc.cco, nc, co);
-        layout_from_coord(cbc.cel, 12, ne, el);
+        layout_from_coord(cbc.cel, NE, ne, el);
         perm_from_coord(cbc.cep, ne, ep);
         eo_from_coord(cbc.ceo, ne, eo);
 
-        uint k = 0;
-        for (uint i = 0; i < 8; i++) {
-            assert(k < 8);
+        unsigned k = 0;
+        for (Cubie i = 0; i < NC; ++i) {
+            assert(k < NC);
             if (cl[i] == 1) {
                 cc.cp[b.c_order[i]] = b.corners[cp[k]];
                 cc.co[b.c_order[i]] = co[k];
                 k++;
             } else {
-                cc.cp[b.c_order[i]] = 8;
+                cc.cp[b.c_order[i]] = NC;
                 cc.co[b.c_order[i]] = 3;
             }
         }
 
         k = 0;
-        for (uint i = 0; i < 12; i++) {
-            assert(k < 12);
+        for (Cubie i = 0; i < NE; i++) {
+            assert(k < NE);
             if (el[i] == 1) {
                 cc.ep[b.e_order[i]] = b.edges[ep[k]];
                 cc.eo[b.e_order[i]] = eo[k];
                 k++;
             } else {
-                cc.ep[b.e_order[i]] = 12;
+                cc.ep[b.e_order[i]] = NE;
                 cc.eo[b.e_order[i]] = 2;
             }
         }
@@ -181,32 +181,32 @@ struct BlockCube {
         std::cout << "  ";
         b.show();
         std::cout << "  CL: ";
-        for (uint i = 0; i < 8; i++) {
+        for (Cubie i = 0; i < NC; ++i) {
             std::cout << cl[i] << ' ';
         }
         std::cout << '\n';
         std::cout << "  CP: ";
-        for (uint i = 0; i < nc; i++) {
+        for (Cubie i = 0; i < nc; ++i) {
             std::cout << cp[i] << ' ';
         }
         std::cout << '\n';
         std::cout << "  CO: ";
-        for (uint i = 0; i < nc; i++) {
+        for (Cubie i = 0; i < nc; ++i) {
             std::cout << co[i] << ' ';
         }
         std::cout << '\n';
         std::cout << "  EL: ";
-        for (uint i = 0; i < 12; i++) {
+        for (Cubie i = 0; i < NE; ++i) {
             std::cout << el[i] << ' ';
         }
         std::cout << '\n';
         std::cout << "  EP: ";
-        for (uint i = 0; i < ne; i++) {
+        for (Cubie i = 0; i < ne; ++i) {
             std::cout << ep[i] << ' ';
         }
         std::cout << '\n';
         std::cout << "  EO: ";
-        for (uint i = 0; i < ne; i++) {
+        for (Cubie i = 0; i < ne; ++i) {
             std::cout << eo[i] << ' ';
         }
         std::cout << '\n';
