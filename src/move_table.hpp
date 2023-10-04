@@ -29,25 +29,24 @@ struct BlockMoveTable {
     static constexpr uint eo_table_size = n_el * n_eo * 18;
     std::unique_ptr<uint[]> eo_table{new uint[eo_table_size]};
 
-    std::filesystem::path table_dir_path;
-    std::filesystem::path block_table_path;
-
-    BlockMoveTable(){};
+    BlockMoveTable() {}
     BlockMoveTable(const Block<nc, ne>& b) {
-        table_dir_path = fs::current_path() / "move_tables/";
-        fs::create_directories(table_dir_path);
-
-        block_table_path = table_dir_path / b.name;
-        if (std::filesystem::exists(block_table_path)) {
-            this->load();
+        auto table_path = block_table_path(b);
+        if (std::filesystem::exists(table_path)) {
+            this->load(table_path);
         } else {
             std::cout
                 << "Move table directory not found, building the tables\n";
-            std::filesystem::create_directories(block_table_path);
+            std::filesystem::create_directories(table_path);
             compute_corner_move_tables(b);
             compute_edge_move_tables(b);
-            this->write();
+            this->write(table_path);
         }
+    }
+
+    auto table_dir_path() const { return fs::current_path() / "move_tables/"; }
+    auto block_table_path(const Block<nc, ne>& b) const {
+        return table_dir_path() / b.name;
     }
 
     void apply(const uint move, CoordinateBlockCube& cbc) const {
@@ -96,11 +95,12 @@ struct BlockMoveTable {
         std::cout << "  Edge sizes (nel, nep, neo): " << n_el << " " << n_ep
                   << " " << n_eo << '\n';
     }
-    void write() {
-        std::filesystem::path cp_table_file = block_table_path / "cp_table.dat";
-        std::filesystem::path co_table_file = block_table_path / "co_table.dat";
-        std::filesystem::path ep_table_file = block_table_path / "ep_table.dat";
-        std::filesystem::path eo_table_file = block_table_path / "eo_table.dat";
+    void write(const std::filesystem::path& table_path) const {
+        fs::create_directories(table_path);
+        std::filesystem::path cp_table_file = table_path / "cp_table.dat";
+        std::filesystem::path co_table_file = table_path / "co_table.dat";
+        std::filesystem::path ep_table_file = table_path / "ep_table.dat";
+        std::filesystem::path eo_table_file = table_path / "eo_table.dat";
         {
             std::ofstream file(cp_table_file, std::ios::binary);
             file.write(reinterpret_cast<char*>(cp_table.get()),
@@ -121,11 +121,11 @@ struct BlockMoveTable {
         }
     }
 
-    void load() {
-        std::filesystem::path cp_table_path = block_table_path / "cp_table.dat";
-        std::filesystem::path co_table_path = block_table_path / "co_table.dat";
-        std::filesystem::path ep_table_path = block_table_path / "ep_table.dat";
-        std::filesystem::path eo_table_path = block_table_path / "eo_table.dat";
+    void load(const std::filesystem::path& table_path) const {
+        std::filesystem::path cp_table_path = table_path / "cp_table.dat";
+        std::filesystem::path co_table_path = table_path / "co_table.dat";
+        std::filesystem::path ep_table_path = table_path / "ep_table.dat";
+        std::filesystem::path eo_table_path = table_path / "eo_table.dat";
 
         std::ifstream istrm(cp_table_path, std::ios::binary);
         istrm.read(reinterpret_cast<char*>(cp_table.get()),

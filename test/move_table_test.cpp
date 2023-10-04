@@ -56,7 +56,7 @@ void test_load() {
     Block<4, 4> b("TopLayer", {0, 1, 2, 3}, {0, 1, 2, 3});
     table.compute_corner_move_tables(b);
     table.compute_edge_move_tables(b);
-    table.write();
+    table.write(table.block_table_path(b));
 
     BlockMoveTable<4, 4> table_loaded(b);
 
