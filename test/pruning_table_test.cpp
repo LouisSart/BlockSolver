@@ -52,7 +52,13 @@ void DL_2x2x3() {
     }
 }
 
+void permutation_pruning_table() {
+    PermutationPruningTable OneC_OneE_table(
+        Block<2, 5>("DL_223", {4, 7}, {4, 7, 8, 10, 11}));
+}
+
 int main() {
+    permutation_pruning_table();
     test_api();
     one_corner_and_one_edge();
     DLB_2x2x2();
