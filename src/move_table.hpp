@@ -32,12 +32,11 @@ struct BlockMoveTable {
     BlockMoveTable() {}
     BlockMoveTable(const Block<nc, ne>& b) {
         auto table_path = block_table_path(b);
-        if (std::filesystem::exists(table_path)) {
+        if (fs::exists(table_path)) {
             this->load(table_path);
         } else {
             std::cout
                 << "Move table directory not found, building the tables\n";
-            std::filesystem::create_directories(table_path);
             compute_corner_move_tables(b);
             compute_edge_move_tables(b);
             this->write(table_path);
@@ -122,6 +121,7 @@ struct BlockMoveTable {
     }
 
     void load(const std::filesystem::path& table_path) const {
+        fs::exists(table_path);
         std::filesystem::path cp_table_path = table_path / "cp_table.dat";
         std::filesystem::path co_table_path = table_path / "co_table.dat";
         std::filesystem::path ep_table_path = table_path / "ep_table.dat";

@@ -1,8 +1,8 @@
 #include "pruning_table.hpp"
 
-void test_api() {
-    std::cout << "API test on the LF column:" << std::endl;
-    Block<2, 1> b("LF_column", {0, 4}, {4});
+template <typename Block>
+void test_optimal_api(const Block& b) {
+    std::cout << b.name << std::endl;
     BlockCube bc(b);
     auto cc = CubieCube::random_state();
     auto cbc = bc.to_coordinate_block_cube(cc);
@@ -14,55 +14,87 @@ void test_api() {
     assert(table.from_index(table.index(cbc)) == cbc);
 }
 
-void one_corner_and_one_edge() {
-    std::cout << "Solution lengths for one corner (UFL) and one edge (UF): "
-              << std::endl;
-    OptimalPruningTable OneC_OneE_table(
-        Block<1, 1>("OneCornerAndOneEdge", {0}, {0}));
-    OptimalPruningTable table_reloaded(
-        Block<1, 1>("OneCornerAndOneEdge", {0}, {0}));
+template <typename Block>
+void test_permutation_api(const Block& b) {
+    std::cout << b.name << std::endl;
+    BlockCube bc(b);
+    auto cc = CubieCube::random_state();
+    auto cbc = bc.to_coordinate_block_cube(cc);
 
-    for (int k = 0; k < OneC_OneE_table.table_size; ++k) {
-        assert(OneC_OneE_table.table[k] == table_reloaded.table[k]);
+    PermutationPruningTable table(b);
+    auto pruning_value = table.get_estimate(cbc);
+
+    assert(pruning_value != 0);
+    auto from_table = table.from_index(table.index(cbc));
+    assert(from_table.ccl == cbc.ccl);
+    assert(from_table.ccp == cbc.ccp);
+    assert(from_table.cel == cbc.cel);
+    assert(from_table.cep == cbc.cep);
+}
+
+template <unsigned nc, unsigned ne>
+void test_optimal_reload(const Block<nc, ne>& b) {
+    std::cout << b.name << std::endl;
+    OptimalPruningTable<nc, ne> table;
+    compute_pruning_table(table, b);
+    table.table_path = table.table_dir / b.name;
+    table.write();
+    OptimalPruningTable reloaded(b);
+
+    for (int k = 0; k < table.size(); ++k) {
+        assert(table.table[k] == reloaded.table[k]);
     }
 }
 
-void DLB_2x2x2() {
-    std::cout << "Solution lengths for the DLB 2x2x2: " << std::endl;
-    OptimalPruningTable DLB_222(Block<1, 3>("DLB_222", {7}, {7, 10, 11}));
-    OptimalPruningTable table_reloaded(
-        Block<1, 3>("DLB_222", {7}, {7, 10, 11}));
+template <unsigned nc, unsigned ne>
+void test_permutation_reload(const Block<nc, ne>& b) {
+    std::cout << b.name << std::endl;
+    PermutationPruningTable<nc, ne> table(b);
+    compute_pruning_table(table, b);
+    table.table_path = table.table_dir / b.name;
+    table.write();
+    PermutationPruningTable reloaded(b);
 
-    for (int k = 0; k < DLB_222.table_size; ++k) {
-        assert(DLB_222.table[k] == table_reloaded.table[k]);
-    }
-}
-void roux_fb() {
-    std::cout << "Solution lengths for Roux First Block :" << std::endl;
-    OptimalPruningTable Roux_FB_table(
-        Block<2, 3>("RouxFirstBlock", {4, 7}, {4, 7, 11}));
-}
-
-void DL_2x2x3() {
-    std::cout << "Solution lengths for DL 2x2x3 :" << std::endl;
-    OptimalPruningTable DL_223(
-        Block<2, 5>("DL_223", {4, 7}, {4, 7, 8, 10, 11}));
-    for (int i = 0; i < DL_223.table_size; ++i) {
-        assert(DL_223.table[i] != 255);
+    for (int k = 0; k < table.size(); ++k) {
+        assert(table.table[k] == reloaded.table[k]);
     }
 }
 
-void permutation_pruning_table() {
-    PermutationPruningTable OneC_OneE_table(
-        Block<2, 5>("DL_223", {4, 7}, {4, 7, 8, 10, 11}));
+template <typename Block>
+void test_optimal_is_correct(const Block& b) {
+    std::cout << b.name << std::endl;
+    OptimalPruningTable opt(b);
+    for (int i = 0; i < opt.table_size; ++i) {
+        assert(opt.table[i] != 255);
+    }
+}
+
+template <typename Block>
+void test_permutation_is_correct(const Block& b) {
+    std::cout << b.name << std::endl;
+    PermutationPruningTable opt(b);
+    for (int i = 0; i < opt.table_size; ++i) {
+        assert(opt.table[i] != 255);
+    }
 }
 
 int main() {
-    permutation_pruning_table();
-    test_api();
-    one_corner_and_one_edge();
-    DLB_2x2x2();
-    roux_fb();
-    DL_2x2x3();
+    auto LF_column = Block<2, 1>("LF_column", {0, 4}, {4});
+    auto DLB_222 = Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB});
+    auto Roux_FB = Block<2, 3>("RouxFirstBlock", {DLF, DLB}, {LF, DL, LB});
+    auto DL_223 = Block<2, 5>("DL_223", {4, 7}, {4, 7, 8, 10, 11});
+
+    std::cout << "API tests" << std::endl;
+    test_optimal_api(LF_column);
+    test_permutation_api(LF_column);
+
+    std::cout << "\nReload tests" << std::endl;
+    test_optimal_api(LF_column);
+    test_optimal_reload(DLB_222);
+    test_permutation_reload(Roux_FB);
+
+    std::cout << "\nCorrectness tests" << std::endl;
+    test_optimal_is_correct(DLB_222);
+    test_permutation_is_correct(DL_223);
     return 0;
 }
