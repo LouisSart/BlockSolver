@@ -1,15 +1,15 @@
 #pragma once
+#include <cassert>
 #include <deque>
 
 #include "algorithm.hpp"
 #include "node.hpp"
-#include "pruning_table.hpp"
 
 template <typename Cube, typename F>
 std::vector<Algorithm> breadth_first_search(const Node<Cube> &root, F &&apply,
                                             size_t max_depth = 4) {
     std::vector<Algorithm> all_solutions;
-    std::deque<Node<CoordinateBlockCube>> queue = {root};
+    std::deque<Node<Cube>> queue = {root};
     auto node = queue.back();
 
     while (queue.size() != 0) {

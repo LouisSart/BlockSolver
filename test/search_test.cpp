@@ -4,6 +4,7 @@
 #include "coordinate_block_cube.hpp"
 #include "move_table.hpp"
 #include "node.hpp"
+#include "pruning_table.hpp"
 
 void test_object_sizes() {
     std::cout << "size of CoordinateBlockCube: " << sizeof(CoordinateBlockCube)
