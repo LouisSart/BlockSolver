@@ -11,10 +11,39 @@
 
 namespace fs = std::filesystem;
 
+struct Advancement {
+    unsigned percent{0};
+    unsigned generated{0};
+    unsigned encountered{0};
+    unsigned depth{0};
+    std::vector<unsigned> nodes_per_depth{0};
+    void update(unsigned search_depth, unsigned table_size) {
+        if (search_depth == depth) {
+            ++nodes_per_depth.back();
+            if ((encountered * 100) / table_size > percent) {
+                ++percent;
+                std::cout << percent << " %"
+                          << "    gen ratio: "
+                          << (float)encountered / (float)generated << std::endl;
+            }
+        } else {
+            show();
+            ++depth;
+            nodes_per_depth.push_back(1);
+        }
+    }
+
+    void show() {
+        std::cout << "Depth: " << depth << " " << nodes_per_depth.back()
+                  << std::endl;
+    }
+};
+
 template <typename PruningTable, unsigned nc, unsigned ne>
 void compute_pruning_table(PruningTable& p_table, const Block<nc, ne>& b) {
     using StorageNode = CompressedNode<unsigned>;
     using WorkNode = Node<CoordinateBlockCube>;
+    Advancement advancement;
     BlockMoveTable m_table(b);
     auto apply = [&m_table](const Move& move, CoordinateBlockCube& CBC) {
         m_table.apply(move, CBC);
@@ -33,8 +62,8 @@ void compute_pruning_table(PruningTable& p_table, const Block<nc, ne>& b) {
     StorageNode root;
     WorkNode node;
     auto queue = std::deque{root};
+    ++advancement.encountered;
     unsigned table_entry{0};
-    std::vector<uint> state_counter{0};
     assert(table_entry == root.state);
     p_table.table[table_entry] = 0;
 
@@ -47,30 +76,20 @@ void compute_pruning_table(PruningTable& p_table, const Block<nc, ne>& b) {
         auto children =
             node.expand<-1>(apply, allowed_next(node.sequence.back()));
         for (auto&& child : children) {
+            ++advancement.generated;
             table_entry = p_table.index(child.state);
             if (p_table.table[table_entry] == unassigned) {
+                ++advancement.encountered;
                 queue.push_front(compress(child));
                 p_table.table[table_entry] = child.depth;
             }
         }
-        if (node.depth == state_counter.size() - 1) {
-            ++state_counter.back();
-        } else {
-            std::cout << "Depth: " << state_counter.size() - 1 << " "
-                      << state_counter.back() << std::endl;
-            state_counter.push_back(1);
-        }
-
+        advancement.update(node.depth, p_table.size());
         queue.pop_back();
     }
-    std::cout << "Depth: " << state_counter.size() - 1 << " "
-              << state_counter.back() << std::endl;
+    advancement.show();
     assert(p_table.table[0] == 0);
-    int n_states = 0;
-    for (auto&& k : state_counter) {
-        n_states += k;
-    }
-    assert(n_states == p_table.size());
+    assert(advancement.encountered == p_table.size());
 }
 
 template <unsigned nc, unsigned ne>
