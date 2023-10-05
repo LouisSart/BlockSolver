@@ -20,6 +20,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 add_subdirectory(src)
 
 add_subdirectory(test)
+add_subdirectory(script)
 export(
   TARGETS block_solver-core
   NAMESPACE gmlib::
