@@ -4,8 +4,8 @@ template <unsigned nc, unsigned ne>
 void assert_move_table_is_correct(Block<nc, ne> b) {
     BlockCube bc(b);
     BlockMoveTable table(b);
-    CubieCube cc;
-    CoordinateBlockCube cbc;
+    auto cc = CubieCube::random_state();
+    auto cbc = bc.to_coordinate_block_cube(cc);
 
     for (uint move : HTM_Moves) {
         table.apply(move, cbc);
@@ -71,6 +71,8 @@ int main() {
     assert_move_table_is_correct(
         Block<0, 4>("BottomCross", {}, {DF, DR, DB, DL}));
     assert_move_table_is_correct(Block<1, 1>("OneCornerAndOneEdge", {0}, {0}));
+    assert_move_table_is_correct(Block<3, 7>("DLB_F2L-1", {DLF, DLB, DRB},
+                                             {LF, LB, DF, DB, DL, RB, DR}));
     test_222_block_alg_apply();
     test_big_move_table();
     test_load();
