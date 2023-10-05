@@ -82,7 +82,7 @@ int main() {
     auto LF_column = Block<2, 1>("LF_column", {0, 4}, {4});
     auto DLB_222 = Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB});
     auto Roux_FB = Block<2, 3>("RouxFirstBlock", {DLF, DLB}, {LF, DL, LB});
-    auto DL_223 = Block<2, 5>("DL_223", {4, 7}, {4, 7, 8, 10, 11});
+    auto DL_223 = Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL});
 
     std::cout << "API tests" << std::endl;
     test_optimal_api(LF_column);
