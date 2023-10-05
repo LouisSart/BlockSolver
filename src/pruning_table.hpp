@@ -11,20 +11,26 @@
 
 namespace fs = std::filesystem;
 
+template <bool verbose = false>
 struct Advancement {
     unsigned percent{0};
     unsigned generated{0};
     unsigned encountered{0};
     unsigned depth{0};
     std::vector<unsigned> nodes_per_depth{0};
+    void add_generated() { ++generated; }
+    void add_encountered() { ++encountered; }
     void update(unsigned search_depth, unsigned table_size) {
         if (search_depth == depth) {
             ++nodes_per_depth.back();
-            if ((encountered * 100) / table_size > percent) {
+            if (((long unsigned)encountered * 100 / table_size) > percent) {
                 ++percent;
-                std::cout << percent << " %"
-                          << "    gen ratio: "
-                          << (float)encountered / (float)generated << std::endl;
+                if constexpr (verbose) {
+                    std::cout << percent << "% "
+                              << "    gen ratio: "
+                              << (double)encountered / (double)generated
+                              << std::endl;
+                }
             }
         } else {
             show();
@@ -76,10 +82,10 @@ void compute_pruning_table(PruningTable& p_table, const Block<nc, ne>& b) {
         auto children =
             node.expand<-1>(apply, allowed_next(node.sequence.back()));
         for (auto&& child : children) {
-            ++advancement.generated;
+            advancement.add_generated();
             table_entry = p_table.index(child.state);
             if (p_table.table[table_entry] == unassigned) {
-                ++advancement.encountered;
+                advancement.add_encountered();
                 queue.push_front(compress(child));
                 p_table.table[table_entry] = child.depth;
             }
