@@ -17,9 +17,16 @@ struct Advancement {
     unsigned encountered{0};
     unsigned depth{0};
     unsigned table_size;
+    float encounter_ratio_limit{0.0};
+    float percent_limit{100.0};
     std::vector<unsigned> nodes_per_depth{0};
 
     Advancement(const unsigned table_size) : table_size(table_size){};
+    Advancement(const unsigned table_size, const float percent_switch,
+                const float encounter_ratio_switch)
+        : table_size(table_size),
+          percent_limit(percent_switch),
+          encounter_ratio_limit(encounter_ratio_switch){};
 
     void add_generated() { ++generated; }
     void add_encountered() {
@@ -49,13 +56,20 @@ struct Advancement {
         }
     }
 
-    bool stop_breadth_first_generator() const { return percent() > 100.0; }
+    bool stop_breadth_first_generator() const {
+        return (percent() > percent_limit ||
+                encounter_ratio() < encounter_ratio_limit);
+    }
+
+    float encounter_ratio() const {
+        return (double)encountered / (double)generated;
+    }
 
     void show() {
         if constexpr (verbose) {
             std::cout << percent() << "% "
-                      << "    encounter ratio: "
-                      << (double)encountered / (double)generated << std::endl;
+                      << "    encounter ratio: " << encounter_ratio()
+                      << std::endl;
         }
     }
 };
@@ -137,12 +151,6 @@ void compute_pruning_table(PruningTable& p_table,
         }
         queue.pop_back();
     }
-    advancement.update(advancement.depth + 1);
-    // if constexpr (verbose) {
-    //     std::cout << "Switching to backwards search" << std::endl;
-    // }
-    // compute_pruning_table_backwards(p_table, advancement);
-    assert(advancement.encountered == p_table.size());
 }
 
 template <unsigned nc, unsigned ne>
@@ -179,13 +187,22 @@ struct OptimalPruningTable {
 
     template <bool verbose = false>
     void gen() const {
-        std::cout << "Generating OptimalPruningTable for Block: " << std::endl;
+        std::cout << "Generating PermutationPruningTable for Block:"
+                  << std::endl;
         b.show();
         reset();
         table[0] = 0;
-        Advancement<verbose> adv(table_size);
+        const float percent_switch = 70.0;
+        const float encounter_ratio_switch = 0.3;
+        Advancement<verbose> adv(table_size, percent_switch,
+                                 encounter_ratio_switch);
         compute_pruning_table(*this, adv);
+        if constexpr (verbose) {
+            std::cout << "Switching to backwards search" << std::endl;
+        }
+        adv.show();
         compute_pruning_table_backwards(*this, adv);
+        assert(adv.encountered == table_size);
         write();
     }
 
@@ -290,9 +307,17 @@ struct PermutationPruningTable {
         b.show();
         reset();
         table[0] = 0;
-        Advancement<verbose> adv(table_size);
+        const float percent_switch = 70.0;
+        const float encounter_ratio_switch = 0.3;
+        Advancement<verbose> adv(table_size, percent_switch,
+                                 encounter_ratio_switch);
         compute_pruning_table(*this, adv);
+        if constexpr (verbose) {
+            std::cout << "Switching to backwards search" << std::endl;
+        }
+        adv.show();
         compute_pruning_table_backwards(*this, adv);
+        assert(adv.encountered == table_size);
         write();
     }
 
