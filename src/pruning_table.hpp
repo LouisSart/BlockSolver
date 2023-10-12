@@ -27,7 +27,7 @@ struct Advancement {
         ++nodes_per_depth.back();
     }
 
-    unsigned percent() {
+    unsigned percent() const {
         return (double(encountered) * 100 / (double)table_size);
     }
 
@@ -48,6 +48,8 @@ struct Advancement {
             nodes_per_depth.push_back(0);
         }
     }
+
+    bool stop_breadth_first_generator() const { return percent() > 100.0; }
 
     void show() {
         if constexpr (verbose) {
@@ -91,11 +93,12 @@ void compute_pruning_table_backwards(PruningTable& p_table,
     }
 }
 
-template <typename PruningTable, bool verbose = false>
-void compute_pruning_table(PruningTable& p_table) {
+template <typename PruningTable, bool verbose>
+void compute_pruning_table(PruningTable& p_table,
+                           Advancement<verbose>& advancement) {
     using StorageNode = CompressedNode<unsigned>;
     using WorkNode = Node<CoordinateBlockCube>;
-    Advancement<verbose> advancement(p_table.size());
+    assert(p_table.size() == advancement.table_size);
     BlockMoveTable m_table(p_table.b);
     auto apply = [&m_table](const Move& move, CoordinateBlockCube& CBC) {
         m_table.apply(move, CBC);
@@ -114,7 +117,7 @@ void compute_pruning_table(PruningTable& p_table) {
     assert(table_entry == root.state);
     p_table.table[table_entry] = 0;
 
-    while (queue.size() > 0) {
+    while (queue.size() > 0 && !advancement.stop_breadth_first_generator()) {
         WorkNode node = uncompress(queue.back());
         assert(p_table.index(node.state) < p_table.size());
         assert(p_table.table[p_table.index(node.state)] !=
@@ -173,10 +176,19 @@ struct OptimalPruningTable {
             load();
         }
     }
+
+    template <bool verbose = false>
     void gen() const {
-        compute_pruning_table(*this);
+        std::cout << "Generating OptimalPruningTable for Block: " << std::endl;
+        b.show();
+        reset();
+        table[0] = 0;
+        Advancement<verbose> adv(table_size);
+        compute_pruning_table(*this, adv);
+        compute_pruning_table_backwards(*this, adv);
         write();
     }
+
     void write() const {
         fs::create_directories(table_path);
         {
@@ -271,12 +283,21 @@ struct PermutationPruningTable {
         }
     }
 
+    template <bool verbose = false>
     void gen() const {
-        compute_pruning_table(*this);
+        std::cout << "Generating PermutationPruningTable for Block:"
+                  << std::endl;
+        b.show();
+        reset();
+        table[0] = 0;
+        Advancement<verbose> adv(table_size);
+        compute_pruning_table(*this, adv);
+        compute_pruning_table_backwards(*this, adv);
         write();
     }
 
-    void write() {
+    void write() const {
+        fs::create_directories(table_path);
         {
             std::ofstream file(table_path / filename, std::ios::binary);
             file.write(reinterpret_cast<char*>(table.get()),

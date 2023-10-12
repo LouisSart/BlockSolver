@@ -35,9 +35,8 @@ void test_permutation_api(const Block& b) {
 template <unsigned nc, unsigned ne>
 void test_optimal_reload(const Block<nc, ne>& b) {
     std::cout << b.name << std::endl;
-    OptimalPruningTable<nc, ne> table;
-    compute_pruning_table(table);
-    table.table_path = table.table_dir / b.name;
+    OptimalPruningTable<nc, ne> table(b);
+    table.gen();
     table.write();
     OptimalPruningTable reloaded(b);
 
@@ -50,8 +49,7 @@ template <unsigned nc, unsigned ne>
 void test_permutation_reload(const Block<nc, ne>& b) {
     std::cout << b.name << std::endl;
     PermutationPruningTable<nc, ne> table(b);
-    compute_pruning_table(table);
-    table.table_path = table.table_dir / b.name;
+    table.gen();
     table.write();
     PermutationPruningTable reloaded(b);
 
@@ -78,8 +76,30 @@ void test_permutation_is_correct(const Block& b) {
     }
 }
 
+template <typename Block>
+void test_direct_and_backward_are_equivalent(const Block& b) {
+    b.show();
+    PermutationPruningTable direct(b), backwards(b);
+
+    std::cout << "Direct generator:" << std::endl;
+    auto adv = Advancement(backwards.size());
+    compute_pruning_table(direct, adv);
+
+    std::cout << "Backwards generator:" << std::endl;
+    adv = Advancement(backwards.size());
+    adv.add_encountered();
+    adv.update();
+    backwards.reset();
+    backwards.table[0] = 0;
+    compute_pruning_table_backwards(backwards, adv);
+
+    for (unsigned k = 0; k < direct.size(); ++k) {
+        assert(backwards.table[k] == direct.table[k]);
+    }
+}
+
 int main() {
-    auto LF_column = Block<2, 1>("LF_column", {0, 4}, {4});
+    auto LF_column = Block<2, 1>("LF_column", {ULF, DLB}, {LF});
     auto DLB_222 = Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB});
     auto Roux_FB = Block<2, 3>("RouxFirstBlock", {DLF, DLB}, {LF, DL, LB});
     auto DL_223 = Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL});
@@ -96,5 +116,9 @@ int main() {
     std::cout << "\nCorrectness tests" << std::endl;
     test_optimal_is_correct(DLB_222);
     test_permutation_is_correct(DL_223);
+
+    std::cout << "\nDirect and backwards equivalence test" << std::endl;
+    test_direct_and_backward_are_equivalent(LF_column);
+    test_direct_and_backward_are_equivalent(DLB_222);
     return 0;
 }

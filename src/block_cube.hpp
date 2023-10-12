@@ -52,7 +52,7 @@ struct Block {
             ptr_e_order++;
         }
     };
-    void show() {
+    void show() const {
         std::cout << "Block<" << nc << ", " << ne << ">";
         std::cout << " \"" << name << "\"";
         std::cout << " c{";
