@@ -36,7 +36,7 @@ template <unsigned nc, unsigned ne>
 void test_optimal_reload(const Block<nc, ne>& b) {
     std::cout << b.name << std::endl;
     OptimalPruningTable<nc, ne> table;
-    compute_pruning_table(table, b);
+    compute_pruning_table(table);
     table.table_path = table.table_dir / b.name;
     table.write();
     OptimalPruningTable reloaded(b);
@@ -50,7 +50,7 @@ template <unsigned nc, unsigned ne>
 void test_permutation_reload(const Block<nc, ne>& b) {
     std::cout << b.name << std::endl;
     PermutationPruningTable<nc, ne> table(b);
-    compute_pruning_table(table, b);
+    compute_pruning_table(table);
     table.table_path = table.table_dir / b.name;
     table.write();
     PermutationPruningTable reloaded(b);

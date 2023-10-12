@@ -18,7 +18,7 @@ struct Advancement {
     unsigned depth{0};
     unsigned table_size;
 
-    Advancement(unsigned table_size) : table_size(table_size){};
+    Advancement(const unsigned table_size) : table_size(table_size){};
 
     void add_generated() { ++generated; }
     void add_encountered() { ++encountered; }
@@ -44,26 +44,19 @@ struct Advancement {
     }
 };
 
-template <typename PruningTable, typename MoveTable, bool verbose = false>
+template <typename PruningTable, bool verbose = false>
 void compute_pruning_table_backwards(PruningTable& p_table,
-                                     const MoveTable& m_table,
                                      Advancement<verbose>& advancement) {
+    BlockMoveTable m_table(p_table.b);
     using StorageNode = CompressedNode<unsigned>;
     using WorkNode = Node<CoordinateBlockCube>;
     auto apply = [&m_table](const Move& move, CoordinateBlockCube& CBC) {
         m_table.apply(move, CBC);
     };
-    auto compress = [&p_table](const WorkNode& big) {
-        return StorageNode(p_table.index(big.state), big.depth);
-    };
-    auto uncompress = [&p_table](const StorageNode& archived) {
-        return WorkNode(p_table.from_index(archived.state), archived.depth);
-    };
     auto unassigned =
         std::numeric_limits<typename PruningTable::entry_type>::max();
 
-    auto depth = advancement.depth;
-    while (advancement.encountered < p_table.table_size - 1) {
+    while (advancement.encountered < p_table.table_size) {
         for (unsigned k = 0; k < p_table.size(); ++k) {
             if (p_table.table[k] == unassigned) {
                 auto node = WorkNode(p_table.from_index(k), unassigned);
@@ -84,12 +77,12 @@ void compute_pruning_table_backwards(PruningTable& p_table,
     }
 }
 
-template <typename PruningTable, unsigned nc, unsigned ne, bool verbose = false>
-void compute_pruning_table(PruningTable& p_table, const Block<nc, ne>& b) {
+template <typename PruningTable, bool verbose = false>
+void compute_pruning_table(PruningTable& p_table) {
     using StorageNode = CompressedNode<unsigned>;
     using WorkNode = Node<CoordinateBlockCube>;
     Advancement<verbose> advancement(p_table.size());
-    BlockMoveTable m_table(b);
+    BlockMoveTable m_table(p_table.b);
     auto apply = [&m_table](const Move& move, CoordinateBlockCube& CBC) {
         m_table.apply(move, CBC);
     };
@@ -134,7 +127,7 @@ void compute_pruning_table(PruningTable& p_table, const Block<nc, ne>& b) {
     if constexpr (verbose) {
         std::cout << "Switching to backwards search" << std::endl;
     }
-    compute_pruning_table_backwards(p_table, m_table, advancement);
+    compute_pruning_table_backwards(p_table, advancement);
     assert(advancement.encountered == p_table.size());
 }
 
@@ -157,18 +150,18 @@ struct OptimalPruningTable {
     fs::path table_path;
     std::string filename = "table.dat";
 
+    Block<nc, ne> b;
+
     OptimalPruningTable(){};
-    OptimalPruningTable(const Block<nc, ne>& b) {
+    OptimalPruningTable(const Block<nc, ne>& block) : b{block} {
         table_path = table_dir / b.name;
         if (fs::exists(table_path / filename)) {
             load();
-        } else {
-            std::cout
-                << "Pruning table directory not found, building the tables"
-                << std::endl;
-            compute_pruning_table(*this, b);
-            write();
         }
+    }
+    void gen() const {
+        compute_pruning_table(*this);
+        write();
     }
     void write() const {
         fs::create_directories(table_path);
@@ -246,19 +239,18 @@ struct PermutationPruningTable {
     fs::path table_path;
     std::string filename = "table.dat";
 
+    const Block<nc, ne> b;
+
     PermutationPruningTable(){};
-    PermutationPruningTable(const Block<nc, ne>& b) {
+    PermutationPruningTable(const Block<nc, ne>& block) : b{block} {
         table_path = table_dir / b.name;
-        if (std::filesystem::exists(table_path / filename)) {
-            this->load();
-        } else {
-            std::cout
-                << "Pruning table directory not found, building the tables"
-                << std::endl;
-            std::filesystem::create_directories(table_path);
-            compute_pruning_table(*this, b);
-            this->write();
+        if (fs::exists(table_path / filename)) {
+            load();
         }
+    }
+    void gen() const {
+        compute_pruning_table(*this);
+        write();
     }
     void write() {
         {
