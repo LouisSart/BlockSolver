@@ -17,28 +17,42 @@ struct Advancement {
     unsigned encountered{0};
     unsigned depth{0};
     unsigned table_size;
+    std::vector<unsigned> nodes_per_depth{0};
 
     Advancement(const unsigned table_size) : table_size(table_size){};
 
     void add_generated() { ++generated; }
-    void add_encountered() { ++encountered; }
+    void add_encountered() {
+        ++encountered;
+        ++nodes_per_depth.back();
+    }
 
     unsigned percent() {
         return (double(encountered) * 100 / (double)table_size);
     }
 
-    void update(unsigned node_depth) {
-        if (node_depth > depth) {
-            std::cout << "Depth: " << depth << " " << encountered << std::endl;
+    void update() {
+        std::cout << "Depth: " << depth << " " << nodes_per_depth.back()
+                  << std::endl;
+        show();
+        ++depth;
+        nodes_per_depth.push_back(0);
+    }
+
+    void update(const unsigned child_depth) {
+        if (child_depth > depth) {
+            std::cout << "Depth: " << depth << " " << nodes_per_depth.back()
+                      << std::endl;
             show();
-            depth = node_depth;
+            depth = child_depth;
+            nodes_per_depth.push_back(0);
         }
     }
 
     void show() {
         if constexpr (verbose) {
             std::cout << percent() << "% "
-                      << "    gen ratio: "
+                      << "    encounter ratio: "
                       << (double)encountered / (double)generated << std::endl;
         }
     }
@@ -53,19 +67,18 @@ void compute_pruning_table_backwards(PruningTable& p_table,
     auto apply = [&m_table](const Move& move, CoordinateBlockCube& CBC) {
         m_table.apply(move, CBC);
     };
-    auto unassigned =
-        std::numeric_limits<typename PruningTable::entry_type>::max();
 
     while (advancement.encountered < p_table.table_size) {
         for (unsigned k = 0; k < p_table.size(); ++k) {
-            if (p_table.table[k] == unassigned) {
-                auto node = WorkNode(p_table.from_index(k), unassigned);
+            if (p_table.table[k] == PruningTable::unassigned) {
+                auto node =
+                    WorkNode(p_table.from_index(k), PruningTable::unassigned);
                 auto children = node.expand(apply, HTM_Moves);
                 for (auto&& child : children) {
                     advancement.add_generated();
                     auto table_entry = p_table.index(child.state);
                     auto child_depth = p_table.table[table_entry];
-                    if (child_depth == advancement.depth) {
+                    if (child_depth == advancement.depth - 1) {
                         advancement.add_encountered();
                         p_table.table[k] = child_depth + 1;
                         break;
@@ -73,7 +86,8 @@ void compute_pruning_table_backwards(PruningTable& p_table,
                 }
             }
         }
-        advancement.update(advancement.depth + 1);
+        advancement.update();
+        assert(advancement.depth < 21);
     }
 }
 
@@ -92,30 +106,26 @@ void compute_pruning_table(PruningTable& p_table) {
     auto uncompress = [&p_table](const StorageNode& archived) {
         return WorkNode(p_table.from_index(archived.state), archived.depth);
     };
-
-    auto unassigned =
-        std::numeric_limits<typename PruningTable::entry_type>::max();
-    std::fill(p_table.table.get(), p_table.table.get() + p_table.size(),
-              unassigned);
+    p_table.reset();
     StorageNode root;
-    WorkNode node;
     auto queue = std::deque{root};
     advancement.add_encountered();
     unsigned table_entry{0};
     assert(table_entry == root.state);
     p_table.table[table_entry] = 0;
 
-    while (queue.size() > 0 && advancement.percent() < 70) {
-        node = uncompress(queue.back());
+    while (queue.size() > 0) {
+        WorkNode node = uncompress(queue.back());
         assert(p_table.index(node.state) < p_table.size());
-        assert(p_table.table[p_table.index(node.state)] != unassigned);
+        assert(p_table.table[p_table.index(node.state)] !=
+               PruningTable::unassigned);
         // -1 template parameter deactivates the move
         // sequence copy at each move application
         auto children = node.expand<-1>(apply, HTM_Moves);
         for (auto&& child : children) {
             advancement.add_generated();
             table_entry = p_table.index(child.state);
-            if (p_table.table[table_entry] == unassigned) {
+            if (p_table.table[table_entry] == PruningTable::unassigned) {
                 queue.push_front(compress(child));
                 p_table.table[table_entry] = child.depth;
                 advancement.update(child.depth);
@@ -124,10 +134,11 @@ void compute_pruning_table(PruningTable& p_table) {
         }
         queue.pop_back();
     }
-    if constexpr (verbose) {
-        std::cout << "Switching to backwards search" << std::endl;
-    }
-    compute_pruning_table_backwards(p_table, advancement);
+    advancement.update(advancement.depth + 1);
+    // if constexpr (verbose) {
+    //     std::cout << "Switching to backwards search" << std::endl;
+    // }
+    // compute_pruning_table_backwards(p_table, advancement);
     assert(advancement.encountered == p_table.size());
 }
 
@@ -135,6 +146,9 @@ template <unsigned nc, unsigned ne>
 struct OptimalPruningTable {
     using entry_type = uint8_t;  // Cannot be printed, max representable
                                  // value of uint8_t is 255
+
+    static constexpr unsigned unassigned =
+        std::numeric_limits<entry_type>::max();
     static constexpr unsigned n_cp = factorial(nc);
     static constexpr unsigned n_co = ipow(3, nc);
     static constexpr unsigned n_ep = factorial(ne);
@@ -180,6 +194,11 @@ struct OptimalPruningTable {
                    sizeof(entry_type) * table_size);
         istrm.close();
     }
+
+    void reset() const {
+        std::fill(table.get(), table.get() + size(), unassigned);
+    }
+
     uint c_index(const CoordinateBlockCube& cbc) const {
         uint index = cbc.ccl * n_cp * n_co + (cbc.ccp * n_co + cbc.cco);
         return index;
@@ -227,7 +246,10 @@ struct NullPruningTable {
 template <unsigned nc, unsigned ne>
 struct PermutationPruningTable {
     using entry_type = uint8_t;  // Cannot be printed, max representable
-                                 // value of uint8_t is 255
+    // value of uint8_t is 255
+
+    static constexpr unsigned unassigned =
+        std::numeric_limits<entry_type>::max();
     static constexpr uint n_cp = factorial(nc);
     static constexpr uint n_ep = factorial(ne);
     static constexpr uint n_corner_states = (factorial(8) / factorial(8 - nc));
@@ -248,10 +270,12 @@ struct PermutationPruningTable {
             load();
         }
     }
+
     void gen() const {
         compute_pruning_table(*this);
         write();
     }
+
     void write() {
         {
             std::ofstream file(table_path / filename, std::ios::binary);
@@ -266,6 +290,10 @@ struct PermutationPruningTable {
         istrm.read(reinterpret_cast<char*>(table.get()),
                    sizeof(entry_type) * table_size);
         istrm.close();
+    }
+
+    void reset() const {
+        std::fill(table.get(), table.get() + size(), unassigned);
     }
 
     uint c_index(const CoordinateBlockCube& cbc) const {
