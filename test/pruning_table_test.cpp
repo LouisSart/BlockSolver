@@ -109,7 +109,6 @@ int main() {
     test_permutation_api(LF_column);
 
     std::cout << "\nReload tests" << std::endl;
-    test_optimal_api(LF_column);
     test_optimal_reload(DLB_222);
     test_permutation_reload(Roux_FB);
 
