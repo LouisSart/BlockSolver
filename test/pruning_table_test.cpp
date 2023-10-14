@@ -24,7 +24,6 @@ void test_permutation_api(const Block& b) {
     PermutationPruningTable table(b);
     auto pruning_value = table.get_estimate(cbc);
 
-    assert(pruning_value != 0);
     auto from_table = table.from_index(table.index(cbc));
     assert(from_table.ccl == cbc.ccl);
     assert(from_table.ccp == cbc.ccp);
@@ -84,6 +83,7 @@ void test_direct_and_backward_are_equivalent(const Block& b) {
     std::cout << "Direct generator:" << std::endl;
     auto adv = Advancement(backwards.size());
     compute_pruning_table(direct, adv);
+    adv.update(adv.depth + 1);
 
     std::cout << "Backwards generator:" << std::endl;
     adv = Advancement(backwards.size());

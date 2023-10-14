@@ -45,9 +45,6 @@ struct OptimalPruningTable {
 
     template <bool verbose = false>
     void gen() const {
-        // std::cout << "Generating PermutationPruningTable for Block:"
-        //           << std::endl;
-        // b.show();
         reset();
         table[0] = 0;
         const float percent_switch = 70.0;
@@ -100,6 +97,11 @@ struct OptimalPruningTable {
         auto index = e_index(cbc) * n_corner_states + c_index(cbc);
         assert(index < table_size);
         return index;
+    }
+
+    entry_type& operator[](const unsigned k) const {
+        assert(k < table_size);
+        return table[k];
     }
 
     CoordinateBlockCube from_index(const uint& index) const {
@@ -160,9 +162,6 @@ struct PermutationPruningTable {
 
     template <bool verbose = false>
     void gen() const {
-        // std::cout << "Generating PermutationPruningTable for Block:"
-        //           << std::endl;
-        // b.show();
         reset();
         table[0] = 0;
         const float percent_switch = 70.0;
@@ -197,7 +196,7 @@ struct PermutationPruningTable {
     }
 
     void reset() const {
-        std::fill(table.get(), table.get() + size(), unassigned);
+        std::fill(table.get(), table.get() + table_size, unassigned);
     }
 
     uint c_index(const CoordinateBlockCube& cbc) const {
@@ -214,6 +213,11 @@ struct PermutationPruningTable {
         auto index = e_index(cbc) * n_corner_states + c_index(cbc);
         assert(index < table_size);
         return index;
+    }
+
+    entry_type& operator[](const unsigned k) const {
+        assert(k < table_size);
+        return table[k];
     }
 
     CoordinateBlockCube from_index(const unsigned& index) const {

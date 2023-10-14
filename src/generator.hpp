@@ -77,17 +77,17 @@ void compute_pruning_table_backwards(PruningTable& p_table,
 
     while (advancement.encountered < p_table.table_size) {
         for (unsigned k = 0; k < p_table.size(); ++k) {
-            if (p_table.table[k] == PruningTable::unassigned) {
+            if (p_table[k] == PruningTable::unassigned) {
                 auto node =
                     WorkNode(p_table.from_index(k), PruningTable::unassigned);
                 auto children = node.expand(apply, HTM_Moves);
                 for (auto&& child : children) {
                     advancement.add_generated();
                     auto table_entry = p_table.index(child.state);
-                    auto child_depth = p_table.table[table_entry];
+                    auto child_depth = p_table[table_entry];
                     if (child_depth == advancement.depth - 1) {
                         advancement.add_encountered();
-                        p_table.table[k] = child_depth + 1;
+                        p_table[k] = child_depth + 1;
                         break;
                     }
                 }
@@ -120,22 +120,21 @@ void compute_pruning_table(PruningTable& p_table,
     advancement.add_encountered();
     unsigned table_entry{0};
     assert(table_entry == root.state);
-    p_table.table[table_entry] = 0;
+    p_table[table_entry] = 0;
 
     while (queue.size() > 0 && !advancement.stop_breadth_first_generator()) {
         WorkNode node = uncompress(queue.back());
         assert(p_table.index(node.state) < p_table.size());
-        assert(p_table.table[p_table.index(node.state)] !=
-               PruningTable::unassigned);
+        assert(p_table[p_table.index(node.state)] != PruningTable::unassigned);
         // -1 template parameter deactivates the move
         // sequence copy at each move application
         auto children = node.expand<-1>(apply, HTM_Moves);
         for (auto&& child : children) {
             advancement.add_generated();
             table_entry = p_table.index(child.state);
-            if (p_table.table[table_entry] == PruningTable::unassigned) {
+            if (p_table[table_entry] == PruningTable::unassigned) {
                 queue.push_front(compress(child));
-                p_table.table[table_entry] = child.depth;
+                p_table[table_entry] = child.depth;
                 advancement.update(child.depth);
                 advancement.add_encountered();
             }
