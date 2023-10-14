@@ -2,6 +2,7 @@
 
 template <unsigned nc, unsigned ne>
 void assert_move_table_is_correct(Block<nc, ne> b) {
+    b.show();
     BlockCube bc(b);
     BlockMoveTable table(b);
     auto cc = CubieCube::random_state();
@@ -41,19 +42,10 @@ void test_222_block_alg_apply() {
     assert(cbc.is_solved());
 }
 
-void test_big_move_table() {
-    // Move tables used to be stored on the stack, and would sometime
-    // exceed stack size
-    // New implementation uses std::unique_pointer to make sure the data is
-    // stored on the "heap" and garbage collected when the table goes out of
-    // scope
-
-    auto table = BlockMoveTable<2, 5>();
-}
-
 void test_load() {
     BlockMoveTable<4, 4> table;
     Block<4, 4> b("TopLayer", {0, 1, 2, 3}, {0, 1, 2, 3});
+    b.show();
     table.compute_corner_move_tables(b);
     table.compute_edge_move_tables(b);
     table.write(table.block_table_path(b));
@@ -71,10 +63,11 @@ int main() {
     assert_move_table_is_correct(
         Block<0, 4>("BottomCross", {}, {DF, DR, DB, DL}));
     assert_move_table_is_correct(Block<1, 1>("OneCornerAndOneEdge", {0}, {0}));
+    assert_move_table_is_correct(
+        Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL}));
     assert_move_table_is_correct(Block<3, 7>("DLB_F2L-1", {DLF, DLB, DRB},
                                              {LF, LB, DF, DB, DL, RB, DR}));
     test_222_block_alg_apply();
-    test_big_move_table();
     test_load();
     return 0;
 }

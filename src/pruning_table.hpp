@@ -37,7 +37,7 @@ struct OptimalPruningTable {
 
     OptimalPruningTable(){};
     OptimalPruningTable(const Block<nc, ne>& block) : b{block} {
-        table_path = table_dir / b.name;
+        table_path = table_dir / b.id;
         if (fs::exists(table_path / filename)) {
             load();
         }
@@ -154,7 +154,7 @@ struct PermutationPruningTable {
 
     PermutationPruningTable(){};
     PermutationPruningTable(const Block<nc, ne>& block) : b{block} {
-        table_path = table_dir / b.name;
+        table_path = table_dir / b.id;
         if (fs::exists(table_path / filename)) {
             load();
         }

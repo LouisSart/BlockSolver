@@ -69,9 +69,12 @@ struct Block {
         auto c_id = layout_coord(corner_positions.data(), NC);
         auto e_id = layout_coord(edge_positions.data(), NE);
 
-        auto s = std::to_string(c_id) + "_" + std::to_string(e_id);
-        return s;
+        // Block ID is of the form: ncCcid_neEeid
+        // For example the DLB 2x2x2 has ID: 1C7_3E217
+        return std::to_string(nc) + "C" + std::to_string(c_id) + "_" +
+               std::to_string(ne) + "E" + std::to_string(e_id);
     }
+
     void show() const {
         std::cout << "Block<" << nc << ", " << ne << ">";
         std::cout << " \"" << name << "\"";

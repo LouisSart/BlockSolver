@@ -8,6 +8,7 @@ void test_optimal_api(const Block& b) {
     auto cbc = bc.to_coordinate_block_cube(cc);
 
     OptimalPruningTable table(b);
+    table.gen();
     auto pruning_value = table.get_estimate(cbc);
 
     assert(pruning_value != 0);
@@ -22,6 +23,7 @@ void test_permutation_api(const Block& b) {
     auto cbc = bc.to_coordinate_block_cube(cc);
 
     PermutationPruningTable table(b);
+    table.gen();
     auto pruning_value = table.get_estimate(cbc);
 
     auto from_table = table.from_index(table.index(cbc));

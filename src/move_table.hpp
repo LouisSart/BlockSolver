@@ -45,10 +45,10 @@ struct BlockMoveTable {
 
     auto table_dir_path() const { return fs::current_path() / "move_tables/"; }
     auto block_table_path(const Block<nc, ne>& b) const {
-        return table_dir_path() / b.name;
+        return table_dir_path() / b.id;
     }
 
-    void apply(const uint move, CoordinateBlockCube& cbc) const {
+    void apply(const unsigned move, CoordinateBlockCube& cbc) const {
         auto&& [ccl, ccp] = get_new_ccl_ccp(cbc.ccl, cbc.ccp, move);
         auto&& cco = get_new_cco(cbc.ccl, cbc.cco, move);
         auto&& [cel, cep] = get_new_cel_cep(cbc.cel, cbc.cep, move);
