@@ -5,6 +5,12 @@
 #include "coordinate_block_cube.hpp"
 #include "cubie_cube.hpp"
 
+void test_block_api() {
+    Block<2, 1> b("TrucBidule", {URF, URB, DRB}, {UR, RB});
+    b.show();
+    std::cout << b.id << std::endl;
+}
+
 template <unsigned nc, unsigned ne>
 void test_to_cbc_from_cc_and_back(Block<nc, ne> b) {
     BlockCube bc(b);
@@ -69,6 +75,7 @@ void test_corner_permutation_table() {
 }
 
 int main() {
+    test_block_api();
     test_to_cbc_from_cc_and_back(Block<8, 0>(
         "AllCorners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {}));
     test_to_cbc_from_cc_and_back(

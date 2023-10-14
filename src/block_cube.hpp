@@ -19,6 +19,7 @@ struct Block {
     std::array<Cubie, NE> e_order;
 
     std::string name;
+    std::string id;
 
     Block(){};
     Block(std::string bname, const std::initializer_list<Cubie> bc,
@@ -51,7 +52,26 @@ struct Block {
             *ptr_e_order = *ptr_e;
             ptr_e_order++;
         }
+        id = compute_id();
     };
+
+    std::string compute_id() const {
+        std::array<unsigned, NC> corner_positions{0};
+        std::array<unsigned, NE> edge_positions{0};
+
+        for (auto c : corners) {
+            corner_positions[c] = 1;
+        }
+        for (auto e : edges) {
+            edge_positions[e] = 1;
+        }
+
+        auto c_id = layout_coord(corner_positions.data(), NC);
+        auto e_id = layout_coord(edge_positions.data(), NE);
+
+        auto s = std::to_string(c_id) + "_" + std::to_string(e_id);
+        return s;
+    }
     void show() const {
         std::cout << "Block<" << nc << ", " << ne << ">";
         std::cout << " \"" << name << "\"";
