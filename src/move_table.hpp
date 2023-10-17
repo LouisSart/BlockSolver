@@ -121,7 +121,7 @@ struct BlockMoveTable {
     }
 
     void load(const std::filesystem::path& table_path) const {
-        fs::exists(table_path);
+        assert(fs::exists(table_path));
         std::filesystem::path cp_table_path = table_path / "cp_table.dat";
         std::filesystem::path co_table_path = table_path / "co_table.dat";
         std::filesystem::path ep_table_path = table_path / "ep_table.dat";

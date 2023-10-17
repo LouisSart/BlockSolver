@@ -10,10 +10,8 @@ int main() {
 
     b.show();
     std::cout << "Permutation Pruning Table:" << std::endl;
-    PermutationPruningTable ppt(b);
-    ppt.gen<true>();
+    auto ppt = Strategy::Permutation(b).gen_table<true>();
 
     std::cout << "Optimal Pruning Table:" << std::endl;
-    OptimalPruningTable opt(b);
-    opt.gen<true>();
+    auto opt = Strategy::Optimal(b).gen_table<true>();
 }

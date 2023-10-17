@@ -8,14 +8,12 @@ int main() {
     auto DL_223 = Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL});
 
     std::cout << "2x2x3 Solve with optimal pruning table" << std::endl;
-    OptimalPruningTable op_table(DL_223);
-    auto solutions = solve(scramble, op_table);
+    auto solutions = solve(scramble, Strategy::Optimal(DL_223));
     show(solutions);
     assert(solutions.size() == 10);
 
     std::cout << "2x2x3 Solve with permutation pruning table" << std::endl;
-    PermutationPruningTable pe_table(DL_223);
-    solutions = solve(scramble, pe_table);
+    solutions = solve(scramble, Strategy::Permutation(DL_223));
     show(solutions);
     assert(solutions.size() == 10);
     return 0.;

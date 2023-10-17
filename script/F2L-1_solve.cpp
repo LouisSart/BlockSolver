@@ -15,9 +15,7 @@ int main() {
                         U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
     scramble.show();
     auto b = DLB_F2Lm1;
-    PermutationPruningTable table(b);
-    // table.gen<true>();
-    auto solutions = solve(scramble, table);
+    auto solutions = solve(scramble, Strategy::Permutation(b));
     for (auto&& s : solutions) {
         s.show();
     }

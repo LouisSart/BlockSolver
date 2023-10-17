@@ -2,14 +2,16 @@
 
 #include "algorithm.hpp"
 #include "cubie_cube.hpp"
+#include "move_table.hpp"
 #include "pruning_table.hpp"
-#include "search.hpp"
+#include "solve.hpp"
 
 void symmetries_2x2x3() {
     Block<2, 5> b("DL_223", {4, 7}, {4, 7, 8, 10, 11});
     BlockCube bc(b);
-    OptimalPruningTable p_table(b);
     BlockMoveTable m_table(b);
+    Strategy::Optimal strat(b);
+    PruningTable p_table(strat);
     CoordinateBlockCube cbc;
     std::cout << "Solving the DL 2x2x3 on Wen's WR scramble: " << std::endl;
     Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
@@ -31,11 +33,8 @@ void symmetries_2x2x3() {
                 scrambled_state.apply(scramble);
                 scrambled_state.apply(symmetry);
                 cbc = bc.to_coordinate_block_cube(scrambled_state);
-                Node<CoordinateBlockCube> root(cbc, 0);
-                auto solutions = IDAstar(root, m_table, p_table);
-                for (auto&& s : solutions) {
-                    s.show();
-                }
+                auto solutions = solve(cbc, p_table, strat);
+                show(solutions);
             }
         }
     }

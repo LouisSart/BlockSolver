@@ -6,13 +6,12 @@ void test_optimal_api(const Block& b) {
     BlockCube bc(b);
     auto cc = CubieCube::random_state();
     auto cbc = bc.to_coordinate_block_cube(cc);
-
-    OptimalPruningTable table(b);
-    table.gen();
+    auto strat = Strategy::Optimal(b);
+    auto table = strat.gen_table();
     auto pruning_value = table.get_estimate(cbc);
 
     assert(pruning_value != 0);
-    assert(table.from_index(table.index(cbc)) == cbc);
+    assert(strat.from_index(strat.index(cbc)) == cbc);
 }
 
 template <typename Block>
@@ -22,11 +21,11 @@ void test_permutation_api(const Block& b) {
     auto cc = CubieCube::random_state();
     auto cbc = bc.to_coordinate_block_cube(cc);
 
-    PermutationPruningTable table(b);
-    table.gen();
+    auto strat = Strategy::Permutation(b);
+    auto table = strat.gen_table();
     auto pruning_value = table.get_estimate(cbc);
 
-    auto from_table = table.from_index(table.index(cbc));
+    auto from_table = strat.from_index(strat.index(cbc));
     assert(from_table.ccl == cbc.ccl);
     assert(from_table.ccp == cbc.ccp);
     assert(from_table.cel == cbc.cel);
@@ -36,10 +35,10 @@ void test_permutation_api(const Block& b) {
 template <unsigned nc, unsigned ne>
 void test_optimal_reload(const Block<nc, ne>& b) {
     std::cout << b.name << std::endl;
-    OptimalPruningTable<nc, ne> table(b);
-    table.gen();
+    auto table = Strategy::Optimal(b).gen_table();
     table.write();
-    OptimalPruningTable reloaded(b);
+    PruningTable<Strategy::Optimal<nc, ne>> reloaded(b);
+    reloaded.load();
 
     for (int k = 0; k < table.size(); ++k) {
         assert(table.table[k] == reloaded.table[k]);
@@ -49,10 +48,10 @@ void test_optimal_reload(const Block<nc, ne>& b) {
 template <unsigned nc, unsigned ne>
 void test_permutation_reload(const Block<nc, ne>& b) {
     std::cout << b.name << std::endl;
-    PermutationPruningTable<nc, ne> table(b);
-    table.gen();
+    auto table = Strategy::Permutation(b).gen_table();
     table.write();
-    PermutationPruningTable reloaded(b);
+
+    auto reloaded = PruningTable{Strategy::Permutation(b)};
 
     for (int k = 0; k < table.size(); ++k) {
         assert(table.table[k] == reloaded.table[k]);
@@ -62,29 +61,31 @@ void test_permutation_reload(const Block<nc, ne>& b) {
 template <typename Block>
 void test_optimal_is_correct(const Block& b) {
     std::cout << b.name << std::endl;
-    OptimalPruningTable opt(b);
-    for (int i = 0; i < opt.table_size; ++i) {
-        assert(opt.table[i] != 255);
+    auto table = Strategy::Optimal(b).gen_table();
+    for (int i = 0; i < table.size(); ++i) {
+        assert(table.table[i] != 255);
     }
 }
 
 template <typename Block>
 void test_permutation_is_correct(const Block& b) {
     std::cout << b.name << std::endl;
-    PermutationPruningTable opt(b);
-    for (int i = 0; i < opt.table_size; ++i) {
-        assert(opt.table[i] != 255);
+    auto table = Strategy::Permutation(b).gen_table();
+    for (int i = 0; i < table.size(); ++i) {
+        assert(table.table[i] != 255);
     }
 }
 
 template <typename Block>
 void test_direct_and_backward_are_equivalent(const Block& b) {
     b.show();
-    PermutationPruningTable direct(b), backwards(b);
+    Strategy::Permutation strat(b);
+    auto direct = PruningTable(strat);
+    auto backwards = PruningTable(strat);
 
     std::cout << "Direct generator:" << std::endl;
-    auto adv = Advancement(backwards.size());
-    compute_pruning_table(direct, adv);
+    auto adv = Advancement(direct.size());
+    compute_pruning_table<false>(direct, strat, adv);
     adv.update(adv.depth + 1);
 
     std::cout << "Backwards generator:" << std::endl;
@@ -93,7 +94,7 @@ void test_direct_and_backward_are_equivalent(const Block& b) {
     adv.update();
     backwards.reset();
     backwards.table[0] = 0;
-    compute_pruning_table_backwards(backwards, adv);
+    compute_pruning_table_backwards(backwards, strat, adv);
 
     for (unsigned k = 0; k < direct.size(); ++k) {
         assert(backwards.table[k] == direct.table[k]);

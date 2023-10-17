@@ -38,13 +38,13 @@ struct Algorithm {
     Algorithm(){};
     Algorithm(std::vector<Move> s) : sequence{s} {};
 
-    void show();
+    void show() const;
 };
 
 std::array<std::string, 18> move_str{"U", "U2", "U'", "D", "D2", "D'",
                                      "R", "R2", "R'", "L", "L2", "L'",
                                      "F", "F2", "F'", "B", "B2", "B'"};
-void Algorithm::show() {
+void Algorithm::show() const {
     int size = 0;
     for (auto&& m : sequence) {
         if (m != NoneMove) {

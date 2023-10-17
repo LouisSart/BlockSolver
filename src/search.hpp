@@ -15,8 +15,6 @@ std::vector<Algorithm> breadth_first_search(const Node<Cube> &root, F &&apply,
     while (queue.size() != 0) {
         auto node = queue.back();
         if (node.state.is_solved()) {
-            std::cout << "Solution found at depth : " << node.depth
-                      << std::endl;
             Algorithm solution(node.sequence);
             all_solutions.push_back(solution);
             queue.pop_back();
@@ -31,9 +29,6 @@ std::vector<Algorithm> breadth_first_search(const Node<Cube> &root, F &&apply,
             }
         }
         assert(queue.size() < 1000000);  // Avoiding memory flood
-    }
-    if (all_solutions.size() == 0) {
-        std::cout << "No solution found" << std::endl;
     }
     return all_solutions;
 }
@@ -71,9 +66,6 @@ std::vector<Algorithm> depth_first_search(const Node<Cube> &root,
             }
         }
         assert(queue.size() < 1000000);  // Avoiding memory flood
-    }
-    if (all_solutions.size() == 0) {
-        std::cout << "No solution found" << std::endl;
     }
     std::cout << "Nodes generated: " << node_counter << std::endl;
     return all_solutions;
