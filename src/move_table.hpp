@@ -58,7 +58,9 @@ struct BlockMoveTable {
 
     void apply(const Algorithm& alg, CoordinateBlockCube& cbc) const {
         for (const auto& move : alg.sequence) {
-            apply(move, cbc);
+            if (move != NoneMove) {
+                apply(move, cbc);
+            }
         }
     }
 
