@@ -7,26 +7,28 @@
 #include "pruning_table.hpp"
 #include "search.hpp"
 
-template <typename Strategy>
+template <bool verbose = true, typename Strategy>
 auto solve(const CoordinateBlockCube &cbc,
            const PruningTable<Strategy> &p_table, const Strategy &strat) {
     Node<CoordinateBlockCube> root(cbc, 0);
-    return IDAstar(root, BlockMoveTable(strat.block), p_table);
+    return IDAstar<verbose>(root, BlockMoveTable(strat.block), p_table);
 }
 
-template <typename Strategy>
+template <bool verbose = true, typename Strategy>
 auto solve(const CoordinateBlockCube &cbc, const Strategy &strat) {
     PruningTable p_table(strat);
-    return solve(cbc, p_table, strat);
+    return solve<verbose>(cbc, p_table, strat);
 }
 
-template <typename Strategy>
+template <bool verbose = true, typename Strategy>
 auto solve(const Algorithm &scramble, const Strategy &strat) {
-    scramble.show();
+    if constexpr (verbose) {
+        scramble.show();
+    }
     BlockMoveTable m_table(strat.block);
     CoordinateBlockCube cbc;
     m_table.apply(scramble, cbc);
-    return solve(cbc, strat);
+    return solve<verbose>(cbc, strat);
 }
 
 template <typename SolutionContainer>
