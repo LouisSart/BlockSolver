@@ -90,8 +90,11 @@ void Algorithm::show() const {
 std::array<Move, N_HTM_MOVES> HTM_Moves{U, U2, U3, D, D2, D3, R, R2, R3,
                                         L, L2, L3, F, F2, F3, B, B2, B3};
 std::array<Move, N_HTM_MOVES_AND_ROTATIONS> HTM_Moves_and_rotations{
-    U,  U2, U3, D,  D2, D3, R,  R2, R3, L,  L2, L3, F,
-    F2, F3, B,  B2, B3, x,  x2, x3, y,  y2, y3, z,  z2};
+    U,  U2, U3, D,  D2, D3, R,  R2, R3, L,  L2, L3, F, F2,
+    F3, B,  B2, B3, x,  x2, x3, y,  y2, y3, z,  z2, z3};
+std::array<Move, N_HTM_MOVES_AND_ROTATIONS> inverse_of_HTM_Moves_and_rotations{
+    U3, U2, U,  D3, D2, D,  R3, R2, R,  L3, L2, L,  F3, F2,
+    F,  B3, B2, B,  x3, x2, x,  y3, y2, y,  z3, z2, z};
 std::vector<Move> after_U{D,  D2, D3, R,  R2, R3, L, L2,
                           L3, F,  F2, F3, B,  B2, B3};
 std::vector<Move> after_D{R, R2, R3, L, L2, L3, F, F2, F3, B, B2, B3};

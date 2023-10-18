@@ -13,6 +13,21 @@ void assert_move_table_is_correct(Block<nc, ne> b) {
         cc.apply(elementary_transformations[move]);
 
         auto cbc_check = bc.to_coordinate_block_cube(cc);
+        assert(cbc == cbc_check);
+    }
+}
+
+template <typename Block>
+void test_inverse_move_apply(const Block& b) {
+    BlockCube bc(b);
+    BlockMoveTable table(b);
+    auto cc = CubieCube::random_state();
+    auto cbc_check = bc.to_coordinate_block_cube(cc);
+    auto cbc = bc.to_coordinate_block_cube(cc);
+
+    for (Move move : HTM_Moves_and_rotations) {
+        table.apply(move, cbc);
+        table.apply_inverse(move, cbc);
 
         assert(cbc == cbc_check);
     }
@@ -68,6 +83,8 @@ int main() {
     assert_move_table_is_correct(Block<3, 7>("DLB_F2L-1", {DLF, DLB, DRB},
                                              {LF, LB, DF, DB, DL, RB, DR}));
     test_222_block_alg_apply();
+    test_inverse_move_apply(
+        Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL}));
     test_load();
     return 0;
 }
