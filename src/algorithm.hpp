@@ -22,13 +22,17 @@ enum Move {
     B,
     B2,
     B3,
+    x,
+    x2,
+    x3,
+    y,
+    y2,
+    y3,
+    z,
+    z2,
+    z3,
     S_URF,
     S_URF2,
-    S_z2,
-    S_y,
-    S_y2,
-    S_y3,
-    S_LR,
     NoneMove = -1
 };
 
@@ -86,7 +90,7 @@ std::vector<Move> after_B{U, U2, U3, D, D2, D3, R, R2, R3, L, L2, L3};
 std::vector<Move> after_None{U, U2, U3, D, D2, D3, R, R2, R3,
                              L, L2, L3, F, F2, F3, B, B2, B3};
 
-std::vector<Move>& allowed_next(const Move m) {
+const std::vector<Move>& allowed_next(const Move m) {
     // Utility function that takes in the last move applied to the current node
     // and returns the set of all moves of different faces
     switch (m) {

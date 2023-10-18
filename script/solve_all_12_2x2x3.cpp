@@ -20,7 +20,7 @@ void symmetries_2x2x3() {
     for (int s1 = 0; s1 < 3; ++s1) {
         symmetry.apply(S_URF);
         for (int s2 = 0; s2 < 2; ++s2) {
-            symmetry.apply(S_z2);
+            symmetry.apply(z2);
             for (int s3 = 0; s3 < 2; ++s3) {
                 symmetry.RL_mirror();
                 std::cout << std::endl;
