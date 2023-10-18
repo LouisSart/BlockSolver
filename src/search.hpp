@@ -90,7 +90,9 @@ std::vector<Algorithm> IDAstar(const Node<Cube> &root, const MoveTable &m_table,
         ++search_depth;
     }
     if constexpr (verbose) {
-        std::cout << "IDA*: No solution found" << std::endl;
+        if (solutions.size() == 0) {
+            std::cout << "IDA*: No solution found" << std::endl;
+        }
     }
     return solutions;
 }
