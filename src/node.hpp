@@ -8,15 +8,16 @@
 template <typename Cube>
 struct Node {
     Cube state;
-    std::vector<Move> sequence;  // The moves that were made to get there
-    int depth;
-    int estimate;  // The estimate on the number of moves needed to solve the
-                   // state
+    Algorithm path;  // The moves that were made to get there
+    unsigned depth;
+    unsigned estimate;  // The estimate on the number of moves needed to solve
+                        // the state
 
-    Node() : state{Cube()}, depth{0}, sequence{NoneMove} {}
-    Node(Cube c, int d) : state{c}, depth{d}, sequence{NoneMove}, estimate{0} {}
-    Node(Cube c, int d, std::vector<Move> seq)
-        : state{c}, depth{d}, sequence{seq}, estimate{0} {}
+    Node() : state{Cube()}, depth{0}, path{} {}
+    Node(const Cube &c, const unsigned &d)
+        : state{c}, depth{d}, path{}, estimate{0} {}
+    Node(const Cube &c, const unsigned &d, const std::vector<Move> &seq)
+        : state{c}, depth{d}, path{seq}, estimate{0} {}
 
     template <int sequence_generation = 1, typename F, typename MoveContainer>
     std::vector<Node<Cube>> expand(const F &apply,
@@ -31,8 +32,8 @@ struct Node {
             apply(move, next);
             children.push_back(Node(next, depth + 1));
             if constexpr (sequence_generation > 0) {
-                children.back().sequence = sequence;
-                children.back().sequence.push_back(move);
+                children.back().path = path;
+                children.back().path.append(move);
             }
         }
         return children;

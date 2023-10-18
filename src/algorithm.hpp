@@ -38,10 +38,21 @@ struct Algorithm {
     Algorithm(){};
     Algorithm(const std::vector<Move>& s) : sequence{s} {};
 
-    auto append(const Algorithm& other) {
+    void append(const Algorithm& other) {
         sequence.insert(sequence.end(), other.sequence.begin(),
                         other.sequence.end());
     }
+
+    void append(const Move& move) { sequence.push_back(move); }
+
+    Move back() {
+        if (sequence.size() == 0) {
+            return NoneMove;
+        }
+        return sequence.back();
+    }
+
+    auto size() const { return sequence.size(); }
 
     void show() const;
 };
@@ -50,14 +61,12 @@ std::array<std::string, 18> move_str{"U", "U2", "U'", "D", "D2", "D'",
                                      "R", "R2", "R'", "L", "L2", "L'",
                                      "F", "F2", "F'", "B", "B2", "B'"};
 void Algorithm::show() const {
-    int size = 0;
     for (auto&& m : sequence) {
         if (m != NoneMove) {
             std::cout << move_str[m] << " ";
-            size += 1;
         }
     }
-    std::cout << "(" << size << ")" << std::endl;
+    std::cout << "(" << size() << ")" << std::endl;
 }
 
 // 0:U 1:U2 2:U' 3:D 4:D2 5:D' 6:R 7:R2 8:R' 9:L 10:L2 11:L' 12:F 13:F2 14:F'

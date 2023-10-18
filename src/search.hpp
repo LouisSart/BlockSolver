@@ -15,14 +15,14 @@ std::vector<Algorithm> breadth_first_search(const Node<Cube> &root, F &&apply,
     while (queue.size() != 0) {
         auto node = queue.back();
         if (node.state.is_solved()) {
-            Algorithm solution(node.sequence);
+            Algorithm solution(node.path);
             all_solutions.push_back(solution);
             queue.pop_back();
         } else {
             queue.pop_back();
             if (node.depth < max_depth) {
                 auto children =
-                    node.expand(apply, allowed_next(node.sequence.back()));
+                    node.expand(apply, allowed_next(node.path.back()));
                 for (auto &&child : children) {
                     queue.push_front(child);
                 }
@@ -53,14 +53,13 @@ std::vector<Algorithm> depth_first_search(const Node<Cube> &root,
         auto node = queue.back();
         ++node_counter;
         if (node.state.is_solved()) {
-            Algorithm solution(node.sequence);
-            all_solutions.push_back(solution);
+            all_solutions.push_back(node.path);
             queue.pop_back();
         } else {
             queue.pop_back();
             if (node.depth + node.estimate <= max_depth) {
                 auto children = node.expand(apply, heuristic,
-                                            allowed_next(node.sequence.back()));
+                                            allowed_next(node.path.back()));
                 for (auto &&child : children) {
                     queue.push_back(child);
                 }
