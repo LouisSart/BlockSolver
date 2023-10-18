@@ -76,17 +76,21 @@ std::vector<Algorithm> depth_first_search(const Node<Cube> &root,
 template <bool verbose = true, typename Cube, typename MoveTable,
           typename PruningTable>
 std::vector<Algorithm> IDAstar(const Node<Cube> &root, const MoveTable &m_table,
-                               const PruningTable &p_table) {
+                               const PruningTable &p_table,
+                               const unsigned max_depth = 20) {
     auto search_depth = p_table.get_estimate(root.state);
     std::vector<Algorithm> solutions;
 
-    while (solutions.size() == 0) {
+    while (solutions.size() == 0 && search_depth <= max_depth) {
         if constexpr (verbose) {
             std::cout << "Searching at depth " << search_depth << std::endl;
         }
         solutions =
             depth_first_search<verbose>(root, m_table, p_table, search_depth);
         ++search_depth;
+    }
+    if constexpr (verbose) {
+        std::cout << "IDA*: No solution found" << std::endl;
     }
     return solutions;
 }

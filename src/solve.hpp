@@ -9,26 +9,39 @@
 
 template <bool verbose = true, typename Strategy>
 auto solve(const CoordinateBlockCube &cbc,
-           const PruningTable<Strategy> &p_table, const Strategy &strat) {
+           const PruningTable<Strategy> &p_table, const Strategy &strat,
+           const unsigned &max_depth = 20) {
     Node<CoordinateBlockCube> root(cbc, 0);
-    return IDAstar<verbose>(root, BlockMoveTable(strat.block), p_table);
+    return IDAstar<verbose>(root, BlockMoveTable(strat.block), p_table,
+                            max_depth);
 }
 
 template <bool verbose = true, typename Strategy>
-auto solve(const CoordinateBlockCube &cbc, const Strategy &strat) {
+auto solve(const CoordinateBlockCube &cbc, const Strategy &strat,
+           const unsigned &max_depth = 20) {
     PruningTable p_table(strat);
-    return solve<verbose>(cbc, p_table, strat);
+    return solve<verbose>(cbc, p_table, strat, max_depth);
 }
 
 template <bool verbose = true, typename Strategy>
-auto solve(const Algorithm &scramble, const Strategy &strat) {
+auto solve(const Algorithm &scramble, const PruningTable<Strategy> &p_table,
+           const Strategy &strat, const unsigned &max_depth = 20) {
+    BlockMoveTable m_table(strat.block);
+    CoordinateBlockCube cbc;
+    m_table.apply(scramble, cbc);
+    return solve<verbose>(cbc, p_table, strat, max_depth);
+}
+
+template <bool verbose = true, typename Strategy>
+auto solve(const Algorithm &scramble, const Strategy &strat,
+           const unsigned &max_depth = 20) {
     if constexpr (verbose) {
         scramble.show();
     }
     BlockMoveTable m_table(strat.block);
     CoordinateBlockCube cbc;
     m_table.apply(scramble, cbc);
-    return solve<verbose>(cbc, strat);
+    return solve<verbose>(cbc, strat, max_depth);
 }
 
 template <typename SolutionContainer>
