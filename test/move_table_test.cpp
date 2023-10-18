@@ -8,7 +8,7 @@ void assert_move_table_is_correct(Block<nc, ne> b) {
     auto cc = CubieCube::random_state();
     auto cbc = bc.to_coordinate_block_cube(cc);
 
-    for (uint move : HTM_Moves) {
+    for (uint move : HTM_Moves_and_rotations) {
         table.apply(move, cbc);
         cc.apply(elementary_transformations[move]);
 

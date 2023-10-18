@@ -11,22 +11,26 @@ namespace fs = std::filesystem;
 
 template <uint nc, uint ne>
 struct BlockMoveTable {
-    static constexpr uint n_cl = binomial(8, nc);
+    static constexpr uint n_cl = binomial(NC, nc);
     static constexpr uint n_cp = factorial(nc);
-    static constexpr uint cp_table_size = n_cp * n_cl * 18;
+    static constexpr uint cp_table_size =
+        n_cp * n_cl * N_HTM_MOVES_AND_ROTATIONS;
     std::unique_ptr<uint[]> cp_table{new uint[cp_table_size]};
 
     static constexpr uint n_co = ipow(3, nc);
-    static constexpr uint co_table_size = n_cl * n_co * 18;
+    static constexpr uint co_table_size =
+        n_cl * n_co * N_HTM_MOVES_AND_ROTATIONS;
     std::unique_ptr<uint[]> co_table{new uint[co_table_size]};
 
-    static constexpr uint n_el = binomial(12, ne);
+    static constexpr uint n_el = binomial(NE, ne);
     static constexpr uint n_ep = factorial(ne);
-    static constexpr uint ep_table_size = n_ep * n_el * 18;
+    static constexpr uint ep_table_size =
+        n_ep * n_el * N_HTM_MOVES_AND_ROTATIONS;
     std::unique_ptr<uint[]> ep_table{new uint[ep_table_size]};
 
     static constexpr uint n_eo = ipow(2, ne);
-    static constexpr uint eo_table_size = n_el * n_eo * 18;
+    static constexpr uint eo_table_size =
+        n_el * n_eo * N_HTM_MOVES_AND_ROTATIONS;
     std::unique_ptr<uint[]> eo_table{new uint[eo_table_size]};
 
     BlockMoveTable() {}
@@ -64,26 +68,32 @@ struct BlockMoveTable {
 
     std::tuple<uint, uint> get_new_ccl_ccp(uint ccl, uint ccp,
                                            uint move) const {
-        assert(18 * (ccl * n_cp + ccp) + move < cp_table_size);
-        uint new_cp_idx = cp_table[18 * (ccl * n_cp + ccp) + move];
+        assert(N_HTM_MOVES_AND_ROTATIONS * (ccl * n_cp + ccp) + move <
+               cp_table_size);
+        uint new_cp_idx =
+            cp_table[N_HTM_MOVES_AND_ROTATIONS * (ccl * n_cp + ccp) + move];
         return std::make_tuple(new_cp_idx / n_cp, new_cp_idx % n_cp);
     }
 
     std::tuple<uint, uint> get_new_cel_cep(uint cel, uint cep,
                                            uint move) const {
-        assert(18 * (cel * n_ep + cep) + move < ep_table_size);
-        uint new_ep_idx = ep_table[18 * (cel * n_ep + cep) + move];
+        assert(N_HTM_MOVES_AND_ROTATIONS * (cel * n_ep + cep) + move <
+               ep_table_size);
+        uint new_ep_idx =
+            ep_table[N_HTM_MOVES_AND_ROTATIONS * (cel * n_ep + cep) + move];
         return std::make_tuple(new_ep_idx / n_ep, new_ep_idx % n_ep);
     }
 
     uint get_new_cco(uint ccl, uint cco, uint move) const {
-        assert(18 * (ccl * n_co + cco) + move < co_table_size);
-        return co_table[18 * (ccl * n_co + cco) + move];
+        assert(N_HTM_MOVES_AND_ROTATIONS * (ccl * n_co + cco) + move <
+               co_table_size);
+        return co_table[N_HTM_MOVES_AND_ROTATIONS * (ccl * n_co + cco) + move];
     }
 
     uint get_new_ceo(uint cel, uint ceo, uint move) const {
-        assert(18 * (cel * n_eo + ceo) + move < eo_table_size);
-        return eo_table[18 * (cel * n_eo + ceo) + move];
+        assert(N_HTM_MOVES_AND_ROTATIONS * (cel * n_eo + ceo) + move <
+               eo_table_size);
+        return eo_table[N_HTM_MOVES_AND_ROTATIONS * (cel * n_eo + ceo) + move];
     }
 
     void show() const {
@@ -153,20 +163,23 @@ struct BlockMoveTable {
 
         uint p_idx = 0, o_idx = 0, m_idx = 0;
         for (uint il = 0; il < n_el; il++) {
-            for (uint ip = 0; ip < n_ep;
-                 ip++)  // Loop for the permutation coordinate
-            {
+            // Loop for the permutation coordinate
+            for (uint ip = 0; ip < n_ep; ip++) {
                 m_idx = 0;
                 cbc.set(0, il, 0, ip, 0, 0);
                 cc = bc.to_cubie_cube(cbc);
-                for (auto&& move_idx : HTM_Moves) {
+                for (auto&& move_idx : HTM_Moves_and_rotations) {
                     auto move = elementary_transformations[move_idx];
                     cc_copy = cc;
                     cc_copy.edge_apply(move);
                     cbc = bc.to_coordinate_block_cube(cc_copy);
-                    assert(18 * (cbc.cel * n_ep + cbc.cep) < ep_table_size);
-                    assert(p_idx * 18 + m_idx < ep_table_size);
-                    ep_table[p_idx * 18 + m_idx] = cbc.cel * n_ep + cbc.cep;
+                    assert(N_HTM_MOVES_AND_ROTATIONS *
+                               (cbc.cel * n_ep + cbc.cep) <
+                           ep_table_size);
+                    assert(p_idx * N_HTM_MOVES_AND_ROTATIONS + m_idx <
+                           ep_table_size);
+                    ep_table[p_idx * N_HTM_MOVES_AND_ROTATIONS + m_idx] =
+                        cbc.cel * n_ep + cbc.cep;
                     m_idx++;
                 }
                 p_idx++;
@@ -177,14 +190,18 @@ struct BlockMoveTable {
                 m_idx = 0;
                 cbc.set(0, il, 0, 0, 0, io);
                 cc = bc.to_cubie_cube(cbc);
-                for (auto&& move_idx : HTM_Moves) {
+                for (auto&& move_idx : HTM_Moves_and_rotations) {
                     auto move = elementary_transformations[move_idx];
                     cc_copy = cc;
                     cc_copy.edge_apply(move);
                     cbc = bc.to_coordinate_block_cube(cc_copy);
-                    assert(18 * (cbc.cel * n_eo + cbc.ceo) < eo_table_size);
-                    assert(o_idx * 18 + m_idx < eo_table_size);
-                    eo_table[o_idx * 18 + m_idx] = cbc.ceo;
+                    assert(N_HTM_MOVES_AND_ROTATIONS *
+                               (cbc.cel * n_eo + cbc.ceo) <
+                           eo_table_size);
+                    assert(o_idx * N_HTM_MOVES_AND_ROTATIONS + m_idx <
+                           eo_table_size);
+                    eo_table[o_idx * N_HTM_MOVES_AND_ROTATIONS + m_idx] =
+                        cbc.ceo;
                     m_idx++;
                 }
                 o_idx++;
@@ -204,14 +221,18 @@ struct BlockMoveTable {
                 m_idx = 0;
                 cbc.set(il, 0, ip, 0, 0, 0);
                 cc = bc.to_cubie_cube(cbc);
-                for (auto&& move_idx : HTM_Moves) {
+                for (auto&& move_idx : HTM_Moves_and_rotations) {
                     cc_copy = cc;
                     auto move = elementary_transformations[move_idx];
                     cc_copy.corner_apply(move);
                     cbc = bc.to_coordinate_block_cube(cc_copy);
-                    assert(18 * (cbc.ccl * n_cp + cbc.ccp) < cp_table_size);
-                    assert(p_idx * 18 + m_idx < cp_table_size);
-                    cp_table[p_idx * 18 + m_idx] = cbc.ccl * n_cp + cbc.ccp;
+                    assert(N_HTM_MOVES_AND_ROTATIONS *
+                               (cbc.ccl * n_cp + cbc.ccp) <
+                           cp_table_size);
+                    assert(p_idx * N_HTM_MOVES_AND_ROTATIONS + m_idx <
+                           cp_table_size);
+                    cp_table[p_idx * N_HTM_MOVES_AND_ROTATIONS + m_idx] =
+                        cbc.ccl * n_cp + cbc.ccp;
                     m_idx++;
                 }
                 p_idx++;
@@ -220,14 +241,18 @@ struct BlockMoveTable {
                 m_idx = 0;
                 cbc.set(il, 0, 0, 0, io, 0);
                 cc = bc.to_cubie_cube(cbc);
-                for (auto&& move_idx : HTM_Moves) {
+                for (auto&& move_idx : HTM_Moves_and_rotations) {
                     auto move = elementary_transformations[move_idx];
                     cc_copy = cc;
                     cc_copy.corner_apply(move);
                     cbc = bc.to_coordinate_block_cube(cc_copy);
-                    assert(18 * (cbc.ccl * n_co + cbc.cco) < co_table_size);
-                    assert(o_idx * 18 + m_idx < co_table_size);
-                    co_table[o_idx * 18 + m_idx] = cbc.cco;
+                    assert(N_HTM_MOVES_AND_ROTATIONS *
+                               (cbc.ccl * n_co + cbc.cco) <
+                           co_table_size);
+                    assert(o_idx * N_HTM_MOVES_AND_ROTATIONS + m_idx <
+                           co_table_size);
+                    co_table[o_idx * N_HTM_MOVES_AND_ROTATIONS + m_idx] =
+                        cbc.cco;
                     m_idx++;
                 }
                 o_idx++;

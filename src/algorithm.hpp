@@ -56,14 +56,28 @@ struct Algorithm {
         return sequence.back();
     }
 
-    auto size() const { return sequence.size(); }
+    auto size() const {
+        unsigned my_size = 0;
+        for (Move move : sequence) {
+            if (move < x && move >= 0) {
+                ++my_size;
+            }
+        }
+        return my_size;
+    }
 
     void show() const;
 };
 
-std::array<std::string, 18> move_str{"U", "U2", "U'", "D", "D2", "D'",
-                                     "R", "R2", "R'", "L", "L2", "L'",
-                                     "F", "F2", "F'", "B", "B2", "B'"};
+constexpr unsigned N_HTM_MOVES = 18;
+constexpr unsigned N_HTM_MOVES_AND_ROTATIONS = 27;
+constexpr unsigned N_HTM_MOVES_AND_SYMMETRIES = 29;
+
+std::array<std::string, N_HTM_MOVES_AND_SYMMETRIES> move_str{
+    "U",  "U2", "U'", "D",  "D2", "D'", "R",  "R2",  "R'",   "L",
+    "L2", "L'", "F",  "F2", "F'", "B",  "B2", "B'",  "x",    "x2",
+    "x'", "y",  "y2", "y'", "z",  "z2", "z'", "x y", "x' z'"};
+
 void Algorithm::show() const {
     for (auto&& m : sequence) {
         if (m != NoneMove) {
@@ -73,11 +87,11 @@ void Algorithm::show() const {
     std::cout << "(" << size() << ")" << std::endl;
 }
 
-// 0:U 1:U2 2:U' 3:D 4:D2 5:D' 6:R 7:R2 8:R' 9:L 10:L2 11:L' 12:F 13:F2 14:F'
-// 15:B 16:B2 17:B' 18:S_URF 19:S_URF2 20:z2 21:y 22:y2 23:y' 24:S_LR
-std::array<Move, 18> HTM_Moves{U, U2, U3, D, D2, D3, R, R2, R3,
-                               L, L2, L3, F, F2, F3, B, B2, B3};
-
+std::array<Move, N_HTM_MOVES> HTM_Moves{U, U2, U3, D, D2, D3, R, R2, R3,
+                                        L, L2, L3, F, F2, F3, B, B2, B3};
+std::array<Move, N_HTM_MOVES_AND_ROTATIONS> HTM_Moves_and_rotations{
+    U,  U2, U3, D,  D2, D3, R,  R2, R3, L,  L2, L3, F,
+    F2, F3, B,  B2, B3, x,  x2, x3, y,  y2, y3, z,  z2};
 std::vector<Move> after_U{D,  D2, D3, R,  R2, R3, L, L2,
                           L3, F,  F2, F3, B,  B2, B3};
 std::vector<Move> after_D{R, R2, R3, L, L2, L3, F, F2, F3, B, B2, B3};
