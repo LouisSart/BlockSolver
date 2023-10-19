@@ -103,7 +103,6 @@ struct Optimal {
     Block<nc, ne> block;
 
     Optimal() {}
-    Optimal(const Optimal<nc, ne>& strat) {}
     Optimal(const Block<nc, ne>& b) : block{b} {}
 
     template <bool verbose = false>
@@ -138,6 +137,12 @@ struct Optimal {
             ((index % n_corner_states) % (n_cp * n_co)) % n_co,  // cco
             ((index / n_corner_states) % (n_ep * n_eo)) % n_eo   // ceo
         );
+    }
+
+    void show() const {
+        std::cout << "Strategy Object:" << std::endl;
+        std::cout << "   Type: " << name << std::endl;
+        block.show();
     }
 };
 
@@ -188,6 +193,11 @@ struct Permutation {
                                    0,                                 // cco
                                    0                                  // ceo
         );
+    }
+    void show() const {
+        std::cout << "Strategy Object:" << std::endl;
+        std::cout << "   Type: " << name << std::endl;
+        block.show();
     }
 };
 }  // namespace Strategy

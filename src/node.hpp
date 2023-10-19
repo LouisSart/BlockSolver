@@ -13,7 +13,7 @@ struct Node {
     unsigned estimate;  // The estimate on the number of moves needed to solve
                         // the state
 
-    Node() : state{Cube()}, depth{0}, path{} {}
+    Node() : state{Cube()}, depth{0}, path{}, estimate{0} {}
     Node(const Cube &c, const unsigned &d)
         : state{c}, depth{d}, path{}, estimate{0} {}
     Node(const Cube &c, const unsigned &d, const std::vector<Move> &seq)

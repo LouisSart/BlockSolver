@@ -40,6 +40,7 @@ struct Algorithm {
     std::vector<Move> sequence;
 
     Algorithm(){};
+    Algorithm(const std::initializer_list<Move> s) : sequence{s} {};
     Algorithm(const std::vector<Move>& s) : sequence{s} {};
 
     void append(const Algorithm& other) {
