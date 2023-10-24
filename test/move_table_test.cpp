@@ -4,17 +4,25 @@ template <unsigned nc, unsigned ne>
 void assert_move_table_is_correct(Block<nc, ne> b) {
     b.show();
     BlockCube bc(b);
-    BlockMoveTable table(b);
+    BlockMoveTable m_table(b);
     auto cc = CubieCube::random_state();
     auto cbc = bc.to_coordinate_block_cube(cc);
 
     for (uint move : HTM_Moves_and_rotations) {
-        table.apply(move, cbc);
+        m_table.apply(move, cbc);
         cc.apply(elementary_transformations[move]);
 
         auto cbc_check = bc.to_coordinate_block_cube(cc);
         assert(cbc == cbc_check);
     }
+
+    Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
+                        U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
+    auto cbc1 = bc.to_coordinate_block_cube(CubieCube(scramble));
+
+    CoordinateBlockCube cbc2;
+    m_table.apply(scramble, cbc2);
+    assert(cbc1 == cbc2);
 }
 
 template <typename Block>
