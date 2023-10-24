@@ -70,47 +70,62 @@ void test_expand_cbc_with_heuristic() {
 }
 
 void test_breadth_first_search() {
+    Algorithm scramble({F2, D, R, U});
     Block<2, 3> b("RouxFirstBlock", {4, 7}, {4, 7, 11});
     CoordinateBlockCube cbc;
-    BlockMoveTable table(b);
-    table.apply(Algorithm({F2, D, R, U}), cbc);
+    BlockMoveTable m_table(b);
+    m_table.apply(scramble, cbc);
 
     Node<CoordinateBlockCube> root(cbc, 0);
     auto solutions = breadth_first_search(
         root,
-        [&table](const Move& move, CoordinateBlockCube& CBC) {
-            table.apply(move, CBC);
+        [&m_table](const Move& move, CoordinateBlockCube& CBC) {
+            m_table.apply(move, CBC);
         },
         4);
     for (auto&& s : solutions) {
         s.show();
+        CoordinateBlockCube cbc_check;
+        m_table.apply(scramble, cbc_check);
+        m_table.apply(s, cbc_check);
+        assert(cbc_check.is_solved());
     }
 }
 
 void test_depth_first_search() {
+    Algorithm scramble({R, L2, D, F});
     Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
     CoordinateBlockCube cbc;
-    BlockMoveTable table(b);
-    table.apply(Algorithm({R, L2, D, F}), cbc);
+    BlockMoveTable m_table(b);
+    m_table.apply(scramble, cbc);
 
     Node<CoordinateBlockCube> root(cbc, 0);
-    auto solutions = depth_first_search(root, table, NullPruningTable(), 3);
+    auto solutions = depth_first_search(root, m_table, NullPruningTable(), 3);
     for (auto&& s : solutions) {
         s.show();
+        CoordinateBlockCube cbc_check;
+        m_table.apply(scramble, cbc_check);
+        m_table.apply(s, cbc_check);
+        assert(cbc_check.is_solved());
     }
 }
 
 void test_depth_first_search_with_heuristic() {
+    Algorithm scramble({R, L2, D, F});
     Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
     CoordinateBlockCube cbc;
     BlockMoveTable m_table(b);
     PruningTable p_table{Strategy::Optimal{b}};
-    m_table.apply(Algorithm({R, L2, D, F}), cbc);
+    m_table.apply(scramble, cbc);
 
     Node<CoordinateBlockCube> root(cbc, 0);
     auto solutions = depth_first_search(root, m_table, p_table, 3);
     for (auto&& s : solutions) {
         s.show();
+        CoordinateBlockCube cbc_check;
+        m_table.apply(scramble, cbc_check);
+        m_table.apply(s, cbc_check);
+        assert(cbc_check.is_solved());
     }
 }
 
@@ -129,6 +144,10 @@ void test_solve_222_on_wr_scramble() {
     assert(solutions.size() == 1);
     for (auto&& s : solutions) {
         s.show();
+        CoordinateBlockCube cbc_check;
+        m_table.apply(scramble, cbc_check);
+        m_table.apply(s, cbc_check);
+        assert(cbc_check.is_solved());
     }
 }
 
