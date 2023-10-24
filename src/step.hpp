@@ -3,6 +3,7 @@
 #include "algorithm.hpp"
 #include "move_table.hpp"
 #include "node.hpp"
+#include "pruning_table.hpp"
 #include "search.hpp"
 
 struct StepNode {
@@ -26,6 +27,29 @@ struct StepNode {
         solutions.push_back(solution);
         depth += d;
         state.apply(solution);
+    }
+
+    void show() const {
+        assert(solutions.size() == setups.size());
+        std::cout << "StepNode object" << std::endl;
+        for (unsigned k = 0; k < setups.size(); ++k) {
+            Algorithm step_sequence = setups[k];
+            step_sequence.concatenate(solutions[k]);
+            step_sequence.show();
+        }
+    }
+};
+
+struct StepSolutions : public std::vector<StepNode> {
+    void concatenate(const StepSolutions& other) {
+        for (const StepNode& node : other) {
+            push_back(node);
+        }
+    }
+    void show() const {
+        for (const auto& node : *this) {
+            node.show();
+        }
     }
 };
 
@@ -52,8 +76,8 @@ struct Step {
         std::cout << "Max step length: " << step_length << std::endl;
     }
 
-    std::vector<StepNode> setup_expand(const StepNode& parent) const {
-        std::vector<StepNode> ret;
+    StepSolutions setup_expand(const StepNode& parent) const {
+        StepSolutions ret;
         for (const auto& setup : setups) {
             ret.emplace_back(parent, setup);
         }
@@ -66,19 +90,44 @@ struct Step {
                    : step_length - node.depth;
     };
 
-    std::vector<StepNode> solve_expand(const StepNode& parent) const {
+    template <typename PTable, typename MTable>
+    StepSolutions solve_expand(const StepNode& parent, const PTable& p_table,
+                               const MTable& m_table) const {
         BlockCube bc(strat.block);
-        PruningTable p_table(strat);
-        BlockMoveTable m_table(strat.block);
         auto cbc = bc.to_coordinate_block_cube(parent.state);
         Node<CoordinateBlockCube> root(cbc, 0);
         unsigned srch_dpth = search_depth(parent);
         std::vector<Algorithm> solutions =
-            IDAstar(root, m_table, p_table, srch_dpth);
+            IDAstar<false>(root, m_table, p_table, srch_dpth);
 
-        std::vector<StepNode> ret;
+        StepSolutions ret;
         for (const auto& sol : solutions) {
             ret.emplace_back(parent, sol, sol.size());
+        }
+        return ret;
+    }
+
+    template <typename PTable, typename MTable>
+    StepSolutions expand(const StepNode& parent, const PTable& p_table,
+                         const MTable& m_table) const {
+        StepSolutions ret;
+        StepSolutions setup_nodes = setup_expand(parent);
+
+        for (const auto& setup_node : setup_nodes) {
+            StepSolutions this_setup_solutions =
+                solve_expand(setup_node, p_table, m_table);
+            ret.concatenate(this_setup_solutions);
+        }
+        return ret;
+    }
+
+    StepSolutions expand(const StepSolutions& prev_step_solutions) {
+        PruningTable p_table(strat);
+        BlockMoveTable m_table(strat.block);
+
+        StepSolutions ret;
+        for (const auto& node : prev_step_solutions) {
+            ret.concatenate(expand(node, p_table, m_table));
         }
         return ret;
     }

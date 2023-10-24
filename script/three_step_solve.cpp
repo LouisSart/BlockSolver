@@ -1,51 +1,38 @@
 #include "solve.hpp"
+#include "step.hpp"
 
-template <bool verbose = false, typename Strategy, typename Solutions>
-auto step(const Algorithm& scramble, const Strategy& strat,
-          const Solutions& prev_step_solutions, const unsigned& max_step_length,
-          const unsigned& max_search_depth) {
-    std::vector<Algorithm> solutions;
-    auto p_table = PruningTable(strat);
-    for (auto solution : prev_step_solutions) {
-        Algorithm setup = scramble;
-        setup.append(solution);
-        unsigned search_depth =
-            (max_step_length - solution.size() < max_search_depth)
-                ? max_search_depth
-                : max_step_length - solution.size();
-        auto continuations =
-            solve<verbose>(setup, p_table, strat, search_depth);
-        for (auto continuation : continuations) {
-            auto combination = solution;
-            combination.append(continuation);
-            solutions.push_back(combination);
-        }
-    }
-    return solutions;
-}
+Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
+                    U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
+
+Strategy::Optimal strat_1(Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB}));
+std::vector<Algorithm> setups_1{{},   {y},     {y2},     {y3},
+                                {z2}, {z2, y}, {z2, y2}, {z2, y3}};
+
+Strategy::Optimal strat_2(Block<2, 5>("DL_223", {DLF, DLB},
+                                      {LF, LB, DF, DB, DL}));
+std::vector<Algorithm> setups_2{{}, {x, y}, {y3, x3}};
+
+Strategy::Permutation strat_3(Block<3, 7>("DLB_F2L-1", {DLF, DLB, DRB},
+                                          {LF, LB, DF, DB, DL, RB, DR}));
+std::vector<Algorithm> setups_3{{}, {z3, y2}};
 
 int main() {
-    Algorithm scramble({R3, U3, F, L2, B2, U3, D3, B,  R3, F2, D,  R2, F,
-                        L,  B2, U, L2, F2, U3, R2, U2, L2, U2, R3, U3, F});
     scramble.show();
 
-    Strategy::Optimal strat_1(Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB}));
+    std::cout << "Step 1 (2x2x2)" << std::endl;
+    Step step_1(scramble, strat_1, setups_1, 5, 5);
+    StepNode root(scramble);
+    auto step_1_solutions = step_1.expand(StepSolutions({root}));
+    // step_1_solutions.show();
 
-    auto solutions = solve<false>(scramble, strat_1, 6);
-    std::cout << "\nSolutions for step 1 (DLB 2x2x2):" << std::endl;
-    show(solutions);
+    std::cout << "Step 2 (2x2x3)" << std::endl;
+    Step step_2(scramble, strat_2, setups_2, 5, 10);
+    auto step_2_solutions = step_2.expand(step_1_solutions);
+    step_2_solutions.show();
 
-    Strategy::Permutation strat_2(
-        Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL}));
-    solutions = step(scramble, strat_2, solutions, 11, 6);
-    std::cout << "\nSolutions for step 2 (DL 2x2x3):" << std::endl;
-    show(solutions);
-
-    Strategy::Permutation strat_3(Block<3, 7>("DLB_F2L-1", {DLF, DLB, DRB},
-                                              {LF, LB, DF, DB, DL, RB, DR}));
-    solutions = step(scramble, strat_3, solutions, 17, 6);
-    std::cout << "\nSolutions for step 3 (DLB F2L-1):" << std::endl;
-    show(solutions);
-
+    std::cout << "Step 3 (F2L-1)" << std::endl;
+    Step step_3(scramble, strat_3, setups_3, 7, 15);
+    auto step_3_solutions = step_3.expand(step_2_solutions);
+    step_3_solutions.show();
     return 0;
 }
