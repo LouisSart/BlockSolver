@@ -64,6 +64,13 @@ struct BlockMoveTable {
         apply(inverse_of_HTM_Moves_and_rotations[move], cbc);
     }
 
+    void apply_inverse(const Algorithm& alg, CoordinateBlockCube& cbc) const {
+        for (auto move = alg.sequence.rbegin(); move != alg.sequence.rend();
+             ++move) {
+            apply_inverse(move, cbc);
+        }
+    }
+
     void apply(const Algorithm& alg, CoordinateBlockCube& cbc) const {
         for (const auto& move : alg.sequence) {
             apply(move, cbc);
