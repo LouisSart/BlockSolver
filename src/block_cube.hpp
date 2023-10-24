@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <iostream>
@@ -31,6 +32,11 @@ struct Block {
         for (int i = 0; i < ne; i++) {
             edges[i] = *(be.begin() + i);
         }
+
+        std::sort(corners.begin(), corners.end(),
+                  [](const Cubie &c1, const Cubie &c2) { return (c1 < c2); });
+        std::sort(edges.begin(), edges.end(),
+                  [](const Cubie &e1, const Cubie &e2) { return (e1 < e2); });
 
         std::list<Cubie> c{ULF, URF, URB, ULB, DLF, DRF, DRB, DLB};
         std::list<Cubie> e{UF, UR, UB, UL, LF, RF, RB, LB, DF, DR, DB, DL};
