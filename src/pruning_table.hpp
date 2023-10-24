@@ -159,7 +159,6 @@ struct Permutation {
     const Block<nc, ne> block;
 
     Permutation() {}
-    Permutation(const Permutation<nc, ne>& strat) {}
     Permutation(const Block<nc, ne>& b) : block{b} {}
 
     template <bool verbose = false>
