@@ -5,50 +5,82 @@
 #include "node.hpp"
 #include "search.hpp"
 
+struct StepNode {
+    std::vector<Algorithm> solutions;
+    std::vector<Algorithm> setups;
+    unsigned depth{0};
+    CubieCube state;
+
+    StepNode(const Algorithm& scramble) { state = CubieCube(scramble); }
+    StepNode(const StepNode& parent, const Algorithm& setup) {
+        *this = parent;
+        setups.push_back(setup);
+        state = CubieCube();
+        state.apply(CubieCube(setup).get_inverse());
+        state.apply(parent.state);
+        state.apply(CubieCube(setup));
+    }
+    StepNode(const StepNode& parent, const Algorithm& solution,
+             const unsigned& d) {
+        *this = parent;
+        solutions.push_back(solution);
+        depth += d;
+        state.apply(solution);
+    }
+};
+
 template <typename Strategy>
 struct Step {
-    using StepNode = Node<CoordinateBlockCube>;
+    Algorithm scramble;
     Strategy strat;
-    std::vector<StepNode> solutions, start_up_nodes;
-    std::vector<Algorithm> premoves;
+    std::vector<Algorithm> setups;
     unsigned max_depth = 20, step_length = 20;
 
-    Step(const Strategy& s) : strat{s} { strat.show(); }
-    Step(const Strategy& s, const std::initializer_list<Algorithm>& setups)
-        : strat{s}, premoves{setups} {}
-    Step(const Strategy& s, const std::initializer_list<Algorithm>& setups,
-         const unsigned& md, const unsigned& sl)
-        : strat{s}, premoves{setups}, max_depth{md}, step_length{sl} {}
+    Step(const Algorithm& sc, const Strategy& st,
+         const std::vector<Algorithm>& se)
+        : scramble{sc}, strat{st}, setups{se} {}
+    Step(const Algorithm& sc, const Strategy& st,
+         const std::vector<Algorithm>& se, const unsigned& md,
+         const unsigned& sl)
+        : scramble{sc}, strat{st}, setups{se}, max_depth{md}, step_length{sl} {}
 
     void show() const {
+        scramble.show();
         std::cout << "Step Object:" << std::endl;
         strat.show();
-        std::cout << "Setups:" << std::endl;
-        for (auto setup : premoves) {
-            setup.show();
-        }
         std::cout << "Max search depth: " << max_depth << std::endl;
         std::cout << "Max step length: " << step_length << std::endl;
     }
 
-    void init(const std::vector<StepNode>& previous_step_nodes) {
-        BlockMoveTable m_table(strat.block);
-        for (const StepNode& node : previous_step_nodes) {
-            start_up_nodes.push_back(node);
-            for (auto setup : premoves) {
-                auto setup_node = node;
-                m_table.apply(setup, setup_node.state);
-                setup_node.path.append(setup);
-                start_up_nodes.push_back(setup_node);
-            }
+    std::vector<StepNode> setup_expand(const StepNode& parent) const {
+        std::vector<StepNode> ret;
+        for (const auto& setup : setups) {
+            ret.emplace_back(parent, setup);
         }
+        return ret;
     }
 
-    void init(const Algorithm& scramble) {
+    unsigned search_depth(const StepNode& node) const {
+        return (step_length - node.depth < max_depth)
+                   ? max_depth
+                   : step_length - node.depth;
+    };
+
+    std::vector<StepNode> solve_expand(const StepNode& parent) const {
+        BlockCube bc(strat.block);
+        PruningTable p_table(strat);
         BlockMoveTable m_table(strat.block);
-        StepNode root;
-        m_table.apply(scramble, root.state);
-        init({root});
+        auto cbc = bc.to_coordinate_block_cube(parent.state);
+        Node<CoordinateBlockCube> root(cbc, 0);
+        unsigned srch_dpth = search_depth(parent);
+        std::vector<Algorithm> solutions =
+            IDAstar(root, m_table, p_table, srch_dpth);
+
+        std::vector<StepNode> ret;
+        for (const auto& sol : solutions) {
+            ret.emplace_back(parent, sol, sol.size());
+        }
+        return ret;
     }
 };
 
