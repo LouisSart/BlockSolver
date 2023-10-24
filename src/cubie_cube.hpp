@@ -36,6 +36,7 @@ struct CubieCube {
             eo[e] = *(eo_in.begin() + e);
         }
     }
+    CubieCube(const Algorithm& scramble) { apply(scramble); }
 
     template <typename Contents>
     void print_array(std::string name, int size, const Contents* arr) const {
@@ -101,7 +102,7 @@ struct CubieCube {
 
     void apply(const Move&);
 
-    void apply(Algorithm& alg);
+    void apply(const Algorithm&);
 
     void RL_mirror() {
         // Apply the RL mirroring symmetry. This cannot be
@@ -489,8 +490,8 @@ std::array<CubieCube, 29> elementary_transformations{
 
 void CubieCube::apply(const Move& m) { apply(elementary_transformations[m]); }
 
-void CubieCube::apply(Algorithm& alg) {
-    for (Move& m : alg.sequence) {
+void CubieCube::apply(const Algorithm& alg) {
+    for (const Move& m : alg.sequence) {
         apply(m);
     }
 }
