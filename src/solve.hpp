@@ -19,7 +19,7 @@ auto solve(const CoordinateBlockCube &cbc,
 template <bool verbose = true, typename Strategy>
 auto solve(const CoordinateBlockCube &cbc, const Strategy &strat,
            const unsigned &max_depth = 20) {
-    PruningTable p_table(strat);
+    auto p_table = strat.load_table();
     return solve<verbose>(cbc, p_table, strat, max_depth);
 }
 

@@ -16,9 +16,10 @@ int main() {
     scramble.show();
     auto b = DLB_F2Lm1;
     Strategy::Permutation(b).gen_table();
-    // auto solutions = solve(scramble, Strategy::Permutation(b));
-    // for (auto&& s : solutions) {
-    //     s.show();
-    // }
-    // assert(solutions.size() == 1);
+    // Strategy::Permutation(b).load_table();
+    auto solutions = solve(scramble, Strategy::Permutation(b));
+    for (auto&& s : solutions) {
+        s.show();
+    }
+    assert(solutions.size() == 1);
 }

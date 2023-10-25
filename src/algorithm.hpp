@@ -32,8 +32,7 @@ enum Move {
     z2,
     z3,
     S_URF,
-    S_URF2,
-    NoneMove = -1
+    S_URF2
 };
 
 struct Algorithm {
@@ -55,12 +54,7 @@ struct Algorithm {
         };
     }
 
-    Move back() {
-        if (sequence.size() == 0) {
-            return NoneMove;
-        }
-        return sequence.back();
-    }
+    Move back() { return sequence.back(); }
 
     auto size() const {
         unsigned my_size = 0;
@@ -86,9 +80,7 @@ std::array<std::string, N_HTM_MOVES_AND_SYMMETRIES> move_str{
 
 void Algorithm::show() const {
     for (auto&& m : sequence) {
-        if (m != NoneMove) {
-            std::cout << move_str[m] << " ";
-        }
+        std::cout << move_str[m] << " ";
     }
     std::cout << "(" << size() << ")" << std::endl;
 }
