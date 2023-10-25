@@ -24,17 +24,15 @@ struct PruningTable {
     std::unique_ptr<entry_type[]> table{new entry_type[Strategy::table_size]};
 
     PruningTable(){};
-    PruningTable(const std::string& block_id) {
+    PruningTable(const std::string block_id) {
         table_path = table_dir / block_id;
-        load();
-    }
+    };
+    template <typename Block>
+    PruningTable(const Block& block) {
+        table_path = table_dir / block.id;
+    };
     PruningTable(const Strategy& strat) {
         table_path = table_dir / strat.block.id;
-        load();
-    }
-    PruningTable(const Strategy&& strat) {
-        table_path = table_dir / strat.block.id;
-        load();
     }
 
     void write() const {
@@ -106,9 +104,15 @@ struct Optimal {
     Optimal(const Block<nc, ne>& b) : block{b} {}
 
     template <bool verbose = false>
-    PruningTable<Optimal<nc, ne>> gen_table() {
+    PruningTable<Optimal<nc, ne>> gen_table() const {
         PruningTable<Optimal<nc, ne>> table(block.id);
         generate<verbose>(table, *this);
+        return table;
+    }
+
+    PruningTable<Optimal<nc, ne>> load_table() const {
+        PruningTable<Optimal<nc, ne>> table(block.id);
+        table.load();
         return table;
     }
 
@@ -165,6 +169,12 @@ struct Permutation {
     PruningTable<Permutation<nc, ne>> gen_table() {
         PruningTable<Permutation<nc, ne>> table(block.id);
         generate<verbose>(table, *this);
+        return table;
+    }
+
+    PruningTable<Permutation<nc, ne>> load_table() const {
+        PruningTable<Permutation<nc, ne>> table(block.id);
+        table.load();
         return table;
     }
 

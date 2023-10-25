@@ -115,7 +115,7 @@ void test_depth_first_search_with_heuristic() {
     Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
     CoordinateBlockCube cbc;
     BlockMoveTable m_table(b);
-    PruningTable p_table{Strategy::Optimal{b}};
+    PruningTable p_table = Strategy::Optimal(b).load_table();
     m_table.apply(scramble, cbc);
 
     Node<CoordinateBlockCube> root(cbc, 0);
@@ -133,7 +133,7 @@ void test_solve_222_on_wr_scramble() {
     Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
     CoordinateBlockCube cbc;
     BlockMoveTable m_table(b);
-    PruningTable p_table{Strategy::Optimal(b)};
+    PruningTable p_table = Strategy::Optimal(b).load_table();
     Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
                         U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
     scramble.show();

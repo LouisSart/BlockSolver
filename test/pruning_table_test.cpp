@@ -37,8 +37,7 @@ void test_optimal_reload(const Block<nc, ne>& b) {
     std::cout << b.name << std::endl;
     auto table = Strategy::Optimal(b).gen_table();
     table.write();
-    PruningTable<Strategy::Optimal<nc, ne>> reloaded(b);
-    reloaded.load();
+    auto reloaded = Strategy::Optimal(b).load_table();
 
     for (int k = 0; k < table.size(); ++k) {
         assert(table.table[k] == reloaded.table[k]);
@@ -51,7 +50,7 @@ void test_permutation_reload(const Block<nc, ne>& b) {
     auto table = Strategy::Permutation(b).gen_table();
     table.write();
 
-    auto reloaded = PruningTable{Strategy::Permutation(b)};
+    auto reloaded = Strategy::Permutation(b).load_table();
 
     for (int k = 0; k < table.size(); ++k) {
         assert(table.table[k] == reloaded.table[k]);
@@ -99,6 +98,7 @@ void test_direct_and_backward_are_equivalent(const Block& b) {
     for (unsigned k = 0; k < direct.size(); ++k) {
         assert(backwards.table[k] == direct.table[k]);
     }
+    direct.write();
 }
 
 int main() {

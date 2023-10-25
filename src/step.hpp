@@ -122,7 +122,7 @@ struct Step {
     }
 
     StepSolutions expand(const StepSolutions& prev_step_solutions) {
-        PruningTable p_table(strat);
+        PruningTable p_table = strat.load_table();
         BlockMoveTable m_table(strat.block);
 
         StepSolutions ret;
