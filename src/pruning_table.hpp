@@ -11,6 +11,10 @@
 
 namespace fs = std::filesystem;
 
+struct LoadError {
+    fs::path table_path;
+};
+
 template <typename Strategy>
 struct PruningTable {
     using entry_type = uint8_t;  // Cannot be printed, max representable
@@ -52,9 +56,8 @@ struct PruningTable {
                        sizeof(entry_type) * size());
             istrm.close();
         } else {
-            std::cout
-                << "Pruning table could not be loaded, must be generated first"
-                << std::endl;
+            std::cout << "Pruning table could not be loaded" << std::endl;
+            throw LoadError{table_path / filename};
         }
     }
 
