@@ -22,22 +22,31 @@ struct Block {
     std::string name;
     std::string id;
 
-    Block(){};
     Block(std::string bname, const std::initializer_list<Cubie> bc,
-          const std::initializer_list<Cubie> be) {
-        name = bname;
-        for (int i = 0; i < nc; i++) {
-            corners[i] = *(bc.begin() + i);
+          const std::initializer_list<Cubie> be)
+        : name{bname} {
+        assert(bc.size() == nc);
+        assert(be.size() == ne);
+
+        auto lit = bc.begin();
+        for (unsigned k = 0; k < nc; ++k) {
+            corners[k] = *lit;
+            ++lit;
         }
-        for (int i = 0; i < ne; i++) {
-            edges[i] = *(be.begin() + i);
+        lit = be.begin();
+        for (unsigned k = 0; k < ne; ++k) {
+            edges[k] = *lit;
+            ++lit;
         }
 
+        // Sort corners and edges for unicity
         std::sort(corners.begin(), corners.end(),
                   [](const Cubie &c1, const Cubie &c2) { return (c1 < c2); });
         std::sort(edges.begin(), edges.end(),
                   [](const Cubie &e1, const Cubie &e2) { return (e1 < e2); });
 
+        // Compute the run through order of the pieces. Needed for correct
+        // computation of corner and edges layout/permutation coordinates
         std::list<Cubie> c{ULF, URF, URB, ULB, DLF, DRF, DRB, DLB};
         std::list<Cubie> e{UF, UR, UB, UL, LF, RF, RB, LB, DF, DR, DB, DL};
         for (int i = nc - 1; i >= 0; i--) {  // has to be int because of i >= 0

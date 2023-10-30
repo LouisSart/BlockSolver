@@ -77,6 +77,53 @@ struct PruningTable {
     unsigned size() const { return Strategy::table_size; }
 };
 
+template <typename CornerStrategy, typename EdgeStrategy>
+struct SplitPruningTable {
+    // using entry_type = uint8_t;  // Cannot be printed, max representable
+    //                              // value of uint8_t is 255
+    // static constexpr unsigned unassigned =
+    //     std::numeric_limits<entry_type>::max();
+    // fs::path table_dir = fs::current_path() / "pruning_tables" /
+    // Strategy::name; fs::path table_path; std::string filename = "table.dat";
+
+    PruningTable<CornerStrategy> c_table;
+    PruningTable<EdgeStrategy> e_table;
+
+    // SplitPruningTable(){};
+    SplitPruningTable(const CornerStrategy& c_strat,
+                      const EdgeStrategy& e_strat)
+        : c_table{c_strat}, e_table{e_strat} {
+        assert(CornerStrategy::n_edge_states == 1);
+        assert(EdgeStrategy::n_corner_states == 1);
+    }
+
+    void write() const {
+        c_table.write();
+        e_table.write();
+    }
+
+    void load() const {
+        c_table.load();
+        e_table.load();
+    }
+
+    void reset() const {
+        c_table.reset();
+        e_table.reset();
+    }
+
+    unsigned get_estimate(const CoordinateBlockCube& cbc) const {
+        auto edge_estimate = e_table.get_estimate(cbc);
+        auto corner_estimate = c_table.get_estimate(cbc);
+        return (corner_estimate < edge_estimate) ? edge_estimate
+                                                 : corner_estimate;
+    }
+
+    unsigned size() const {
+        return CornerStrategy::table_size + EdgeStrategy::table_size;
+    }
+};
+
 struct NullPruningTable {
     template <typename Cube>
     unsigned get_estimate(const Cube& cube) const {
@@ -210,6 +257,29 @@ struct Permutation {
         std::cout << "Strategy Object:" << std::endl;
         std::cout << "   Type: " << name << std::endl;
         block.show();
+    }
+};
+
+template <typename CornerStrategy, typename EdgeStrategy>
+struct Split {
+    CornerStrategy c_strat;
+    EdgeStrategy e_strat;
+
+    Split(const CornerStrategy& cs, const EdgeStrategy& es)
+        : c_strat{cs}, e_strat{es} {}
+
+    template <bool verbose = false>
+    SplitPruningTable<CornerStrategy, EdgeStrategy> gen_table() const {
+        SplitPruningTable<CornerStrategy, EdgeStrategy> table(c_strat, e_strat);
+        table.c_table = c_strat.template gen_table<verbose>();
+        table.e_table = e_strat.template gen_table<verbose>();
+        return table;
+    }
+
+    SplitPruningTable<CornerStrategy, EdgeStrategy> load_table() const {
+        SplitPruningTable<CornerStrategy, EdgeStrategy> table(c_strat, e_strat);
+        table.load();
+        return table;
     }
 };
 }  // namespace Strategy

@@ -101,6 +101,30 @@ void test_direct_and_backward_are_equivalent(const Block& b) {
     direct.write();
 }
 
+template <unsigned nc, unsigned ne>
+void test_split_api(const Block<nc, ne>& b) {
+    Block<nc, 0> c_sub_block(b.name + "_corners", b.corners, {});
+    Block<0, ne> e_sub_block(b.name + "_edges", {}, b.edges);
+    Strategy::Optimal c_strat(c_sub_block);
+    Strategy::Optimal e_strat(e_sub_block);
+
+    SplitPruningTable table(c_strat, e_strat);
+    assert(table.size() > 0);
+    table.reset();
+
+    CoordinateBlockCube cbc{0, 0, 0, 0, 0, 0};
+    assert(table.get_estimate(cbc) > 0);
+
+    auto strat = Strategy::Split(c_strat, e_strat);
+    table = strat.gen_table();
+    assert(table.get_estimate(cbc) == 0);
+    table.write();
+    table.reset();
+    assert(table.get_estimate(cbc) != 0);
+    table.load();
+    assert(table.get_estimate(cbc) == 0);
+}
+
 int main() {
     auto LF_column = Block<2, 1>("LF_column", {ULF, DLB}, {LF});
     auto DLB_222 = Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB});
@@ -122,5 +146,8 @@ int main() {
     std::cout << "\nDirect and backwards equivalence test" << std::endl;
     test_direct_and_backward_are_equivalent(LF_column);
     test_direct_and_backward_are_equivalent(DLB_222);
+
+    std::cout << "\nSplit pruning table test" << std::endl;
+    test_split_api(DLB_222);
     return 0;
 }
