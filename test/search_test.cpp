@@ -151,6 +151,34 @@ void test_solve_222_on_wr_scramble() {
     }
 }
 
+void test_solve_with_split_heuristic() {
+    Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
+    CoordinateBlockCube cbc;
+    BlockMoveTable m_table(b);
+
+    Block<1, 0> c_sub_block(b.name + "_corners", {7}, {});
+    Block<0, 3> e_sub_block(b.name + "_edges", {}, {7, 10, 11});
+    Strategy::Optimal c_strat(c_sub_block);
+    Strategy::Optimal e_strat(e_sub_block);
+    SplitPruningTable p_table(c_strat, e_strat);
+    p_table.load();
+    Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
+                        U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
+    scramble.show();
+    m_table.apply(scramble, cbc);
+
+    Node<CoordinateBlockCube> root(cbc, 0);
+    auto solutions = depth_first_search(root, m_table, p_table, 4);
+    assert(solutions.size() == 1);
+    for (auto&& s : solutions) {
+        s.show();
+        CoordinateBlockCube cbc_check;
+        m_table.apply(scramble, cbc_check);
+        m_table.apply(s, cbc_check);
+        assert(cbc_check.is_solved());
+    }
+}
+
 int main() {
     std::cout << " --- Test expansion ---" << std::endl;
     test_expand_cbc();
@@ -167,5 +195,7 @@ int main() {
     test_solve_222_on_wr_scramble();
     std::cout << " --- Test object sizes --- " << std::endl;
     test_object_sizes();
+    std::cout << " --- Test split heuristic --- " << std::endl;
+    test_solve_with_split_heuristic();
     return 0;
 }

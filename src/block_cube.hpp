@@ -22,23 +22,9 @@ struct Block {
     std::string name;
     std::string id;
 
-    Block(std::string bname, const std::initializer_list<Cubie> bc,
-          const std::initializer_list<Cubie> be)
-        : name{bname} {
-        assert(bc.size() == nc);
-        assert(be.size() == ne);
-
-        auto lit = bc.begin();
-        for (unsigned k = 0; k < nc; ++k) {
-            corners[k] = *lit;
-            ++lit;
-        }
-        lit = be.begin();
-        for (unsigned k = 0; k < ne; ++k) {
-            edges[k] = *lit;
-            ++lit;
-        }
-
+    Block(std::string bname, const std::array<Cubie, nc> bc,
+          const std::array<Cubie, ne> be)
+        : corners{bc}, edges{be} {
         // Sort corners and edges for unicity
         std::sort(corners.begin(), corners.end(),
                   [](const Cubie &c1, const Cubie &c2) { return (c1 < c2); });
@@ -68,6 +54,27 @@ struct Block {
             ptr_e_order++;
         }
         id = compute_id();
+    }
+
+    Block(std::string bname, const std::initializer_list<Cubie> bc,
+          const std::initializer_list<Cubie> be)
+        : name{bname} {
+        assert(bc.size() == nc);
+        assert(be.size() == ne);
+
+        std::array<Cubie, nc> car;
+        std::array<Cubie, ne> ear;
+        auto lit = bc.begin();
+        for (unsigned k = 0; k < nc; ++k) {
+            car[k] = *lit;
+            ++lit;
+        }
+        lit = be.begin();
+        for (unsigned k = 0; k < ne; ++k) {
+            ear[k] = *lit;
+            ++lit;
+        }
+        Block(bname, car, ear);
     };
 
     std::string compute_id() const {
