@@ -24,7 +24,7 @@ void test_object_sizes() {
 
 void test_expand_cbc() {
     CoordinateBlockCube cbc;
-    Block<4, 2> b("FrontColumns", {0, 1, 4, 5}, {4, 5});
+    Block<4, 2> b("FrontColumns", {ULF, DLF, URF, DRF}, {LF, RF});
     BlockMoveTable table(b);
 
     Node root(cbc, 0);
@@ -47,7 +47,7 @@ void test_expand_cbc() {
 
 void test_expand_cbc_with_heuristic() {
     CoordinateBlockCube cbc;
-    Block<4, 2> b("FrontColumns", {0, 1, 4, 5}, {4, 5});
+    Block<4, 2> b("FrontColumns", {ULF, DLF, URF, DRF}, {LF, RF});
     BlockMoveTable table(b);
     int k = 0;
 
@@ -71,7 +71,7 @@ void test_expand_cbc_with_heuristic() {
 
 void test_breadth_first_search() {
     Algorithm scramble({F2, D, R, U});
-    Block<2, 3> b("RouxFirstBlock", {4, 7}, {4, 7, 11});
+    Block<2, 3> b("RouxFirstBlock", {DLF, DLB}, {LF, LB, DL});
     CoordinateBlockCube cbc;
     BlockMoveTable m_table(b);
     m_table.apply(scramble, cbc);
@@ -94,7 +94,7 @@ void test_breadth_first_search() {
 
 void test_depth_first_search() {
     Algorithm scramble({R, L2, D, F});
-    Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
+    Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
     CoordinateBlockCube cbc;
     BlockMoveTable m_table(b);
     m_table.apply(scramble, cbc);
@@ -112,7 +112,7 @@ void test_depth_first_search() {
 
 void test_depth_first_search_with_heuristic() {
     Algorithm scramble({R, L2, D, F});
-    Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
+    Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
     CoordinateBlockCube cbc;
     BlockMoveTable m_table(b);
     PruningTable p_table = Strategy::Optimal(b).load_table();
@@ -130,7 +130,7 @@ void test_depth_first_search_with_heuristic() {
 }
 
 void test_solve_222_on_wr_scramble() {
-    Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
+    Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
     CoordinateBlockCube cbc;
     BlockMoveTable m_table(b);
     PruningTable p_table = Strategy::Optimal(b).load_table();
@@ -152,12 +152,12 @@ void test_solve_222_on_wr_scramble() {
 }
 
 void test_solve_with_split_heuristic() {
-    Block<1, 3> b("DLB_222", {7}, {7, 10, 11});
+    Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
     CoordinateBlockCube cbc;
     BlockMoveTable m_table(b);
 
-    Block<1, 0> c_sub_block(b.name + "_corners", {7}, {});
-    Block<0, 3> e_sub_block(b.name + "_edges", {}, {7, 10, 11});
+    Block<1, 0> c_sub_block(b.name + "_corners", {DLB}, {});
+    Block<0, 3> e_sub_block(b.name + "_edges", {}, {LB, DB, DL});
     Strategy::Optimal c_strat(c_sub_block);
     Strategy::Optimal e_strat(e_sub_block);
     SplitPruningTable p_table(c_strat, e_strat);

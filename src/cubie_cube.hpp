@@ -8,12 +8,7 @@
 
 #include "algorithm.hpp"
 #include "coordinate.hpp"
-
-constexpr unsigned NC = 8, NE = 12;
-using Cubie = unsigned;
-using Orientation = unsigned;
-enum Corner : Cubie { ULF, URF, URB, ULB, DLF, DRF, DRB, DLB };
-enum Edge : Cubie { UF, UR, UB, UL, LF, RF, RB, LB, DF, DR, DB, DL };
+#include "cubie.hpp"
 
 struct CubieCube {
     Cubie cp[NC]{ULF, URF, URB, ULB, DLF, DRF, DRB, DLB};

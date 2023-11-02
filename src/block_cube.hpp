@@ -11,20 +11,20 @@
 
 template <unsigned nc, unsigned ne>
 struct Block {
-    std::array<Cubie, nc> corners;  // corner indices
-    std::array<Cubie, ne> edges;    // edge indices
+    std::array<Corner, nc> corners;  // corner indices
+    std::array<Edge, ne> edges;      // edge indices
 
     // map: [0,...,7]->[block corners,non-block corners]
-    std::array<Cubie, NC> c_order;
+    std::array<Corner, NC> c_order;
     // map: [0,...,11]->[block edges,non-block edges]
-    std::array<Cubie, NE> e_order;
+    std::array<Edge, NE> e_order;
 
     std::string name;
     std::string id;
 
-    Block(std::string bname, const std::array<Cubie, nc> &bc,
-          const std::array<Cubie, ne> &be)
-        : corners{bc}, edges{be} {
+    Block(std::string bname, const std::array<Corner, nc> &bc,
+          const std::array<Edge, ne> &be)
+        : name{bname}, corners{bc}, edges{be} {
         // Sort corners and edges for unicity
         std::sort(corners.begin(), corners.end(),
                   [](const Cubie &c1, const Cubie &c2) { return (c1 < c2); });
@@ -33,8 +33,8 @@ struct Block {
 
         // Compute the run through order of the pieces. Needed for correct
         // computation of corner and edges layout/permutation coordinates
-        std::list<Cubie> c{ULF, URF, URB, ULB, DLF, DRF, DRB, DLB};
-        std::list<Cubie> e{UF, UR, UB, UL, LF, RF, RB, LB, DF, DR, DB, DL};
+        std::list<Corner> c{ULF, URF, URB, ULB, DLF, DRF, DRB, DLB};
+        std::list<Edge> e{UF, UR, UB, UL, LF, RF, RB, LB, DF, DR, DB, DL};
         for (int i = nc - 1; i >= 0; i--) {  // has to be int because of i >= 0
             assert((corners[i] >= ULF) && (corners[i] <= DLB));
             c.remove(corners[i]);
@@ -45,12 +45,12 @@ struct Block {
             e.remove(edges[i]);
             e.push_front(edges[i]);
         }
-        Cubie *ptr_c_order = c_order.begin();
+        Corner *ptr_c_order = c_order.begin();
         for (auto ptr_c = c.begin(); ptr_c != c.end(); ptr_c++) {
             *ptr_c_order = *ptr_c;
             ptr_c_order++;
         }
-        Cubie *ptr_e_order = e_order.begin();
+        Edge *ptr_e_order = e_order.begin();
         for (auto ptr_e = e.begin(); ptr_e != e.end(); ptr_e++) {
             *ptr_e_order = *ptr_e;
             ptr_e_order++;
@@ -58,25 +58,24 @@ struct Block {
         id = compute_id();
     }
 
-    Block(std::string bname, const std::initializer_list<Cubie> bc,
-          const std::initializer_list<Cubie> be)
-        : name{bname} {
+    Block(std::string bname, const std::initializer_list<Corner> bc,
+          const std::initializer_list<Edge> be) {
         assert(bc.size() == nc);
         assert(be.size() == ne);
 
-        std::array<Cubie, nc> car;
-        std::array<Cubie, ne> ear;
+        std::array<Corner, nc> car;
+        std::array<Edge, ne> ear;
         auto lit = bc.begin();
         for (unsigned k = 0; k < nc; ++k) {
             assert((ULF <= *lit) && (*lit <= DLB));
             car[k] = *lit;
             ++lit;
         }
-        lit = be.begin();
+        auto lit_e = be.begin();
         for (unsigned k = 0; k < ne; ++k) {
-            assert((UF <= *lit) && (*lit <= DL));
-            ear[k] = *lit;
-            ++lit;
+            assert((UF <= *lit_e) && (*lit_e <= DL));
+            ear[k] = *lit_e;
+            ++lit_e;
         }
         *this = Block(bname, car, ear);
     };
@@ -113,12 +112,12 @@ struct Block {
             std::cout << e << ' ';
         }
         std::cout << "}" << std::endl;
-        std::cout << "Corner order: ";
+        std::cout << "   Corner order: ";
         for (auto &c : c_order) {
             std::cout << c << ' ';
         }
         std::cout << std::endl;
-        std::cout << "Edge order: ";
+        std::cout << "   Edge order: ";
         for (auto &e : e_order) {
             std::cout << e << ' ';
         }
@@ -141,8 +140,8 @@ struct BlockCube {
     Block<nc, ne> b;  // Block object
 
     BlockCube(){};
-    BlockCube(std::string bname, const std::initializer_list<Cubie> bc,
-              const std::initializer_list<Cubie> be)
+    BlockCube(std::string bname, const std::initializer_list<Corner> bc,
+              const std::initializer_list<Edge> be)
         : b(bname, bc, be){};
     BlockCube(const Block<nc, ne> &b) : b(b){};
 

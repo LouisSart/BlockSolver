@@ -7,7 +7,7 @@
 #include "solve.hpp"
 
 void symmetries_2x2x3() {
-    Block<2, 5> b("DL_223", {4, 7}, {4, 7, 8, 10, 11});
+    Block<2, 5> b("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL});
     BlockCube bc(b);
     BlockMoveTable m_table(b);
     Strategy::Optimal strat(b);

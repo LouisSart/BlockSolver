@@ -51,7 +51,7 @@ void test_to_cbc_from_cc_and_back(Block<nc, ne> b) {
 }
 
 void test_corner_permutation_table() {
-    BlockCube<1, 1> bc("UFL corner", {0}, {0});
+    BlockCube<1, 0> bc("UFL corner", {ULF}, {});
     CubieCube cc, cc_copy;
     uint num_layout = 8;
     uint num_perm = 1;
@@ -81,7 +81,7 @@ void test_corner_permutation_table() {
 
 int main() {
     test_block();
-    auto OCOE = Block<1, 1>("OneCornerAndOneEdge", {0}, {0});
+    auto OCOE = Block<1, 1>("OneCornerAndOneEdge", {ULF}, {UF});
     test_to_cbc_from_cc_and_back(OCOE);
     test_to_cbc_from_cc_and_back(Block<8, 0>(
         "AllCorners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {}));

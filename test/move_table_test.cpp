@@ -42,7 +42,7 @@ void test_inverse_move_apply(const Block& b) {
 }
 
 void test_222_block_alg_apply() {
-    BlockCube<1, 3> bc("DLB_222", {7}, {7, 10, 11});
+    BlockCube<1, 3> bc("DLB_222", {DLB}, {DL, DB, LB});
     BlockMoveTable<1, 3> table(bc.b);
     CubieCube cc;
     CoordinateBlockCube cbc;
@@ -67,7 +67,7 @@ void test_222_block_alg_apply() {
 
 void test_load() {
     BlockMoveTable<4, 4> table;
-    Block<4, 4> b("TopLayer", {0, 1, 2, 3}, {0, 1, 2, 3});
+    Block<4, 4> b("TopLayer", {ULF, URF, URB, ULB}, {UF, UR, UB, UL});
     b.show();
     table.compute_corner_move_tables(b);
     table.compute_edge_move_tables(b);
@@ -85,7 +85,8 @@ int main() {
         "AllCorners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {}));
     assert_move_table_is_correct(
         Block<0, 4>("BottomCross", {}, {DF, DR, DB, DL}));
-    assert_move_table_is_correct(Block<1, 1>("OneCornerAndOneEdge", {0}, {0}));
+    assert_move_table_is_correct(
+        Block<1, 1>("OneCornerAndOneEdge", {ULF}, {UF}));
     assert_move_table_is_correct(
         Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL}));
     assert_move_table_is_correct(Block<3, 7>("DLB_F2L-1", {DLF, DLB, DRB},
