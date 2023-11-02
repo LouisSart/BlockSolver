@@ -123,6 +123,13 @@ struct Block {
         }
         std::cout << std::endl;
     };
+
+    std::tuple<Block<nc, 0>, Block<0, ne>> split_corners_and_edges() const {
+        Block<nc, 0> corner_part(name + "_corners", corners,
+                                 std::array<Edge, 0>{});
+        Block<0, ne> edge_part(name + "_edges", std::array<Corner, 0>{}, edges);
+        return std::tuple(corner_part, edge_part);
+    }
 };
 
 template <unsigned nc, unsigned ne>

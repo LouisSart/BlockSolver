@@ -14,6 +14,9 @@ void test_block() {
     for (auto &e : b.e_order) {
         assert((UF <= e) && (e <= DL));
     }
+    auto [cb, eb] = b.split_corners_and_edges();
+    cb.show();
+    eb.show();
 }
 
 template <unsigned nc, unsigned ne>
