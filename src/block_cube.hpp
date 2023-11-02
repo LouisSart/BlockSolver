@@ -22,8 +22,8 @@ struct Block {
     std::string name;
     std::string id;
 
-    Block(std::string bname, const std::array<Cubie, nc> bc,
-          const std::array<Cubie, ne> be)
+    Block(std::string bname, const std::array<Cubie, nc> &bc,
+          const std::array<Cubie, ne> &be)
         : corners{bc}, edges{be} {
         // Sort corners and edges for unicity
         std::sort(corners.begin(), corners.end(),
@@ -36,10 +36,12 @@ struct Block {
         std::list<Cubie> c{ULF, URF, URB, ULB, DLF, DRF, DRB, DLB};
         std::list<Cubie> e{UF, UR, UB, UL, LF, RF, RB, LB, DF, DR, DB, DL};
         for (int i = nc - 1; i >= 0; i--) {  // has to be int because of i >= 0
+            assert((corners[i] >= ULF) && (corners[i] <= DLB));
             c.remove(corners[i]);
             c.push_front(corners[i]);
         }
         for (int i = ne - 1; i >= 0; i--) {  // has to be int because of i >= 0
+            assert((edges[i] >= UF) && (edges[i] <= DL));
             e.remove(edges[i]);
             e.push_front(edges[i]);
         }
@@ -66,15 +68,17 @@ struct Block {
         std::array<Cubie, ne> ear;
         auto lit = bc.begin();
         for (unsigned k = 0; k < nc; ++k) {
+            assert((ULF <= *lit) && (*lit <= DLB));
             car[k] = *lit;
             ++lit;
         }
         lit = be.begin();
         for (unsigned k = 0; k < ne; ++k) {
+            assert((UF <= *lit) && (*lit <= DL));
             ear[k] = *lit;
             ++lit;
         }
-        Block(bname, car, ear);
+        *this = Block(bname, car, ear);
     };
 
     std::string compute_id() const {
@@ -108,7 +112,17 @@ struct Block {
         for (auto &e : edges) {
             std::cout << e << ' ';
         }
-        std::cout << "}\n";
+        std::cout << "}" << std::endl;
+        std::cout << "Corner order: ";
+        for (auto &c : c_order) {
+            std::cout << c << ' ';
+        }
+        std::cout << std::endl;
+        std::cout << "Edge order: ";
+        for (auto &e : e_order) {
+            std::cout << e << ' ';
+        }
+        std::cout << std::endl;
     };
 };
 
@@ -130,7 +144,7 @@ struct BlockCube {
     BlockCube(std::string bname, const std::initializer_list<Cubie> bc,
               const std::initializer_list<Cubie> be)
         : b(bname, bc, be){};
-    BlockCube(Block<nc, ne> b) : b(b){};
+    BlockCube(const Block<nc, ne> &b) : b(b){};
 
     CoordinateBlockCube to_coordinate_block_cube(const CubieCube &cc) {
         // Returns the coordinate representation

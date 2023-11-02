@@ -5,6 +5,17 @@
 #include "coordinate_block_cube.hpp"
 #include "cubie_cube.hpp"
 
+void test_block() {
+    Block<2, 5> b("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL});
+    b.show();
+    for (auto &c : b.c_order) {
+        assert((ULF <= c) && (c <= DLB));
+    }
+    for (auto &e : b.e_order) {
+        assert((UF <= e) && (e <= DL));
+    }
+}
+
 template <unsigned nc, unsigned ne>
 void test_to_cbc_from_cc_and_back(Block<nc, ne> b) {
     BlockCube bc(b);
@@ -69,11 +80,13 @@ void test_corner_permutation_table() {
 }
 
 int main() {
+    test_block();
+    auto OCOE = Block<1, 1>("OneCornerAndOneEdge", {0}, {0});
+    test_to_cbc_from_cc_and_back(OCOE);
     test_to_cbc_from_cc_and_back(Block<8, 0>(
         "AllCorners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {}));
     test_to_cbc_from_cc_and_back(
         Block<0, 4>("BottomCross", {}, {DF, DR, DB, DL}));
-    test_to_cbc_from_cc_and_back(Block<1, 1>("OneCornerAndOneEdge", {0}, {0}));
     test_corner_permutation_table();
     return 0;
 }
