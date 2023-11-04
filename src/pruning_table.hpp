@@ -79,17 +79,9 @@ struct PruningTable {
 
 template <typename CornerStrategy, typename EdgeStrategy>
 struct SplitPruningTable {
-    // using entry_type = uint8_t;  // Cannot be printed, max representable
-    //                              // value of uint8_t is 255
-    // static constexpr unsigned unassigned =
-    //     std::numeric_limits<entry_type>::max();
-    // fs::path table_dir = fs::current_path() / "pruning_tables" /
-    // Strategy::name; fs::path table_path; std::string filename = "table.dat";
-
     PruningTable<CornerStrategy> c_table;
     PruningTable<EdgeStrategy> e_table;
 
-    // SplitPruningTable(){};
     SplitPruningTable(const CornerStrategy& c_strat,
                       const EdgeStrategy& e_strat)
         : c_table{c_strat}, e_table{e_strat} {
@@ -113,8 +105,10 @@ struct SplitPruningTable {
     }
 
     unsigned get_estimate(const CoordinateBlockCube& cbc) const {
-        auto edge_estimate = e_table.get_estimate(cbc);
-        auto corner_estimate = c_table.get_estimate(cbc);
+        CoordinateBlockCube c_cbc(cbc.ccl, 0, cbc.ccp, 0, cbc.cco, 0);
+        CoordinateBlockCube e_cbc(0, cbc.cel, 0, cbc.cep, 0, cbc.ceo);
+        auto corner_estimate = c_table.get_estimate(c_cbc);
+        auto edge_estimate = e_table.get_estimate(e_cbc);
         return (corner_estimate < edge_estimate) ? edge_estimate
                                                  : corner_estimate;
     }
