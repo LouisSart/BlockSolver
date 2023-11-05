@@ -5,6 +5,15 @@
 #include "algorithm.hpp"
 #include "node.hpp"
 
+template <typename NodeType>
+auto standard_directions(const NodeType &node) {
+    if (node.path.sequence.size() == 0) {
+        return default_directions;
+    } else {
+        return allowed_next(node.path.sequence.back());
+    }
+}
+
 template <typename Cube, typename F>
 std::vector<Algorithm> breadth_first_search(const Node<Cube> &root, F &&apply,
                                             size_t max_depth = 4) {
@@ -21,8 +30,7 @@ std::vector<Algorithm> breadth_first_search(const Node<Cube> &root, F &&apply,
         } else {
             queue.pop_back();
             if (node.depth < max_depth) {
-                auto children =
-                    node.expand(apply, allowed_next(node.path.back()));
+                auto children = node.expand(apply, standard_directions(node));
                 for (auto &&child : children) {
                     queue.push_front(child);
                 }
@@ -58,8 +66,8 @@ std::vector<Algorithm> depth_first_search(const Node<Cube> &root,
         } else {
             queue.pop_back();
             if (node.depth + node.estimate <= max_depth) {
-                auto children = node.expand(apply, heuristic,
-                                            allowed_next(node.path.back()));
+                auto children =
+                    node.expand(apply, heuristic, standard_directions(node));
                 for (auto &&child : children) {
                     queue.push_back(child);
                 }

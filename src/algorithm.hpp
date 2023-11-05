@@ -93,6 +93,9 @@ std::array<Move, N_HTM_MOVES_AND_ROTATIONS> HTM_Moves_and_rotations{
 std::array<Move, N_HTM_MOVES_AND_ROTATIONS> inverse_of_HTM_Moves_and_rotations{
     U3, U2, U,  D3, D2, D,  R3, R2, R,  L3, L2, L,  F3, F2,
     F,  B3, B2, B,  x3, x2, x,  y3, y2, y,  z3, z2, z};
+
+std::vector<Move> default_directions{U, U2, U3, D, D2, D3, R, R2, R3,
+                                     L, L2, L3, F, F2, F3, B, B2, B3};
 std::vector<Move> after_U{D,  D2, D3, R,  R2, R3, L, L2,
                           L3, F,  F2, F3, B,  B2, B3};
 std::vector<Move> after_D{R, R2, R3, L, L2, L3, F, F2, F3, B, B2, B3};
@@ -102,8 +105,6 @@ std::vector<Move> after_L{U, U2, U3, D, D2, D3, F, F2, F3, B, B2, B3};
 std::vector<Move> after_F{U,  U2, U3, D,  D2, D3, R, R2,
                           R3, L,  L2, L3, B,  B2, B3};
 std::vector<Move> after_B{U, U2, U3, D, D2, D3, R, R2, R3, L, L2, L3};
-std::vector<Move> after_None{U, U2, U3, D, D2, D3, R, R2, R3,
-                             L, L2, L3, F, F2, F3, B, B2, B3};
 
 const std::vector<Move>& allowed_next(const Move m) {
     // Utility function that takes in the last move applied to the current node
@@ -122,6 +123,6 @@ const std::vector<Move>& allowed_next(const Move m) {
         case B ... B3:
             return after_B;
         default:
-            return after_None;
+            return default_directions;
     }
 }
