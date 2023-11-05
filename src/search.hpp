@@ -14,6 +14,12 @@ auto standard_directions(const NodeType &node) {
     }
 }
 
+template <typename SolutionContainer>
+void show(SolutionContainer solutions) {
+    for (auto &&s : solutions) {
+        s.show();
+    }
+}
 template <typename Cube, typename F>
 std::vector<Algorithm> breadth_first_search(const Node<Cube> &root, F &&apply,
                                             size_t max_depth = 4) {

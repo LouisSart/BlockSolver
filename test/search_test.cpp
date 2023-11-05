@@ -6,6 +6,17 @@
 #include "node.hpp"
 #include "pruning_table.hpp"
 
+template <typename MoveTable, typename SolutionContainer>
+void check_solutions(const Algorithm& scramble, const MoveTable& m_table,
+                     const SolutionContainer& solutions) {
+    for (auto&& s : solutions) {
+        CoordinateBlockCube cbc_check;
+        m_table.apply(scramble, cbc_check);
+        m_table.apply(s, cbc_check);
+        assert(cbc_check.is_solved());
+    }
+}
+
 void test_object_sizes() {
     std::cout << "size of CoordinateBlockCube: " << sizeof(CoordinateBlockCube)
               << std::endl;
@@ -22,9 +33,9 @@ void test_object_sizes() {
                sizeof(CoordinateBlockCube));
 }
 
-void test_expand_cbc() {
+template <typename Block>
+void test_expand_cbc(const Block& b) {
     CoordinateBlockCube cbc;
-    Block<4, 2> b("FrontColumns", {ULF, DLF, URF, DRF}, {LF, RF});
     BlockMoveTable table(b);
 
     Node root(cbc, 0);
@@ -45,9 +56,9 @@ void test_expand_cbc() {
     assert(children[B3].state.is_solved());
 }
 
-void test_expand_cbc_with_heuristic() {
+template <typename Block>
+void test_expand_cbc_with_heuristic(const Block& b) {
     CoordinateBlockCube cbc;
-    Block<4, 2> b("FrontColumns", {ULF, DLF, URF, DRF}, {LF, RF});
     BlockMoveTable table(b);
     int k = 0;
 
@@ -83,13 +94,8 @@ void test_breadth_first_search() {
             m_table.apply(move, CBC);
         },
         4);
-    for (auto&& s : solutions) {
-        s.show();
-        CoordinateBlockCube cbc_check;
-        m_table.apply(scramble, cbc_check);
-        m_table.apply(s, cbc_check);
-        assert(cbc_check.is_solved());
-    }
+    show(solutions);
+    check_solutions(scramble, m_table, solutions);
 }
 
 void test_depth_first_search() {
@@ -101,13 +107,8 @@ void test_depth_first_search() {
 
     Node<CoordinateBlockCube> root(cbc, 0);
     auto solutions = depth_first_search(root, m_table, NullPruningTable(), 3);
-    for (auto&& s : solutions) {
-        s.show();
-        CoordinateBlockCube cbc_check;
-        m_table.apply(scramble, cbc_check);
-        m_table.apply(s, cbc_check);
-        assert(cbc_check.is_solved());
-    }
+    show(solutions);
+    check_solutions(scramble, m_table, solutions);
 }
 
 void test_depth_first_search_with_heuristic() {
@@ -120,13 +121,8 @@ void test_depth_first_search_with_heuristic() {
 
     Node<CoordinateBlockCube> root(cbc, 0);
     auto solutions = depth_first_search(root, m_table, p_table, 3);
-    for (auto&& s : solutions) {
-        s.show();
-        CoordinateBlockCube cbc_check;
-        m_table.apply(scramble, cbc_check);
-        m_table.apply(s, cbc_check);
-        assert(cbc_check.is_solved());
-    }
+    show(solutions);
+    check_solutions(scramble, m_table, solutions);
 }
 
 void test_solve_222_on_wr_scramble() {
@@ -142,13 +138,8 @@ void test_solve_222_on_wr_scramble() {
     Node<CoordinateBlockCube> root(cbc, 0);
     auto solutions = depth_first_search(root, m_table, p_table, 4);
     assert(solutions.size() == 1);
-    for (auto&& s : solutions) {
-        s.show();
-        CoordinateBlockCube cbc_check;
-        m_table.apply(scramble, cbc_check);
-        m_table.apply(s, cbc_check);
-        assert(cbc_check.is_solved());
-    }
+    show(solutions);
+    check_solutions(scramble, m_table, solutions);
 }
 
 void test_solve_with_split_heuristic() {
@@ -165,20 +156,19 @@ void test_solve_with_split_heuristic() {
     auto root = Node(cbc, 0);
     auto solutions = depth_first_search(root, m_table, p_table, 4);
     assert(solutions.size() == 1);
-    for (auto&& s : solutions) {
-        s.show();
-        CoordinateBlockCube cbc_check;
-        m_table.apply(scramble, cbc_check);
-        m_table.apply(s, cbc_check);
-        assert(cbc_check.is_solved());
-    }
+    show(solutions);
+    check_solutions(scramble, m_table, solutions);
 }
 
 int main() {
-    // std::cout << " --- Test expansion ---" << std::endl;
-    // test_expand_cbc();
-    // std::cout << " --- Test expansion with heuristic ---" << std::endl;
-    // test_expand_cbc_with_heuristic();
+    Block<2, 3> RouxFirstBlock("RouxFirstBlock", {DLF, DLB}, {LF, LB, DL});
+    Block<4, 2> FrontColumns("FrontColumns", {ULF, DLF, URF, DRF}, {LF, RF});
+
+    std::cout << " --- Test expansion ---" << std::endl;
+    test_expand_cbc(FrontColumns);
+    std::cout << " --- Test expansion with heuristic ---" << std::endl;
+    test_expand_cbc_with_heuristic(RouxFirstBlock);
+
     std::cout << " --- Test breadth first ---" << std::endl;
     test_breadth_first_search();
     std::cout << " --- Test depth first --- " << std::endl;

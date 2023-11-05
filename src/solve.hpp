@@ -43,10 +43,3 @@ auto solve(const Algorithm &scramble, const Strategy &strat,
     m_table.apply(scramble, cbc);
     return solve<verbose>(cbc, strat, max_depth);
 }
-
-template <typename SolutionContainer>
-void show(SolutionContainer solutions) {
-    for (auto &&s : solutions) {
-        s.show();
-    }
-}
