@@ -89,6 +89,14 @@ struct SplitPruningTable {
         assert(EdgeStrategy::n_corner_states == 1);
     }
 
+    template <typename Block>
+    SplitPruningTable(const Block& b) {
+        auto [c_sub_block, e_sub_block] = b.split_corners_and_edges();
+        CornerStrategy c_strat(c_sub_block);
+        EdgeStrategy e_strat(e_sub_block);
+        *this = SplitPruningTable(c_strat, e_strat);
+    }
+
     void write() const {
         c_table.write();
         e_table.write();

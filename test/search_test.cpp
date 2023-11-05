@@ -155,11 +155,8 @@ void test_solve_with_split_heuristic() {
     Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
     CoordinateBlockCube cbc;
     BlockMoveTable m_table(b);
-    auto [c_sub_block, e_sub_block] = b.split_corners_and_edges();
-
-    Strategy::Optimal c_strat(c_sub_block);
-    Strategy::Optimal e_strat(e_sub_block);
-    SplitPruningTable p_table(c_strat, e_strat);
+    SplitPruningTable<Strategy::Optimal<1, 0>, Strategy::Optimal<0, 3>> p_table(
+        b);
     p_table.load();
     Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
                         U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
