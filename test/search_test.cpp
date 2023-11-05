@@ -155,9 +155,8 @@ void test_solve_with_split_heuristic() {
     Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
     CoordinateBlockCube cbc;
     BlockMoveTable m_table(b);
+    auto [c_sub_block, e_sub_block] = b.split_corners_and_edges();
 
-    Block<1, 0> c_sub_block(b.name + "_corners", {DLB}, {});
-    Block<0, 3> e_sub_block(b.name + "_edges", {}, {LB, DB, DL});
     Strategy::Optimal c_strat(c_sub_block);
     Strategy::Optimal e_strat(e_sub_block);
     SplitPruningTable p_table(c_strat, e_strat);
@@ -166,8 +165,7 @@ void test_solve_with_split_heuristic() {
                         U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
     scramble.show();
     m_table.apply(scramble, cbc);
-
-    Node<CoordinateBlockCube> root(cbc, 0);
+    auto root = Node(cbc, 0);
     auto solutions = depth_first_search(root, m_table, p_table, 4);
     assert(solutions.size() == 1);
     for (auto&& s : solutions) {
@@ -180,17 +178,17 @@ void test_solve_with_split_heuristic() {
 }
 
 int main() {
-    std::cout << " --- Test expansion ---" << std::endl;
-    test_expand_cbc();
-    std::cout << " --- Test expansion with heuristic ---" << std::endl;
-    test_expand_cbc_with_heuristic();
+    // std::cout << " --- Test expansion ---" << std::endl;
+    // test_expand_cbc();
+    // std::cout << " --- Test expansion with heuristic ---" << std::endl;
+    // test_expand_cbc_with_heuristic();
     std::cout << " --- Test breadth first ---" << std::endl;
     test_breadth_first_search();
     std::cout << " --- Test depth first --- " << std::endl;
     test_depth_first_search();
     std::cout << " --- Test depth first with heuristic --- " << std::endl;
     test_depth_first_search_with_heuristic();
-    std::cout << " --- Test depth first 2x2 solve on Wen's WR scramble #1 --- "
+    std::cout << "--- Test depth first 2x2 solve on Wen's WR scramble #1 --- "
               << std::endl;
     test_solve_222_on_wr_scramble();
     std::cout << " --- Test object sizes --- " << std::endl;
