@@ -22,6 +22,7 @@ struct Block {
     std::string name;
     std::string id;
 
+    Block() {}
     Block(std::string bname, const std::array<Corner, nc> &bc,
           const std::array<Edge, ne> &be)
         : name{bname}, corners{bc}, edges{be} {

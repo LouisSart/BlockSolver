@@ -77,52 +77,44 @@ struct PruningTable {
     unsigned size() const { return Strategy::table_size; }
 };
 
-template <typename CornerStrategy, typename EdgeStrategy>
-struct SplitPruningTable {
-    PruningTable<CornerStrategy> c_table;
-    PruningTable<EdgeStrategy> e_table;
+template <typename FirstStrategy, typename SecondStrategy>
+struct MaxCombinePruningTable {
+    PruningTable<FirstStrategy> table_one;
+    PruningTable<SecondStrategy> table_two;
 
-    SplitPruningTable(const CornerStrategy& c_strat,
-                      const EdgeStrategy& e_strat)
-        : c_table{c_strat}, e_table{e_strat} {
-        assert(CornerStrategy::n_edge_states == 1);
-        assert(EdgeStrategy::n_corner_states == 1);
-    }
-
-    template <typename Block>
-    SplitPruningTable(const Block& b) {
-        auto [c_sub_block, e_sub_block] = b.split_corners_and_edges();
-        CornerStrategy c_strat(c_sub_block);
-        EdgeStrategy e_strat(e_sub_block);
-        *this = SplitPruningTable(c_strat, e_strat);
+    MaxCombinePruningTable(const FirstStrategy& strat_one,
+                           const SecondStrategy& strat_two)
+        : table_one{strat_one}, table_two{strat_two} {
+        assert(FirstStrategy::n_edge_states == 1);
+        assert(SecondStrategy::n_corner_states == 1);
     }
 
     void write() const {
-        c_table.write();
-        e_table.write();
+        table_one.write();
+        table_two.write();
     }
 
     void load() const {
-        c_table.load();
-        e_table.load();
+        table_one.load();
+        table_two.load();
     }
 
     void reset() const {
-        c_table.reset();
-        e_table.reset();
+        table_one.reset();
+        table_two.reset();
     }
 
     unsigned get_estimate(const CoordinateBlockCube& cbc) const {
         CoordinateBlockCube c_cbc(cbc.ccl, 0, cbc.ccp, 0, cbc.cco, 0);
         CoordinateBlockCube e_cbc(0, cbc.cel, 0, cbc.cep, 0, cbc.ceo);
-        auto corner_estimate = c_table.get_estimate(c_cbc);
-        auto edge_estimate = e_table.get_estimate(e_cbc);
+        auto corner_estimate = table_one.get_estimate(c_cbc);
+        auto edge_estimate = table_two.get_estimate(e_cbc);
         return (corner_estimate < edge_estimate) ? edge_estimate
                                                  : corner_estimate;
     }
 
     unsigned size() const {
-        return CornerStrategy::table_size + EdgeStrategy::table_size;
+        return FirstStrategy::table_size + SecondStrategy::table_size;
     }
 };
 
@@ -262,24 +254,32 @@ struct Permutation {
     }
 };
 
-template <typename CornerStrategy, typename EdgeStrategy>
+template <unsigned nc, unsigned ne>
 struct Split {
+    using CornerStrategy = Optimal<nc, 0>;
+    using EdgeStrategy = Optimal<0, ne>;
     CornerStrategy c_strat;
     EdgeStrategy e_strat;
+    Block<nc, ne> block;
 
-    Split(const CornerStrategy& cs, const EdgeStrategy& es)
-        : c_strat{cs}, e_strat{es} {}
+    Split(const Block<nc, ne>& b) : block{b} {
+        auto [c_sub_block, e_sub_block] = b.split_corners_and_edges();
+        c_strat = CornerStrategy(c_sub_block);
+        e_strat = EdgeStrategy(e_sub_block);
+    }
 
     template <bool verbose = false>
-    SplitPruningTable<CornerStrategy, EdgeStrategy> gen_table() const {
-        SplitPruningTable<CornerStrategy, EdgeStrategy> table(c_strat, e_strat);
-        table.c_table = c_strat.template gen_table<verbose>();
-        table.e_table = e_strat.template gen_table<verbose>();
+    MaxCombinePruningTable<CornerStrategy, EdgeStrategy> gen_table() const {
+        MaxCombinePruningTable<CornerStrategy, EdgeStrategy> table(c_strat,
+                                                                   e_strat);
+        table.table_one = c_strat.template gen_table<verbose>();
+        table.table_two = e_strat.template gen_table<verbose>();
         return table;
     }
 
-    SplitPruningTable<CornerStrategy, EdgeStrategy> load_table() const {
-        SplitPruningTable<CornerStrategy, EdgeStrategy> table(c_strat, e_strat);
+    MaxCombinePruningTable<CornerStrategy, EdgeStrategy> load_table() const {
+        MaxCombinePruningTable<CornerStrategy, EdgeStrategy> table(c_strat,
+                                                                   e_strat);
         table.load();
         return table;
     }

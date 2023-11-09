@@ -107,14 +107,14 @@ void test_split_api(const Block<nc, ne>& b) {
     Strategy::Optimal c_strat(c_sub_block);
     Strategy::Optimal e_strat(e_sub_block);
 
-    SplitPruningTable split_table(c_strat, e_strat);
+    MaxCombinePruningTable split_table(c_strat, e_strat);
     assert(split_table.size() > 0);
     split_table.reset();
 
     CoordinateBlockCube cbc{0, 0, 0, 0, 0, 0};
     assert(split_table.get_estimate(cbc) > 0);
 
-    auto strat = Strategy::Split(c_strat, e_strat);
+    auto strat = Strategy::Split(b);
     split_table = strat.gen_table();
     assert(split_table.get_estimate(cbc) == 0);
     split_table.write();
