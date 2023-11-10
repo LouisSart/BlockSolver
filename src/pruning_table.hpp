@@ -210,7 +210,7 @@ struct Permutation {
     Permutation(const Block<nc, ne>& b) : block{b} {}
 
     template <bool verbose = false>
-    PruningTable<Permutation<nc, ne>> gen_table() {
+    PruningTable<Permutation<nc, ne>> gen_table() const {
         PruningTable<Permutation<nc, ne>> table(block.id);
         generate<verbose>(table, *this);
         return table;

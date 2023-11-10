@@ -5,6 +5,8 @@
 #include "algorithm.hpp"
 #include "node.hpp"
 
+using Solutions = std::vector<Algorithm>;
+
 template <typename NodeType>
 auto standard_directions(const NodeType &node) {
     if (node.path.sequence.size() == 0) {
@@ -21,9 +23,9 @@ void show(SolutionContainer solutions) {
     }
 }
 template <typename Cube, typename F>
-std::vector<Algorithm> breadth_first_search(const Node<Cube> &root, F &&apply,
-                                            size_t max_depth = 4) {
-    std::vector<Algorithm> all_solutions;
+Solutions breadth_first_search(const Node<Cube> &root, F &&apply,
+                               size_t max_depth = 4) {
+    Solutions all_solutions;
     std::deque<Node<Cube>> queue = {root};
     auto node = queue.back();
 
@@ -48,17 +50,16 @@ std::vector<Algorithm> breadth_first_search(const Node<Cube> &root, F &&apply,
 }
 template <bool verbose = true, typename Cube, typename MoveTable,
           typename PruningTable>
-std::vector<Algorithm> depth_first_search(const Node<Cube> &root,
-                                          const MoveTable &m_table,
-                                          const PruningTable &p_table,
-                                          const uint max_depth = 4) {
+Solutions depth_first_search(const Node<Cube> &root, const MoveTable &m_table,
+                             const PruningTable &p_table,
+                             const uint max_depth = 4) {
     auto apply = [&m_table](const Move &move, Cube &cube) {
         m_table.apply(move, cube);
     };
     auto heuristic = [&p_table](const Cube &cube) {
         return p_table.get_estimate(cube);
     };
-    std::vector<Algorithm> all_solutions;
+    Solutions all_solutions;
     std::deque<Node<Cube>> queue = {root};
     auto node = queue.back();
     int node_counter = 0;
@@ -89,11 +90,10 @@ std::vector<Algorithm> depth_first_search(const Node<Cube> &root,
 
 template <bool verbose = true, typename Cube, typename MoveTable,
           typename PruningTable>
-std::vector<Algorithm> IDAstar(const Node<Cube> &root, const MoveTable &m_table,
-                               const PruningTable &p_table,
-                               const unsigned max_depth = 20) {
+Solutions IDAstar(const Node<Cube> &root, const MoveTable &m_table,
+                  const PruningTable &p_table, const unsigned max_depth = 20) {
     auto search_depth = p_table.get_estimate(root.state);
-    std::vector<Algorithm> solutions;
+    Solutions solutions;
 
     while (solutions.size() == 0 && search_depth <= max_depth) {
         if constexpr (verbose) {
