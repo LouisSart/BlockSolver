@@ -4,6 +4,7 @@
 #include "coordinate_block_cube.hpp"
 #include "move_table.hpp"
 #include "node.hpp"
+#include "pruning_table.hpp"
 #include "search.hpp"
 
 template <bool verbose = true, typename PTable, typename Strategy>
@@ -40,4 +41,24 @@ auto solve(const Algorithm &scramble, const Strategy &strat,
     CoordinateBlockCube cbc;
     m_table.apply(scramble, cbc);
     return solve<verbose>(cbc, strat, max_depth);
+}
+
+template <typename Strategy>
+Solutions ask_if_generate_and_solve(const Algorithm &scramble,
+                                    const Strategy &strat,
+                                    const unsigned &max_depth = 20) {
+    try {
+        auto solutions = solve(scramble, strat);
+        return solutions;
+    } catch (LoadError error) {
+        std::cout << "Do you want to generate pruning table ? (y/n) "
+                  << std::endl;
+        std::string answer;
+        std::cin >> answer;
+        if (answer == "y") {
+            strat.gen_table();
+            return solve(scramble, strat);
+        } else
+            return {};
+    }
 }

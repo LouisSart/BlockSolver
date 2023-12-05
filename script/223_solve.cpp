@@ -3,25 +3,6 @@
 
 using namespace Strategy;
 
-template <typename Strategy>
-Solutions ask_if_generate_and_solve(const Algorithm& scramble,
-                                    const Strategy& strat) {
-    try {
-        auto solutions = solve(scramble, strat);
-        return solutions;
-    } catch (LoadError error) {
-        std::cout << "Do you want to generate pruning table ? (y/n) "
-                  << std::endl;
-        std::string answer;
-        std::cin >> answer;
-        if (answer == "y") {
-            strat.gen_table();
-            return solve(scramble, strat);
-        } else
-            return {};
-    }
-}
-
 int main() {
     Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
                         U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});

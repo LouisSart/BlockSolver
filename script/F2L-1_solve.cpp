@@ -13,13 +13,10 @@ auto DLB_F2Lm1 =
 int main() {
     Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
                         U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
-    scramble.show();
+
     auto b = DLB_F2Lm1;
-    Strategy::Permutation(b).gen_table();
-    // Strategy::Permutation(b).load_table();
-    auto solutions = solve(scramble, Strategy::Permutation(b));
-    for (auto&& s : solutions) {
-        s.show();
-    }
+    auto strat = Strategy::Split(b);
+    auto solutions = ask_if_generate_and_solve(scramble, strat);
+    show(solutions);
     assert(solutions.size() == 1);
 }
