@@ -10,8 +10,8 @@ void symmetries_2x2x3() {
     Block<2, 5> b("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL});
     BlockCube bc(b);
     BlockMoveTable m_table(b);
-    Strategy::Optimal strat(b);
-    PruningTable p_table(strat);
+    Strategy::Split strat(b);
+    auto p_table = strat.load_table();
     CoordinateBlockCube cbc;
     std::cout << "Solving the DL 2x2x3 on Wen's WR scramble: " << std::endl;
     Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
@@ -33,7 +33,7 @@ void symmetries_2x2x3() {
                 scrambled_state.apply(scramble);
                 scrambled_state.apply(symmetry);
                 cbc = bc.to_coordinate_block_cube(scrambled_state);
-                auto solutions = solve(cbc, p_table, strat);
+                auto solutions = solve(cbc, m_table, p_table);
                 show(solutions);
             }
         }
