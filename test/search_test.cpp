@@ -93,7 +93,7 @@ void test_breadth_first_search() {
         [&m_table](const Move& move, CoordinateBlockCube& CBC) {
             m_table.apply(move, CBC);
         },
-        4);
+        [](const CoordinateBlockCube& cube) { return cube.is_solved(); }, 4);
     show(solutions);
     check_solutions(scramble, m_table, solutions);
 }
@@ -106,7 +106,13 @@ void test_depth_first_search() {
     m_table.apply(scramble, cbc);
 
     Node<CoordinateBlockCube> root(cbc, 0);
-    auto solutions = depth_first_search(root, m_table, NullPruningTable(), 3);
+    auto solutions = depth_first_search(
+        root,
+        [&m_table](const Move& move, CoordinateBlockCube& cube) {
+            m_table.apply(move, cube);
+        },
+        [](const CoordinateBlockCube& cube) { return (unsigned)1; },
+        [](const CoordinateBlockCube& cube) { return cube.is_solved(); }, 3);
     show(solutions);
     check_solutions(scramble, m_table, solutions);
 }
@@ -120,7 +126,15 @@ void test_depth_first_search_with_heuristic() {
     m_table.apply(scramble, cbc);
 
     Node<CoordinateBlockCube> root(cbc, 0);
-    auto solutions = depth_first_search(root, m_table, p_table, 3);
+    auto solutions = depth_first_search(
+        root,
+        [&m_table](const Move& move, CoordinateBlockCube& cube) {
+            m_table.apply(move, cube);
+        },
+        [&p_table](const CoordinateBlockCube& cube) {
+            return p_table.get_estimate(cube);
+        },
+        [](const CoordinateBlockCube& cube) { return cube.is_solved(); }, 3);
     show(solutions);
     check_solutions(scramble, m_table, solutions);
 }
@@ -136,7 +150,15 @@ void test_solve_222_on_wr_scramble() {
     m_table.apply(scramble, cbc);
 
     Node<CoordinateBlockCube> root(cbc, 0);
-    auto solutions = depth_first_search(root, m_table, p_table, 4);
+    auto solutions = depth_first_search(
+        root,
+        [&m_table](const Move& move, CoordinateBlockCube& cube) {
+            m_table.apply(move, cube);
+        },
+        [&p_table](const CoordinateBlockCube& cube) {
+            return p_table.get_estimate(cube);
+        },
+        [](const CoordinateBlockCube& cube) { return cube.is_solved(); }, 4);
     assert(solutions.size() == 1);
     show(solutions);
     check_solutions(scramble, m_table, solutions);
@@ -153,7 +175,15 @@ void test_solve_with_split_heuristic() {
     scramble.show();
     m_table.apply(scramble, cbc);
     auto root = Node(cbc, 0);
-    auto solutions = depth_first_search(root, m_table, p_table, 4);
+    auto solutions = IDAstar(
+        root,
+        [&m_table](const Move& move, CoordinateBlockCube& cube) {
+            m_table.apply(move, cube);
+        },
+        [&p_table](const CoordinateBlockCube& cube) {
+            return p_table.get_estimate(cube);
+        },
+        [](const CoordinateBlockCube& cube) { return cube.is_solved(); }, 4);
     assert(solutions.size() == 1);
     show(solutions);
     check_solutions(scramble, m_table, solutions);
