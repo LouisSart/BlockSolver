@@ -1,5 +1,6 @@
 #include "move_table.hpp"
 #include "pruning_table.hpp"
+#include "search.hpp"
 
 template <unsigned nb>
 struct MultiBlockCube : std::array<CoordinateBlockCube, nb> {
@@ -24,12 +25,12 @@ BlockMoveTable mt1(block_1);
 BlockMoveTable mt2(block_2);
 
 namespace Mover {
-void apply(const Move& move, MultiBlockCube<2>& cube) {
+auto apply = [](const Move& move, MultiBlockCube<2>& cube) {
     mt1.apply(move, cube[0]);
     mt2.apply(move, cube[1]);
 };
 
-void apply(const Algorithm& seq, MultiBlockCube<2>& cube) {
+auto apply_seq = [](const Algorithm& seq, MultiBlockCube<2>& cube) {
     mt1.apply(seq, cube[0]);
     mt2.apply(seq, cube[1]);
 };
@@ -49,22 +50,32 @@ auto h2 = [](const MultiBlockCube<2>& state) {
 };
 
 template <unsigned step, unsigned nsteps>
-bool is_solved(const MultiBlockCube<nsteps>& cube) {
+auto is_solved = [](const MultiBlockCube<nsteps>& cube) {
     static_assert(step < nsteps);
     if constexpr (step == 0) {
         return cube[0].is_solved();
     } else {
-        return (cube[step].is_solved() && is_solved<step - 1>(cube));
+        return (cube[step].is_solved() && is_solved<step - 1, nsteps>(cube));
     }
-}
+};
 
 int main() {
+    scramble.show();
     MultiBlockCube<2> cube;
     cube.show();
-    Mover::apply(scramble, cube);
+    Mover::apply_seq(scramble, cube);
     cube.show();
-    Algorithm step1_sol({D3, L2, B, L3});
-    Mover::apply(step1_sol, cube);
-    std::cout << is_solved<0>(cube) << " " << is_solved<1>(cube) << std::endl;
+
+    // Step 1
+    auto root = Node(cube, 0);
+    auto solutions =
+        depth_first_search(root, Mover::apply, h1, is_solved<0, 2>);
+    show(solutions);
+
+    // Step 2
+    Mover::apply_seq(solutions[0], cube);  // take first solution found
+    root = Node(cube, 0);
+    solutions = depth_first_search(root, Mover::apply, h2, is_solved<1, 2>, 7);
+    show(solutions);
     return 0;
 }

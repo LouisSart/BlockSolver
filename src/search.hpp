@@ -48,17 +48,12 @@ Solutions breadth_first_search(const Node<Cube> &root, F &&apply,
     }
     return all_solutions;
 }
-template <bool verbose = true, typename Cube, typename MoveTable,
-          typename PruningTable>
-Solutions depth_first_search(const Node<Cube> &root, const MoveTable &m_table,
-                             const PruningTable &p_table,
+template <bool verbose = true, typename Cube, typename Mover, typename Pruner,
+          typename SolveCheck>
+Solutions depth_first_search(const Node<Cube> &root, const Mover &apply,
+                             const Pruner &estimate,
+                             const SolveCheck &is_solved,
                              const uint max_depth = 4) {
-    auto apply = [&m_table](const Move &move, Cube &cube) {
-        m_table.apply(move, cube);
-    };
-    auto heuristic = [&p_table](const Cube &cube) {
-        return p_table.get_estimate(cube);
-    };
     Solutions all_solutions;
     std::deque<Node<Cube>> queue = {root};
     auto node = queue.back();
@@ -67,14 +62,14 @@ Solutions depth_first_search(const Node<Cube> &root, const MoveTable &m_table,
     while (queue.size() > 0) {
         auto node = queue.back();
         ++node_counter;
-        if (node.state.is_solved()) {
+        if (is_solved(node.state)) {
             all_solutions.push_back(node.path);
             queue.pop_back();
         } else {
             queue.pop_back();
             if (node.depth + node.estimate <= max_depth) {
                 auto children =
-                    node.expand(apply, heuristic, standard_directions(node));
+                    node.expand(apply, estimate, standard_directions(node));
                 for (auto &&child : children) {
                     queue.push_back(child);
                 }
