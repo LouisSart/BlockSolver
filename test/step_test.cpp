@@ -21,32 +21,41 @@ Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
                     U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
 Block<1, 3> block_1("DLB_222", {DLB}, {DL, LB, DB});
 Block<1, 2> block_2("DL_F_sq", {DLF}, {DF, LF});
+Block<1, 2> block_3("DB_R_sq", {DRB}, {RB, DR});
 BlockMoveTable mt1(block_1);
 BlockMoveTable mt2(block_2);
+BlockMoveTable mt3(block_3);
 
 namespace Mover {
-auto apply = [](const Move& move, MultiBlockCube<2>& cube) {
+auto apply = [](const Move& move, MultiBlockCube<3>& cube) {
     mt1.apply(move, cube[0]);
     mt2.apply(move, cube[1]);
+    mt3.apply(move, cube[2]);
 };
 
-auto apply_seq = [](const Algorithm& seq, MultiBlockCube<2>& cube) {
+auto apply_seq = [](const Algorithm& seq, MultiBlockCube<3>& cube) {
     mt1.apply(seq, cube[0]);
     mt2.apply(seq, cube[1]);
+    mt3.apply(seq, cube[2]);
 };
 }  // namespace Mover
 
 auto pt1 = Strategy::Optimal(block_1).load_table();
 auto pt2 = Strategy::Optimal(block_2).load_table();
+auto pt3 = Strategy::Optimal(block_3).load_table();
 
-auto h1 = [](const MultiBlockCube<2>& state) {
+auto h1 = [](const MultiBlockCube<3>& state) {
     return pt1.get_estimate(state[0]);
 };
 
-auto h2 = [](const MultiBlockCube<2>& state) {
-    return (pt1.get_estimate(state[0]) < pt2.get_estimate(state[1]))
-               ? pt2.get_estimate(state[1])
-               : pt1.get_estimate(state[0]);
+auto h2 = [](const MultiBlockCube<3>& state) {
+    return (pt2.get_estimate(state[1]) > h1(state)) ? pt2.get_estimate(state[1])
+                                                    : h1(state);
+};
+
+auto h3 = [](const MultiBlockCube<3>& state) {
+    return (pt3.get_estimate(state[2]) > h2(state)) ? pt3.get_estimate(state[2])
+                                                    : h2(state);
 };
 
 template <unsigned step, unsigned nsteps>
@@ -61,21 +70,28 @@ auto is_solved = [](const MultiBlockCube<nsteps>& cube) {
 
 int main() {
     scramble.show();
-    MultiBlockCube<2> cube;
-    cube.show();
+    MultiBlockCube<3> cube;
     Mover::apply_seq(scramble, cube);
     cube.show();
 
     // Step 1
     auto root = Node(cube, 0);
     auto solutions =
-        depth_first_search(root, Mover::apply, h1, is_solved<0, 2>);
+        depth_first_search(root, Mover::apply, h1, is_solved<0, 3>);
     show(solutions);
 
     // Step 2
     Mover::apply_seq(solutions[0], cube);  // take first solution found
+    cube.show();
     root = Node(cube, 0);
-    solutions = depth_first_search(root, Mover::apply, h2, is_solved<1, 2>, 7);
+    solutions = depth_first_search(root, Mover::apply, h2, is_solved<1, 3>, 6);
+    show(solutions);
+
+    // Step 3
+    Mover::apply_seq(solutions[0], cube);  // take first solution found
+    cube.show();
+    root = Node(cube, 0);
+    solutions = depth_first_search(root, Mover::apply, h3, is_solved<2, 3>, 7);
     show(solutions);
     return 0;
 }
