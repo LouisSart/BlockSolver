@@ -44,3 +44,18 @@ struct CoordinateBlockCube {
         std::cout << " EO coordinate: " << ceo << '\n';
     };
 };
+
+template <unsigned nb>
+struct MultiBlockCube : std::array<CoordinateBlockCube, nb> {
+    void show() const {
+        std::cout << "MultiBlockCube<" << nb << ">" << std::endl;
+        for (unsigned k = 0; k < nb; ++k) {
+            std::cout << "   Block " << k << ": ";
+            if ((*this)[k].is_solved()) {
+                std ::cout << "solved" << std::endl;
+            } else {
+                std ::cout << "not solved" << std::endl;
+            }
+        }
+    }
+};
