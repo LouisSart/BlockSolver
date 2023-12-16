@@ -1,8 +1,8 @@
 #include <tuple>
 
-#include "move_table.hpp"
 #include "pruning_table.hpp"
 #include "search.hpp"
+#include "step.hpp"
 
 Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B, U3,
                     D3, F2, B2, U,  L2, D,  F2, U2, D,  R3, U3, F});
@@ -11,24 +11,6 @@ Block<1, 2> block_2("DL_F_sq", {DLF}, {DF, LF});
 Block<1, 2> block_3("DB_R_sq", {DRB}, {RB, DR});
 auto m_tables = std::make_tuple(
     BlockMoveTable(block_1), BlockMoveTable(block_2), BlockMoveTable(block_3));
-
-namespace Mover {
-template <unsigned step, unsigned n_steps>
-auto apply = [](const Move& move, MultiBlockCube<n_steps>& cube) {
-    std::get<step>(m_tables).apply(move, cube[step]);
-    if constexpr (step > 0) {
-        apply<step - 1, n_steps>(move, cube);
-    }
-};
-
-template <unsigned step, unsigned n_steps>
-auto apply_seq = [](const Algorithm& seq, MultiBlockCube<n_steps>& cube) {
-    std::get<step>(m_tables).apply(seq, cube[step]);
-    if constexpr (step > 0) {
-        apply_seq<step - 1, n_steps>(seq, cube);
-    }
-};
-}  // namespace Mover
 
 auto p_tables = std::tuple(Strategy::Optimal(block_1).load_table(),
                            Strategy::Optimal(block_2).load_table(),

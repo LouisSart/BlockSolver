@@ -58,4 +58,13 @@ struct MultiBlockCube : std::array<CoordinateBlockCube, nb> {
             }
         }
     }
+
+    bool is_solved() const {
+        for (auto cbc : *this) {
+            if (!cbc.is_solved()) {
+                return false;
+            }
+        }
+        return true;
+    }
 };
