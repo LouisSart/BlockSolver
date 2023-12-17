@@ -74,6 +74,8 @@ struct PruningTable {
         return table[Strategy::index(cbc)];
     }
 
+    PruningTable<Strategy>* get_ptr() { return this; }
+
     unsigned size() const { return Strategy::table_size; }
 };
 
@@ -113,6 +115,10 @@ struct MaxCombinePruningTable {
                                                  : corner_estimate;
     }
 
+    MaxCombinePruningTable<FirstStrategy, SecondStrategy>* get_ptr() {
+        return this;
+    }
+
     unsigned size() const {
         return FirstStrategy::table_size + SecondStrategy::table_size;
     }
@@ -127,6 +133,8 @@ struct NullPruningTable {
             return 1;
         }
     }
+
+    NullPruningTable* get_ptr() { return this; }
 };
 
 namespace Strategy {
