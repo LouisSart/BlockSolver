@@ -74,3 +74,8 @@ struct Pruner {
         };
     }
 };
+
+template <typename Cube>
+auto get_is_solved(const Cube& cube) {
+    return [](const Cube& cube) -> bool { return cube.is_solved(); };
+}

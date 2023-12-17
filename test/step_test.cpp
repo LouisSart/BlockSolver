@@ -23,6 +23,9 @@ void step_first_test() {
     auto estimator = pruner.get_estimator();
     assert(0 < pruner.get_estimate(cube));
     assert(0 < estimator(cube));
+
+    auto is_solved = get_is_solved(cube);
+    assert(!is_solved(cube));
 }
 
 int main() {
