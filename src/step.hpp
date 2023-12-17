@@ -42,3 +42,35 @@ struct Mover {
         };
     }
 };
+
+template <typename... PTs>
+struct Pruner {
+    static constexpr unsigned _NTABLES = sizeof...(PTs);
+    std::tuple<PTs*...> _pts;
+
+    Pruner(PTs*... pts) { _pts = std::tuple(pts...); }
+
+    template <unsigned step>
+    unsigned h(const MultiBlockCube<_NTABLES>& state) const {
+        static_assert(step < _NTABLES);
+        if constexpr (step == 0) {
+            return std::get<0>(_pts)->get_estimate(state[0]);
+        } else {
+            auto this_step_estimate =
+                std::get<step>(_pts)->get_estimate(state[step]);
+            return (this_step_estimate > h<step - 1>(state))
+                       ? this_step_estimate
+                       : h<step - 1>(state);
+        }
+    };
+
+    unsigned get_estimate(const MultiBlockCube<_NTABLES>& state) const {
+        return h<_NTABLES - 1>(state);
+    }
+
+    auto get_estimator() const {
+        return [this](const MultiBlockCube<_NTABLES>& state) -> unsigned {
+            return this->h<_NTABLES - 1>(state);
+        };
+    }
+};
