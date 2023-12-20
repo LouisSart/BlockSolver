@@ -51,31 +51,36 @@ struct Pruner {
     Pruner(PTs*... pts) { _pts = std::tuple(pts...); }
 
     template <unsigned step>
-    unsigned h(const MultiBlockCube<_NTABLES>& state) const {
+    unsigned get_estimate(const MultiBlockCube<_NTABLES>& state) const {
         static_assert(step < _NTABLES);
+        auto this_step_estimate =
+            std::get<step>(_pts)->get_estimate(state[step]);
         if constexpr (step == 0) {
-            return std::get<0>(_pts)->get_estimate(state[0]);
+            return this_step_estimate;
         } else {
-            auto this_step_estimate =
-                std::get<step>(_pts)->get_estimate(state[step]);
-            return (this_step_estimate > h<step - 1>(state))
+            return (this_step_estimate > get_estimate<step - 1>(state))
                        ? this_step_estimate
-                       : h<step - 1>(state);
+                       : get_estimate<step - 1>(state);
         }
     };
 
-    unsigned get_estimate(const MultiBlockCube<_NTABLES>& state) const {
-        return h<_NTABLES - 1>(state);
-    }
-
+    template <unsigned steps>
     auto get_estimator() const {
         return [this](const MultiBlockCube<_NTABLES>& state) -> unsigned {
-            return this->h<_NTABLES - 1>(state);
+            return this->get_estimate<steps>(state);
         };
     }
 };
 
 template <typename Cube>
-auto get_is_solved(const Cube& cube) {
-    return [](const Cube& cube) -> bool { return cube.is_solved(); };
+auto get_is_solved(const Cube& cube, const unsigned steps) {
+    assert(steps < cube.size());
+    return [steps](const Cube& cube) -> bool {
+        for (unsigned k = 0; k <= steps; ++k) {
+            if (!cube[k].is_solved()) {
+                return false;
+            }
+        }
+        return true;
+    };
 }
