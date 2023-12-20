@@ -14,10 +14,9 @@ Block<1, 2> block_3("DB_R_sq", {DRB}, {RB, DR});
 auto mover = Mover(new BlockMoveTable(block_1), new BlockMoveTable(block_2),
                    new BlockMoveTable(block_3));
 
-auto pt1 = Strategy::Optimal(block_1).load_table();
-auto pt2 = Strategy::Optimal(block_2).load_table();
-auto pt3 = Strategy::Optimal(block_3).load_table();
-auto pruner = Pruner(pt1.get_ptr(), pt2.get_ptr(), pt3.get_ptr());
+auto pruner = Pruner(load_table_ptr(Strategy::Optimal(block_1)),
+                     load_table_ptr(Strategy::Optimal(block_2)),
+                     load_table_ptr(Strategy::Optimal(block_3)));
 
 int main() {
     scramble.show();

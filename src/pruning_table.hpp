@@ -141,6 +141,7 @@ namespace Strategy {
 template <unsigned nc, unsigned ne>
 struct Optimal {
     static constexpr unsigned n_cp = factorial(nc);
+    using table_t = PruningTable<Optimal<nc, ne>>;
     static constexpr unsigned n_co = ipow(3, nc);
     static constexpr unsigned n_ep = factorial(ne);
     static constexpr unsigned n_eo = ipow(2, ne);
@@ -204,6 +205,7 @@ struct Optimal {
 
 template <unsigned nc, unsigned ne>
 struct Permutation {
+    using table_t = PruningTable<Permutation<nc, ne>>;
     static constexpr unsigned n_cp = factorial(nc);
     static constexpr unsigned n_ep = factorial(ne);
     static constexpr unsigned n_corner_states =
@@ -266,6 +268,7 @@ template <unsigned nc, unsigned ne>
 struct Split {
     using CornerStrategy = Optimal<nc, 0>;
     using EdgeStrategy = Optimal<0, ne>;
+    using table_t = MaxCombinePruningTable<CornerStrategy, EdgeStrategy>;
     CornerStrategy c_strat;
     EdgeStrategy e_strat;
     Block<nc, ne> block;
@@ -293,3 +296,17 @@ struct Split {
     }
 };
 }  // namespace Strategy
+
+template <bool verbose = false, typename Strategy>
+Strategy::table_t* gen_table_ptr(const Strategy& strat) {
+    auto table = new Strategy::table_t(strat.block.id);
+    *table = strat.template gen_table<verbose>();
+    return table;
+}
+
+template <typename Strategy>
+Strategy::table_t* load_table_ptr(const Strategy& strat) {
+    auto table = new Strategy::table_t(strat.block.id);
+    *table = strat.template load_table();
+    return table;
+}
