@@ -1,58 +1,59 @@
 #pragma once
 #include <algorithm>
 #include <iostream>
+#include <memory>
 #include <vector>
 
 #include "algorithm.hpp"
 
 template <typename Cube>
-struct Node {
+struct Node : public std::enable_shared_from_this<Node<Cube>> {
+    using sptr = std::shared_ptr<Node<Cube>>;
     Cube state;
-    Algorithm path;  // The moves that were made to get there
-    unsigned depth;
-    unsigned estimate;  // The estimate on the number of moves needed to solve
-                        // the state
+    Move last_move;     // The move which yielded this state
+    sptr parent;        // shared_ptr to the parent
+    unsigned depth;     // The number of moves made to get this state
+    unsigned estimate;  // The lower-bound estimate on the number of moves
+                        // needed to solve the state
 
-    Node() : state{Cube()}, depth{0}, path{}, estimate{0} {}
-    Node(const Cube &c, const unsigned &d)
-        : state{c}, depth{d}, path{}, estimate{0} {}
-    Node(const Cube &c, const unsigned &d, const std::vector<Move> &seq)
-        : state{c}, depth{d}, path{seq}, estimate{0} {}
+    static sptr make_root(const Cube &cube) { return sptr(new Node(cube, 0)); }
 
+   private:
+    Node() : state{Cube()}, depth{0}, parent{nullptr}, estimate{0} {}
+    Node(const Cube &c, const unsigned &d = 0, sptr p = nullptr,
+         const unsigned &e = 1)
+        : state{c}, depth{d}, parent{p}, estimate{e} {}
+
+   public:
     template <int sequence_generation = 1, typename F, typename MoveContainer>
-    std::vector<Node<Cube>> expand(const F &apply,
-                                   const MoveContainer &directions) const {
+    std::vector<sptr> expand(const F &apply, const MoveContainer &directions) {
         // Generates the children nodes by using the apply function on all moves
         // in the directions container
-        std::vector<Node<Cube>> children;
+        std::vector<sptr> children;
         Cube next;
 
         for (auto &&move : directions) {
             next = state;
             apply(move, next);
-            children.push_back(Node(next, depth + 1));
-            if constexpr (sequence_generation > 0) {
-                children.back().path = path;
-                children.back().path.append(move);
-            }
+            children.emplace_back(
+                new Node(next, depth + 1, this->shared_from_this()));
         }
         return children;
     }
 
     template <typename F, typename H, typename MoveContainer>
-    std::vector<Node<Cube>> expand(const F &apply, const H &heuristic,
-                                   const MoveContainer &directions) const {
+    std::vector<sptr> expand(const F &apply, const H &heuristic,
+                             const MoveContainer &directions) {
         // Generates the children nodes, computes their estimate using the
         // heuristic function and then sorts them by decreasing pruning values
         // (so that children.back() is the child with the lowest estimate.)
         auto children = expand(apply, directions);
         for (auto &child : children) {
-            child.estimate = heuristic(child.state);
+            child->estimate = heuristic(child->state);
         }
-        std::sort(children.begin(), children.end(),
-                  [](Node<Cube> node1, Node<Cube> node2) {
-                      return node1.estimate > node2.estimate;
-                  });
+        std::sort(children.begin(), children.end(), [](sptr node1, sptr node2) {
+            return node1->estimate > node2->estimate;
+        });
         return children;
     };
 
