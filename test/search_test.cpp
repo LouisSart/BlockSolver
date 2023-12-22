@@ -80,23 +80,23 @@ void test_expand_cbc_with_heuristic(const Block& b) {
                           }));
 }
 
-// void test_breadth_first_search() {
-//     Algorithm scramble({F2, D, R, U});
-//     Block<2, 3> b("RouxFirstBlock", {DLF, DLB}, {LF, LB, DL});
-//     CoordinateBlockCube cbc;
-//     BlockMoveTable m_table(b);
-//     m_table.apply(scramble, cbc);
+void test_breadth_first_search() {
+    Algorithm scramble({F2, D, R, U});
+    Block<2, 3> b("RouxFirstBlock", {DLF, DLB}, {LF, LB, DL});
+    CoordinateBlockCube cbc;
+    BlockMoveTable m_table(b);
+    m_table.apply(scramble, cbc);
 
-//     Node<CoordinateBlockCube> root(cbc, 0);
-//     auto solutions = breadth_first_search(
-//         root,
-//         [&m_table](const Move& move, CoordinateBlockCube& CBC) {
-//             m_table.apply(move, CBC);
-//         },
-//         [](const CoordinateBlockCube& cube) { return cube.is_solved(); }, 4);
-//     show(solutions);
-//     check_solutions(scramble, m_table, solutions);
-// }
+    auto root = Node<CoordinateBlockCube>::make_root(cbc);
+    auto solutions = breadth_first_search(
+        root,
+        [&m_table](const Move& move, CoordinateBlockCube& CBC) {
+            m_table.apply(move, CBC);
+        },
+        [](const CoordinateBlockCube& cube) { return cube.is_solved(); }, 4);
+    show(solutions);
+    check_solutions(scramble, m_table, solutions);
+}
 
 // void test_depth_first_search() {
 //     Algorithm scramble({R, L2, D, F});
@@ -225,8 +225,8 @@ int main() {
     std::cout << " --- Test expansion with heuristic ---" << std::endl;
     test_expand_cbc_with_heuristic(RouxFirstBlock);
 
-    // std::cout << " --- Test breadth first ---" << std::endl;
-    // test_breadth_first_search();
+    std::cout << " --- Test breadth first ---" << std::endl;
+    test_breadth_first_search();
     // std::cout << " --- Test depth first --- " << std::endl;
     // test_depth_first_search();
     // std::cout << " --- Test depth first with heuristic --- " << std::endl;

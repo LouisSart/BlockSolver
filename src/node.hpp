@@ -21,8 +21,12 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
    private:
     Node() : state{Cube()}, depth{0}, parent{nullptr}, estimate{0} {}
     Node(const Cube &c, const unsigned &d = 0, sptr p = nullptr,
-         const unsigned &e = 1)
-        : state{c}, depth{d}, parent{p}, estimate{e} {}
+         const Move m = U, const unsigned &e = 1)
+        : state{c}, depth{d}, parent{p}, estimate{e} {
+        if (p != nullptr) {
+            last_move = m;
+        }
+    }
 
    public:
     template <int sequence_generation = 1, typename F, typename MoveContainer>
@@ -36,7 +40,7 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
             next = state;
             apply(move, next);
             children.emplace_back(
-                new Node(next, depth + 1, this->shared_from_this()));
+                new Node(next, depth + 1, this->shared_from_this(), move));
         }
         return children;
     }
@@ -56,6 +60,19 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
         });
         return children;
     };
+
+    Algorithm get_path() const {
+        Algorithm path;
+        Move move = last_move;
+        sptr p = parent;
+        while (p != nullptr) {
+            path.append(move);
+            move = p->last_move;
+            p = p->parent;
+        }
+        std::reverse(path.sequence.begin(), path.sequence.end());
+        return path;
+    }
 
     void show() const {
         std::cout << "Node object: " << std::endl;

@@ -7,12 +7,12 @@
 
 using Solutions = std::vector<Algorithm>;
 
-template <typename NodeType>
-auto standard_directions(const NodeType &node) {
-    if (node.path.sequence.size() == 0) {
+template <typename NodePtr>
+auto standard_directions(const NodePtr node) {
+    if (node->parent == nullptr) {
         return default_directions;
     } else {
-        return allowed_next(node.path.sequence.back());
+        return allowed_next(node->last_move);
     }
 }
 
@@ -22,24 +22,23 @@ void show(SolutionContainer solutions) {
         s.show();
     }
 }
-template <typename Cube, typename F, typename SolveCheck>
-Solutions breadth_first_search(const Node<Cube> &root, F &&apply,
+template <typename NodePtr, typename F, typename SolveCheck>
+Solutions breadth_first_search(const NodePtr root, F &&apply,
                                SolveCheck &&is_solved,
                                const unsigned max_depth = 4) {
     Solutions all_solutions;
-    std::deque<Node<Cube>> queue = {root};
+    std::deque<NodePtr> queue = {root};
     auto node = queue.back();
 
     while (queue.size() != 0) {
         auto node = queue.back();
-        if (is_solved(node.state)) {
-            Algorithm solution(node.path);
-            all_solutions.push_back(solution);
+        if (is_solved(node->state)) {
+            all_solutions.push_back(node->get_path());
             queue.pop_back();
         } else {
             queue.pop_back();
-            if (node.depth < max_depth) {
-                auto children = node.expand(apply, standard_directions(node));
+            if (node->depth < max_depth) {
+                auto children = node->expand(apply, standard_directions(node));
                 for (auto &&child : children) {
                     queue.push_front(child);
                 }
