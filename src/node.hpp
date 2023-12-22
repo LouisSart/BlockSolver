@@ -9,12 +9,12 @@
 template <typename Cube>
 struct Node : public std::enable_shared_from_this<Node<Cube>> {
     using sptr = std::shared_ptr<Node<Cube>>;
-    Cube state;
-    Move last_move;     // The move which yielded this state
-    sptr parent;        // shared_ptr to the parent
+    Cube state;         // The cube state this node corresponds to
+    sptr parent;        // The shared_ptr to the parent
     unsigned depth;     // The number of moves made to get this state
     unsigned estimate;  // The lower-bound estimate on the number of moves
                         // needed to solve the state
+    Move last_move;     // The move which yielded this state
 
     static sptr make_root(const Cube &cube) { return sptr(new Node(cube, 0)); }
 

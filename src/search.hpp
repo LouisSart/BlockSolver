@@ -48,28 +48,28 @@ Solutions breadth_first_search(const NodePtr root, F &&apply,
     }
     return all_solutions;
 }
-template <bool verbose = true, typename Cube, typename Mover, typename Pruner,
-          typename SolveCheck>
-Solutions depth_first_search(const Node<Cube> &root, const Mover &apply,
+template <bool verbose = true, typename NodePtr, typename Mover,
+          typename Pruner, typename SolveCheck>
+Solutions depth_first_search(const NodePtr root, const Mover &apply,
                              const Pruner &estimate,
                              const SolveCheck &is_solved,
                              const unsigned max_depth = 4) {
     Solutions all_solutions;
-    std::deque<Node<Cube>> queue = {root};
+    std::deque<NodePtr> queue = {root};
     auto node = queue.back();
     int node_counter = 0;
 
     while (queue.size() > 0) {
         auto node = queue.back();
         ++node_counter;
-        if (is_solved(node.state)) {
-            all_solutions.push_back(node.path);
+        if (is_solved(node->state)) {
+            all_solutions.push_back(node->get_path());
             queue.pop_back();
         } else {
             queue.pop_back();
-            if (node.depth + node.estimate <= max_depth) {
+            if (node->depth + node->estimate <= max_depth) {
                 auto children =
-                    node.expand(apply, estimate, standard_directions(node));
+                    node->expand(apply, estimate, standard_directions(node));
                 for (auto &&child : children) {
                     queue.push_back(child);
                 }
@@ -83,12 +83,12 @@ Solutions depth_first_search(const Node<Cube> &root, const Mover &apply,
     return all_solutions;
 }
 
-template <bool verbose = true, typename Cube, typename Mover, typename Pruner,
-          typename SolveCheck>
-Solutions IDAstar(const Node<Cube> &root, const Mover &apply,
+template <bool verbose = true, typename NodePtr, typename Mover,
+          typename Pruner, typename SolveCheck>
+Solutions IDAstar(const NodePtr root, const Mover &apply,
                   const Pruner &estimate, const SolveCheck &is_solved,
                   const unsigned max_depth = 20) {
-    auto search_depth = estimate(root.state);
+    auto search_depth = estimate(root->state);
     Solutions solutions;
 
     while (solutions.size() == 0 && search_depth <= max_depth) {
