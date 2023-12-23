@@ -20,11 +20,11 @@ void step_first_test() {
     auto pt1 = Strategy::Optimal(block_1).gen_table();
     auto pt2 = Strategy::Optimal(block_2).gen_table();
     auto pruner = Pruner(pt1.get_ptr(), pt2.get_ptr());
-    auto estimator = pruner.get_estimator();
-    assert(0 < pruner.get_estimate(cube));
+    auto estimator = pruner.get_estimator<1>();
+    assert(0 < pruner.get_estimate<0>(cube));
     assert(0 < estimator(cube));
 
-    auto is_solved = get_is_solved(cube);
+    auto is_solved = get_is_solved(cube, 0);
     assert(!is_solved(cube));
 }
 

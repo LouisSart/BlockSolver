@@ -8,7 +8,7 @@ template <bool verbose = true, typename MTable, typename PTable>
 auto solve(const CoordinateBlockCube &cbc, const MTable &m_table,
            const PTable &p_table, const unsigned &max_depth = 20) {
     auto solutions = IDAstar(
-        Node(cbc, 0),
+        Node<CoordinateBlockCube>::make_root(cbc),
         [&m_table](const Move &move, CoordinateBlockCube &cube) {
             m_table.apply(move, cube);
         },

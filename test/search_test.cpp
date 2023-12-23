@@ -43,7 +43,7 @@ void test_expand_cbc(const Block& b) {
         [&table](const Move& move, CoordinateBlockCube& CBC) {
             table.apply(move, CBC);
         },
-        HTM_Moves);
+        [](const CoordinateBlockCube& cbc) { return 1; }, HTM_Moves);
 
     assert(children.size() == 18);
     assert(!children[U]->state.is_solved());
@@ -93,6 +93,7 @@ void test_breadth_first_search() {
         [&m_table](const Move& move, CoordinateBlockCube& CBC) {
             m_table.apply(move, CBC);
         },
+        [](const CoordinateBlockCube& cbc) { return 1; },
         [](const CoordinateBlockCube& cube) { return cube.is_solved(); }, 4);
     show(solutions);
     check_solutions(scramble, m_table, solutions);

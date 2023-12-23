@@ -22,9 +22,11 @@ void show(SolutionContainer solutions) {
         s.show();
     }
 }
-template <typename NodePtr, typename F, typename SolveCheck>
-Solutions breadth_first_search(const NodePtr root, F &&apply,
-                               SolveCheck &&is_solved,
+
+template <typename NodePtr, typename Mover, typename Pruner,
+          typename SolveCheck>
+Solutions breadth_first_search(const NodePtr root, Mover &&apply,
+                               const Pruner &&estimate, SolveCheck &&is_solved,
                                const unsigned max_depth = 4) {
     Solutions all_solutions;
     std::deque<NodePtr> queue = {root};
@@ -38,7 +40,8 @@ Solutions breadth_first_search(const NodePtr root, F &&apply,
         } else {
             queue.pop_back();
             if (node->depth < max_depth) {
-                auto children = node->expand(apply, standard_directions(node));
+                auto children =
+                    node->expand(apply, estimate, standard_directions(node));
                 for (auto &&child : children) {
                     queue.push_front(child);
                 }
