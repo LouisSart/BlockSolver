@@ -17,6 +17,9 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
     Move last_move;     // The move which yielded this state
 
     static sptr make_root(const Cube &cube) { return sptr(new Node(cube, 0)); }
+    static sptr make_node(const Cube &cube, const unsigned &depth) {
+        return sptr(new Node(cube, depth));
+    }
 
    private:
     Node() : state{Cube()}, depth{0}, parent{nullptr}, estimate{0} {}
@@ -29,21 +32,24 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
     }
 
    public:
-    template <int sequence_generation = 1, typename F, typename MoveContainer>
-    std::vector<sptr> expand(const F &apply, const MoveContainer &directions) {
-        // Generates the children nodes by using the apply function on all moves
-        // in the directions container
-        std::vector<sptr> children;
-        Cube next;
+    // template <int sequence_generation = 1, typename F, typename
+    // MoveContainer> std::vector<sptr> expand(const F &apply, const
+    // MoveContainer &directions) {
+    //     // Generates the children nodes by using the apply function on all
+    //     moves
+    //     // in the directions container
+    //     std::vector<sptr> children;
+    //     Cube next;
 
-        for (auto &&move : directions) {
-            next = state;
-            apply(move, next);
-            children.emplace_back(
-                new Node(next, depth + 1, this->shared_from_this(), move));
-        }
-        return children;
-    }
+    //     for (auto &&move : directions) {
+    //         next = state;
+    //         apply(move, next);
+    //         children.emplace_back(new Node(next, depth + 1,
+    //                                        this->shared_from_this(), move,
+    //                                        heuristic(state)));
+    //     }
+    //     return children;
+    // }
 
     template <typename F, typename H, typename MoveContainer>
     std::vector<sptr> expand(const F &apply, const H &heuristic,
@@ -51,9 +57,14 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
         // Generates the children nodes, computes their estimate using the
         // heuristic function and then sorts them by decreasing pruning values
         // (so that children.back() is the child with the lowest estimate.)
-        auto children = expand(apply, directions);
-        for (auto &child : children) {
-            child->estimate = heuristic(child->state);
+        std::vector<sptr> children;
+        Cube next;
+        for (auto &&move : directions) {
+            next = state;
+            apply(move, next);
+            children.emplace_back(new Node(next, depth + 1,
+                                           this->shared_from_this(), move,
+                                           heuristic(state)));
         }
         std::sort(children.begin(), children.end(), [](sptr node1, sptr node2) {
             return node1->estimate > node2->estimate;

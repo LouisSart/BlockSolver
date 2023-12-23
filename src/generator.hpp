@@ -75,17 +75,19 @@ void compute_pruning_table_backwards(PruningTable& p_table, Strategy& strat,
     auto apply = [&m_table](const Move& move, CoordinateBlockCube& CBC) {
         m_table.apply(move, CBC);
     };
+    auto h_zero = [](const CoordinateBlockCube& cube) { return 0; };
+
     using WorkNode = Node<CoordinateBlockCube>;
 
     while (advancement.encountered < p_table.size()) {
         for (unsigned k = 0; k < p_table.size(); ++k) {
             if (p_table[k] == PruningTable::unassigned) {
-                auto node =
-                    WorkNode(strat.from_index(k), PruningTable::unassigned);
-                auto children = node.expand(apply, HTM_Moves);
+                auto node = WorkNode::make_node(strat.from_index(k),
+                                                PruningTable::unassigned);
+                auto children = node->expand(apply, h_zero, HTM_Moves);
                 for (auto&& child : children) {
                     advancement.add_generated();
-                    auto table_entry = strat.index(child.state);
+                    auto table_entry = strat.index(child->state);
                     auto child_depth = p_table[table_entry];
                     if (child_depth == advancement.depth - 1) {
                         advancement.add_encountered();
@@ -111,12 +113,14 @@ void compute_pruning_table(PruningTable& p_table, Strategy& strat,
     auto apply = [&m_table](const Move& move, CoordinateBlockCube& CBC) {
         m_table.apply(move, CBC);
     };
-    auto compress = [](const WorkNode& big) {
-        return StorageNode(Strategy::index(big.state), big.depth);
+    auto compress = [](const WorkNode::sptr big) {
+        return StorageNode(Strategy::index(big->state), big->depth);
     };
     auto uncompress = [](const StorageNode& archived) {
-        return WorkNode(Strategy::from_index(archived.state), archived.depth);
+        return WorkNode::make_node(Strategy::from_index(archived.state),
+                                   archived.depth);
     };
+    auto h_zero = [](const CoordinateBlockCube& cube) { return 0; };
     p_table.reset();
     StorageNode root;
     auto queue = std::deque{root};
@@ -126,19 +130,17 @@ void compute_pruning_table(PruningTable& p_table, Strategy& strat,
     p_table[table_entry] = 0;
 
     while (queue.size() > 0 && !advancement.stop_breadth_first_generator()) {
-        WorkNode node = uncompress(queue.back());
-        assert(strat.index(node.state) < p_table.size());
-        assert(p_table[strat.index(node.state)] != PruningTable::unassigned);
-        // -1 template parameter deactivates the move
-        // sequence copy at each move application
-        auto children = node.expand<-1>(apply, HTM_Moves);
+        auto node = uncompress(queue.back());
+        assert(strat.index(node->state) < p_table.size());
+        assert(p_table[strat.index(node->state)] != PruningTable::unassigned);
+        auto children = node->expand(apply, h_zero, HTM_Moves);
         for (auto&& child : children) {
             advancement.add_generated();
-            table_entry = strat.index(child.state);
+            table_entry = strat.index(child->state);
             if (p_table[table_entry] == PruningTable::unassigned) {
                 queue.push_front(compress(child));
-                p_table[table_entry] = child.depth;
-                advancement.update(child.depth);
+                p_table[table_entry] = child->depth;
+                advancement.update(child->depth);
                 advancement.add_encountered();
             }
         }

@@ -25,7 +25,7 @@ int main() {
 
     // Step 1
     std::cout << "\nStep 1: " << block_1.name << std::endl;
-    auto root = Node(cube, 0);
+    auto root = Node<MultiBlockCube<3>>::make_root(cube);
     auto solutions =
         IDAstar<true>(root, mover.get_apply(), pruner.get_estimator<0>(),
                       get_is_solved(cube, 0));
@@ -34,16 +34,16 @@ int main() {
     // Step 2
     std::cout << "\nStep 2: " << block_2.name << std::endl;
     mover.apply(solutions[0], cube);  // take first solution found
-    root = Node(cube, 0);
+    root = Node<MultiBlockCube<3>>::make_root(cube);
     solutions =
         IDAstar<false>(root, mover.get_apply(), pruner.get_estimator<1>(),
-                       get_is_solved(cube, 1), 6);
+                       get_is_solved(cube, 1));
     show(solutions);
 
     // Step 3
     std::cout << "\nStep 3: " << block_3.name << std::endl;
     mover.apply(solutions[0], cube);  // take first solution found
-    root = Node(cube, 0);
+    root = Node<MultiBlockCube<3>>::make_root(cube);
     solutions =
         IDAstar<false>(root, mover.get_apply(), pruner.get_estimator<2>(),
                        get_is_solved(cube, 2));

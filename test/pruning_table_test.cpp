@@ -155,7 +155,7 @@ int main() {
 
     std::cout << "\nCorrectness tests" << std::endl;
     test_optimal_is_correct(DLB_222);
-    test_permutation_is_correct(DL_223);
+    test_permutation_is_correct(Roux_FB);
 
     std::cout << "\nDirect and backwards equivalence test" << std::endl;
     test_direct_and_backward_are_equivalent(LF_column);
