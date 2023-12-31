@@ -32,25 +32,6 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
     }
 
    public:
-    // template <int sequence_generation = 1, typename F, typename
-    // MoveContainer> std::vector<sptr> expand(const F &apply, const
-    // MoveContainer &directions) {
-    //     // Generates the children nodes by using the apply function on all
-    //     moves
-    //     // in the directions container
-    //     std::vector<sptr> children;
-    //     Cube next;
-
-    //     for (auto &&move : directions) {
-    //         next = state;
-    //         apply(move, next);
-    //         children.emplace_back(new Node(next, depth + 1,
-    //                                        this->shared_from_this(), move,
-    //                                        heuristic(state)));
-    //     }
-    //     return children;
-    // }
-
     template <typename F, typename H, typename MoveContainer>
     std::vector<sptr> expand(const F &apply, const H &heuristic,
                              const MoveContainer &directions) {
@@ -66,9 +47,11 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
                                            this->shared_from_this(), move,
                                            heuristic(state)));
         }
-        std::sort(children.begin(), children.end(), [](sptr node1, sptr node2) {
-            return node1->estimate > node2->estimate;
-        });
+        // [Sorting disabled]
+        // std::sort(children.begin(), children.end(), [](sptr node1, sptr
+        // node2) {
+        //     return node1->estimate > node2->estimate;
+        // });
         return children;
     };
 
