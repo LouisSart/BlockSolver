@@ -140,6 +140,34 @@ void test_depth_first_search_with_heuristic() {
     check_solutions(scramble, m_table, solutions);
 }
 
+void test_successive_expansions() {
+    Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
+    CoordinateBlockCube cbc;
+    BlockMoveTable m_table(b);
+    PruningTable p_table = Strategy::Optimal(b).load_table();
+    Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
+                        U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
+    m_table.apply(scramble, cbc);
+
+    auto root = Node<CoordinateBlockCube>::make_root(cbc);
+    auto mover = [&m_table](const Move& move, CoordinateBlockCube& cube) {
+        m_table.apply(move, cube);
+    };
+    auto pruner = [&p_table](const CoordinateBlockCube& cube) {
+        return p_table.get_estimate(cube);
+    };
+    auto children = root->expand(mover, pruner, HTM_Moves);
+    assert(pruner(root->state) == 4);
+    assert(children[U]->estimate == 5);
+    assert(children[D3]->estimate == 3);
+    children = children[D3]->expand(mover, pruner, HTM_Moves);
+    assert(children[L2]->estimate == 2);
+    children = children[L2]->expand(mover, pruner, HTM_Moves);
+    assert(children[B]->estimate == 1);
+    children = children[B]->expand(mover, pruner, HTM_Moves);
+    assert(children[L3]->estimate == 0);
+}
+
 void test_solve_222_on_wr_scramble() {
     Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
     CoordinateBlockCube cbc;
@@ -200,7 +228,8 @@ int main() {
     test_expand_cbc(FrontColumns);
     std::cout << " --- Test expansion with heuristic ---" << std::endl;
     test_expand_cbc_with_heuristic(RouxFirstBlock);
-
+    std::cout << " --- Test successive expansions ---" << std::endl;
+    test_successive_expansions();
     std::cout << " --- Test breadth first ---" << std::endl;
     test_breadth_first_search();
     std::cout << " --- Test depth first --- " << std::endl;
