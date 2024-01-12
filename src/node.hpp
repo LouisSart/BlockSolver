@@ -45,7 +45,7 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
             apply(move, next);
             children.emplace_back(new Node(next, depth + 1,
                                            this->shared_from_this(), move,
-                                           heuristic(state)));
+                                           heuristic(next)));
         }
         // [Sorting disabled]
         // std::sort(children.begin(), children.end(), [](sptr node1, sptr

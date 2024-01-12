@@ -58,6 +58,7 @@ Solutions depth_first_search(const NodePtr root, const Mover &apply,
                              const SolveCheck &is_solved,
                              const unsigned max_depth = 4) {
     Solutions all_solutions;
+    root->estimate = estimate(root->state);
     std::deque<NodePtr> queue = {root};
     auto node = queue.back();
     int node_counter = 0;
