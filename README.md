@@ -52,30 +52,26 @@ Usually the better pruning values require a lot of memory because they take into
 
 TODO: Description of the algorithms for pruning table generation
 
-### Exact Pruning Value ###
+### Optimal Pruning Value ###
 
-This is the optimal pruning value. It is exactly equal to the optimal solution length and allows the search algorithm to prune every sub-optimal path, leaving only those which are optimal. This makes the search optimally fast, as it allows to only generate the path to the shortest solutions. (Now that I write about this and use the word 'optimal' 5 times in 3 sentences, I think I should rename this the Optimal Pruning Value). 
+This is the optimal pruning value. It is exactly equal to the optimal solution length and allows the search algorithm to prune every sub-optimal path, leaving only those which are optimal. This makes the search optimally fast, as it allows to only generate the path to the shortest solutions.
 
-Unfortunaltely it starts becoming unusable for high number of pieces in the block. For instance with 2 corners and 2 edges, the table has size 100 B, but for 5 corners and 5 edges you would need about 30 GB of RAM which I don't have (lol). So building a 2x2x2 or even a 2x2x3 block using an optimal pruning value would be feasible, but not the first two blocks of the Roux method at once. Furthermore the table generation requires some RAM. My experience is that a block of 4 edges and 4 corners (like the U layer for instance) requires too much RAM to be built on my machine, even though the table technically fits into my memory.
+Pros: Finds the optimal path directly
+Cons: Big table size, cannot be used for big blocks
 
 ### Permutation Pruning Value ###
 
 This corresponds to the optimal number of moves needed to restore the block pieces to their home locations, without consideration for their respective orientations. This reduces the table size significantly, making it usable for about 10-11 pieces in the block.
 
-TODO: Average value study for this pruning value
+Pros: Small table, usable for bigger blocks
+Cons: The set of all estimate zero states is not the solved state alone, but a much bigger space. This means having a low PPV doesn't necessarily mean the state is close to solved. PPV is not good for low value states.
 
-### Orientation Pruning Value ###
+# Split Pruning Value #
 
-Orientation Pruning value corresponds to the number of moves needed to restore the pieces to the block home location in the solved orientation, without consideration for their permutation among the block's cubie locations. The table size for this pruning value is smaller than the permutation pruning value on higher number of pieces (12+ pieces). However I expect this OPV to be not as efficient as PPV.
+The split heuristic computes the optimal solution lengths for corners and edges and takes the maximum of the two as the pruning value. It is limited by the table size with the most possible states (either corners or edges). For higher edge (resp. corner) numbers, I think we could split again the set of edges (resp. corners) and take the maximum value of the two sets as the pruning value. This is not implemented yet as we are not really interested in optimal solutions for very big blocks because they are often not humanly findable.
 
-TODO: Average value study for this pruning value
-
-### Layout Pruning Value ###
-
-LPV corresponds to the minimal number of moves needed to restore the block pieces to the block location, regardless of their orientations and permutation. The table size for this is very very low, but I expect it ot be very inefficient
-
-TODO: Average value study for this pruning value
-
+Pros: Small table size, the estimate-zero space is the solved state alone, extendable to bigger blocks
+Cons: No cons really
 
 # Search Algorithms #
 
@@ -91,9 +87,9 @@ Pruning values can be used in BFS, but it is not implemented here.
 
 Depth-first search uses a different strategy than BFS to avoid its memory limitations. Given a depth threshold max_depth, DFS iteratively applies one move to the scrambled state, then to the state that was just obtained, and continues with the children states until it reaches max_depth. This is why it is called depth-first. If no solution was found then DFS steps back to depth max_depth - 1 and applies the depth-first strategy up to max_depth again until there is no more nodes to generate. It then starts again from depth max-depth - 2 and so on until all nodes are visited or solutions have beed found.
 
-DFS does not require as much memory because it only stores the nodes that are on the path to depth d (which is of size O(d)) when looking for solution at depth d+1. Its main downfall is that you need to have an estimate of the optimals length to set the max_depth parameter. If your estimate is too low then no solution will be found, and you will need to relaunch the search with a higher max_depth, and if it is too high then the algorithm will run for longer than necessary and find (possibly many) suboptimal solutions.
+DFS does not require as much memory because it only stores the path to one node at depth d (which is of size O(d)) when looking for solution at depth d+1. Its main downfall is that you need to have an estimate of the optimals length to set the max_depth parameter. If your estimate is too low then no solution will be found, and you will need to relaunch the search with a higher max_depth, and if it is too high then the algorithm will run for longer than necessary and find (possibly many) suboptimal solutions.
 
-DFS can use a pruning value to reduce the search space size. To do so it applies the depth first strategy until it runs into a node at depth d such that d+h = max_depth, where h is the estimated distance of this node to the goal state. If h is an admissible heuristic (e.g. it never overestimates the distance to solved) then DFS will find every solution of length < max_depth. This improvement allows for a faster search.
+DFS can use a pruning value to reduce the search space size. To do so it applies the depth first strategy until it runs into a node at depth d such that d+h > max_depth, where h is the estimated distance of this node to the goal state. If h is an admissible heuristic (e.g. it never overestimates the distance to solved) then DFS will find every solution of length < max_depth. The closer the heuristic is to the optimal length, the faster DFS will find a solution.
 
 ### Iterative deepening search ###
 
