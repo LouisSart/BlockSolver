@@ -12,7 +12,7 @@ void check_solutions(const Algorithm& scramble, const MoveTable& m_table,
     for (auto&& s : solutions) {
         CoordinateBlockCube cbc_check;
         m_table.apply(scramble, cbc_check);
-        m_table.apply(s, cbc_check);
+        m_table.apply(s->get_path(), cbc_check);
         assert(cbc_check.is_solved());
     }
 }

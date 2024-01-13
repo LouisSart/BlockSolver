@@ -5,7 +5,8 @@
 #include "algorithm.hpp"
 #include "node.hpp"
 
-using Solutions = std::vector<Algorithm>;
+template <typename NodePtr>
+using Solutions = std::vector<NodePtr>;
 
 template <typename NodePtr>
 auto standard_directions(const NodePtr node) {
@@ -18,24 +19,25 @@ auto standard_directions(const NodePtr node) {
 
 template <typename SolutionContainer>
 void show(SolutionContainer solutions) {
-    for (auto &&s : solutions) {
-        s.show();
+    for (auto &&node : solutions) {
+        node->get_path().show();
     }
 }
 
 template <typename NodePtr, typename Mover, typename Pruner,
           typename SolveCheck>
-Solutions breadth_first_search(const NodePtr root, Mover &&apply,
-                               const Pruner &&estimate, SolveCheck &&is_solved,
-                               const unsigned max_depth = 4) {
-    Solutions all_solutions;
+Solutions<NodePtr> breadth_first_search(const NodePtr root, Mover &&apply,
+                                        const Pruner &&estimate,
+                                        SolveCheck &&is_solved,
+                                        const unsigned max_depth = 4) {
+    Solutions<NodePtr> all_solutions;
     std::deque<NodePtr> queue = {root};
     auto node = queue.back();
 
     while (queue.size() != 0) {
         auto node = queue.back();
         if (is_solved(node->state)) {
-            all_solutions.push_back(node->get_path());
+            all_solutions.push_back(node);
             queue.pop_back();
         } else {
             queue.pop_back();
@@ -53,11 +55,11 @@ Solutions breadth_first_search(const NodePtr root, Mover &&apply,
 }
 template <bool verbose = true, typename NodePtr, typename Mover,
           typename Pruner, typename SolveCheck>
-Solutions depth_first_search(const NodePtr root, const Mover &apply,
-                             const Pruner &estimate,
-                             const SolveCheck &is_solved,
-                             const unsigned max_depth = 4) {
-    Solutions all_solutions;
+Solutions<NodePtr> depth_first_search(const NodePtr root, const Mover &apply,
+                                      const Pruner &estimate,
+                                      const SolveCheck &is_solved,
+                                      const unsigned max_depth = 4) {
+    Solutions<NodePtr> all_solutions;
     root->estimate = estimate(root->state);
     std::deque<NodePtr> queue = {root};
     auto node = queue.back();
@@ -67,7 +69,7 @@ Solutions depth_first_search(const NodePtr root, const Mover &apply,
         auto node = queue.back();
         ++node_counter;
         if (is_solved(node->state)) {
-            all_solutions.push_back(node->get_path());
+            all_solutions.push_back(node);
             queue.pop_back();
         } else {
             queue.pop_back();
@@ -89,11 +91,11 @@ Solutions depth_first_search(const NodePtr root, const Mover &apply,
 
 template <bool verbose = true, typename NodePtr, typename Mover,
           typename Pruner, typename SolveCheck>
-Solutions IDAstar(const NodePtr root, const Mover &apply,
-                  const Pruner &estimate, const SolveCheck &is_solved,
-                  const unsigned max_depth = 20) {
+Solutions<NodePtr> IDAstar(const NodePtr root, const Mover &apply,
+                           const Pruner &estimate, const SolveCheck &is_solved,
+                           const unsigned max_depth = 20) {
     auto search_depth = estimate(root->state);
-    Solutions solutions;
+    Solutions<NodePtr> solutions;
 
     while (solutions.size() == 0 && search_depth <= max_depth) {
         if constexpr (verbose) {

@@ -21,9 +21,9 @@ auto solve(const CoordinateBlockCube &cbc, const MTable &m_table,
 }
 
 template <typename Strategy>
-Solutions ask_if_generate_and_solve(const Algorithm &scramble,
-                                    const Strategy &strat,
-                                    const unsigned &max_depth = 20) {
+Solutions<Node<CoordinateBlockCube>::sptr> ask_if_generate_and_solve(
+    const Algorithm &scramble, const Strategy &strat,
+    const unsigned &max_depth = 20) {
     try {
         auto p_table = strat.load_table();
     } catch (LoadError error) {
