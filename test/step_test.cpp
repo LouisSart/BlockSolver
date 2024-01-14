@@ -5,10 +5,12 @@
 Block<1, 0> block_1("ULF corner", {ULF}, {});
 Block<0, 1> block_2("UF edge", {}, {UF});
 
+auto mover = Mover{new BlockMoveTable(block_1), new BlockMoveTable(block_2)};
+auto pruner = Pruner(gen_table_ptr(Strategy::Optimal(block_1)),
+                     gen_table_ptr(Strategy::Optimal(block_2)));
+auto apply = mover.get_apply();
+
 void step_first_test() {
-    auto mover =
-        Mover{new BlockMoveTable(block_1), new BlockMoveTable(block_2)};
-    auto apply = mover.get_apply();
     MultiBlockCube<2> cube;
     assert(cube.is_solved());
     apply(U, cube);
@@ -17,10 +19,7 @@ void step_first_test() {
     mover.apply(seq, cube);
     mover.apply(U, cube);
 
-    auto pt1 = Strategy::Optimal(block_1).gen_table();
-    auto pt2 = Strategy::Optimal(block_2).gen_table();
-    auto pruner = Pruner(pt1.get_ptr(), pt2.get_ptr());
-    auto estimator = pruner.get_estimator<1>();
+    auto estimator = pruner.get_estimator<0>();
     assert(0 < pruner.get_estimate<0>(cube));
     assert(0 < estimator(cube));
 
@@ -28,7 +27,19 @@ void step_first_test() {
     assert(!is_solved(cube));
 }
 
+void second_step_test() {
+    MultiBlockCube<2> cube;
+    auto root = Node<MultiBlockCube<2>>::make_root(cube);
+    auto children =
+        root->expand(mover.get_apply(), pruner.get_estimator<1>(), HTM_Moves);
+    assert(children[R]->estimate == 0);
+    assert(children[U]->estimate == 1);
+    assert(children[F]->estimate == 1);
+    assert(children[L]->estimate == 1);
+}
+
 int main() {
     step_first_test();
+    second_step_test();
     return 0;
 }
