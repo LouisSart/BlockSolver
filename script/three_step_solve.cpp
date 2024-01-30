@@ -40,16 +40,16 @@ int main() {
     Solutions<NodePtr> step2_solutions;
     for (auto node : solutions) {
         auto tmp = make_step<1>(node, 11);
-        step2_solutions.insert(step2_solutions.begin(), tmp.begin(), tmp.end());
+        step2_solutions.insert(step2_solutions.end(), tmp.begin(), tmp.end());
     }
 
     // Step 3 : F2L-1
-    std::cout << "Three step F2L-1 solutions" << std::endl;
     Solutions<NodePtr> step3_solutions;
     for (auto node : step2_solutions) {
         auto tmp = make_step<2>(node, 16);
-        step3_solutions.insert(step3_solutions.begin(), tmp.begin(), tmp.end());
+        step3_solutions.insert(step3_solutions.end(), tmp.begin(), tmp.end());
     }
+    std::cout << "Three step F2L-1 solutions" << std::endl;
     show(step3_solutions);
     return 0;
 }
