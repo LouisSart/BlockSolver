@@ -38,8 +38,15 @@ void second_step_test() {
     assert(children[L]->estimate == 1);
 }
 
+void step_object_test() {
+    MultiBlockCube<2> cube;
+    auto step_root = StepNode<MultiBlockCube<2>>::make_root(cube);
+    step_root->show();
+}
+
 int main() {
     step_first_test();
     second_step_test();
+    step_object_test();
     return 0;
 }

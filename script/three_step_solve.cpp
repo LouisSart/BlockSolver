@@ -24,17 +24,20 @@ auto make_step(const Node<MultiBlockCube<3>>::sptr root, unsigned step_depth) {
         get_is_solved(root->state, step), step_depth);
 }
 
+using MultiNode = Node<MultiBlockCube<3>>;
+using NodePtr = MultiNode::sptr;
+
 int main() {
     scramble.show();
     MultiBlockCube<3> cube;
     mover.apply(scramble, cube);
 
     // Step 1 : 2x2x2
-    auto root = Node<MultiBlockCube<3>>::make_root(cube);
+    auto root = MultiNode::make_root(cube);
     auto solutions = make_step<0>(root, 6);
 
     // Step 2 : 2x2x3
-    auto step2_solutions = Solutions<typename Node<MultiBlockCube<3>>::sptr>();
+    Solutions<NodePtr> step2_solutions;
     for (auto node : solutions) {
         auto tmp = make_step<1>(node, 11);
         step2_solutions.insert(step2_solutions.begin(), tmp.begin(), tmp.end());
@@ -42,7 +45,7 @@ int main() {
 
     // Step 3 : F2L-1
     std::cout << "Three step F2L-1 solutions" << std::endl;
-    auto step3_solutions = Solutions<typename Node<MultiBlockCube<3>>::sptr>();
+    Solutions<NodePtr> step3_solutions;
     for (auto node : step2_solutions) {
         auto tmp = make_step<2>(node, 16);
         step3_solutions.insert(step3_solutions.begin(), tmp.begin(), tmp.end());

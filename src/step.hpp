@@ -84,3 +84,43 @@ auto get_is_solved(const Cube& cube, const unsigned steps) {
         return true;
     };
 }
+
+template <typename Cube>
+struct StepNode : public std::enable_shared_from_this<StepNode<Cube>> {
+    using sptr = std::shared_ptr<StepNode>;
+
+    Cube state;
+    sptr parent = nullptr;
+    unsigned depth = 0;
+    unsigned estimate = 0;
+    Algorithm path;
+    unsigned number = 0;
+
+    static sptr make_root(const Cube& cube) {
+        return sptr(new StepNode(cube, 0));
+    }
+    static sptr make_node(const Cube& cube, const unsigned& depth) {
+        return sptr(new StepNode(cube, depth));
+    }
+
+   private:
+    StepNode() : state{Cube()}, depth{0}, parent{nullptr}, estimate{0} {}
+    StepNode(const Cube& c, const unsigned& d = 0, sptr p = nullptr,
+             const Algorithm a = {}, const unsigned& e = 1)
+        : state{c}, depth{d}, parent{p}, estimate{e} {
+        if (p != nullptr) {
+            path = a;
+        }
+    }
+
+   public:
+    void show() const {
+        std::cout << "Step object:" << std::endl;
+        std::cout << "   Step number: " << number << std::endl;
+        std::cout << "   Depth: " << depth << std::endl;
+        if (parent != nullptr) {
+            std::cout << "    Step solution:" << std::endl;
+            path.show();
+        }
+    }
+};
