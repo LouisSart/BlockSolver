@@ -16,8 +16,8 @@ void assert_move_table_is_correct(Block<nc, ne> b) {
         assert(cbc == cbc_check);
     }
 
-    Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
-                        U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
+    Algorithm scramble(
+        "R' U' F  D2 R2 F' L2 D2 F' L  U' B U' D' F2 B2 L2 D F2 U2 D R' U' F");
     auto cbc1 = bc.to_coordinate_block_cube(CubieCube(scramble));
 
     CoordinateBlockCube cbc2;
@@ -47,8 +47,8 @@ void test_222_block_alg_apply() {
     CubieCube cc;
     CoordinateBlockCube cbc;
     Algorithm alg({D2, L, R, F3, U});
-    Algorithm no_effect({R, U, R3, F3, U2, L3, U3, L, F, U2});
-    Algorithm Tperm({R, U, R3, U3, R3, F, R2, U3, R3, U3, R, U, R3, F3});
+    Algorithm no_effect("R U R' F' U2 L' U' L F U2");
+    Algorithm Tperm("R U R' U' R' F R2 U' R' U' R U R' F'");
 
     cc.apply(alg);
     table.apply(alg, cbc);

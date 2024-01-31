@@ -1,6 +1,8 @@
 #pragma once
 #include <array>
 #include <iostream>
+#include <sstream>
+#include <unordered_map>
 #include <vector>
 
 enum Move {
@@ -35,12 +37,37 @@ enum Move {
     S_URF2
 };
 
+std::unordered_map<std::string, Move> str_to_move = {
+    {"U", U}, {"U2", U2}, {"U'", U3}, {"D", D}, {"D2", D2}, {"D'", D3},
+    {"R", R}, {"R2", R2}, {"R'", R3}, {"L", L}, {"L2", L2}, {"L'", L3},
+    {"F", F}, {"F2", F2}, {"F'", F3}, {"B", B}, {"B2", B2}, {"B'", B3}};
+
 struct Algorithm {
     std::vector<Move> sequence;
 
     Algorithm(){};
     Algorithm(const std::initializer_list<Move> s) : sequence{s} {};
     Algorithm(const std::vector<Move>& s) : sequence{s} {};
+    Algorithm(const std::string& str) {
+        *this = Algorithm::make_from_str(str);
+    };
+
+    static Algorithm make_from_str(const std::string& str) {
+        Algorithm ret;
+        std::stringstream s(str);
+        std::string move_str;
+        s >> move_str;
+        while (s) {
+            if (str_to_move.find(move_str) != str_to_move.end()) {
+                ret.append(str_to_move[move_str]);
+            } else {
+                std::cout << "Error reading scramble" << std::endl;
+                abort();
+            }
+            s >> move_str;
+        }
+        return ret;
+    }
 
     void append(const Algorithm& other) {
         sequence.insert(sequence.end(), other.sequence.begin(),
