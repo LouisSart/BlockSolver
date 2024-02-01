@@ -28,18 +28,41 @@ using MultiNode = Node<MultiBlockCube<3>>;
 using NodePtr = MultiNode::sptr;
 using StepMultiNode = StepNode<MultiBlockCube<3>>;
 using StepNodePtr = StepMultiNode::sptr;
+using StepSolutions = Solutions<StepNodePtr>;
+
+std::vector<Algorithm> get_skeleton(const StepNodePtr& node_ptr) {
+    std::vector<Algorithm> skeleton;
+    Algorithm path = node_ptr->path;
+    StepNodePtr p = node_ptr->parent;
+    while (p != nullptr) {
+        skeleton.push_back(path);
+        path = p->path;
+        p = p->parent;
+    }
+    std::reverse(skeleton.begin(), skeleton.end());
+    return skeleton;
+}
+
+void show(const std::vector<Algorithm>& skeleton) {
+    for (Algorithm step : skeleton) {
+        step.show();
+    }
+}
 
 auto expand(const StepNodePtr step_node_ptr) {
     NodePtr node =
         MultiNode::make_node(step_node_ptr->state, step_node_ptr->depth);
     Solutions<NodePtr> solutions;
-    switch (step_node_ptr->depth) {
+    switch (step_node_ptr->number) {
         case 0:
             solutions = make_step<0>(node, splits_move_counts[0]);
+            break;
         case 1:
             solutions = make_step<1>(node, splits_move_counts[1]);
+            break;
         case 2:
             solutions = make_step<2>(node, splits_move_counts[2]);
+            break;
         default:
             std::cout << "Error in StepNode expansion" << std::endl;
             abort();
@@ -62,23 +85,26 @@ int main(int argc, const char* argv[]) {
     mover.apply(scramble, cube);
 
     // Step 1 : 2x2x2
-    auto root = MultiNode::make_root(cube);
-    auto solutions = make_step<0>(root, 6);
+    auto root = StepMultiNode::make_root(cube);
+    auto solutions = expand(root);
 
     // Step 2 : 2x2x3
-    Solutions<NodePtr> step2_solutions;
+    StepSolutions step2_solutions;
     for (auto node : solutions) {
-        auto tmp = make_step<1>(node, 11);
+        auto tmp = expand(node);
         step2_solutions.insert(step2_solutions.end(), tmp.begin(), tmp.end());
     }
 
     // Step 3 : F2L-1
-    Solutions<NodePtr> step3_solutions;
+    StepSolutions step3_solutions;
     for (auto node : step2_solutions) {
-        auto tmp = make_step<2>(node, 16);
+        auto tmp = expand(node);
         step3_solutions.insert(step3_solutions.end(), tmp.begin(), tmp.end());
     }
     std::cout << "Three step F2L-1 solutions" << std::endl;
-    show(step3_solutions);
+    for (auto solution : step3_solutions) {
+        show(get_skeleton(solution));
+        std::cout << std::endl;
+    }
     return 0;
 }
