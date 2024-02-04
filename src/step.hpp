@@ -2,6 +2,7 @@
 
 #include "coordinate_block_cube.hpp"
 #include "move_table.hpp"
+#include "search.hpp"
 
 template <typename... MTs>
 struct Mover {
@@ -124,3 +125,71 @@ struct StepNode : public std::enable_shared_from_this<StepNode<Cube>> {
         }
     }
 };
+
+namespace Method {
+
+using MultiNode = Node<MultiBlockCube<3>>;
+using NodePtr = MultiNode::sptr;
+using StepMultiNode = StepNode<MultiBlockCube<3>>;
+using StepNodePtr = StepMultiNode::sptr;
+using StepSolutions = Solutions<StepNodePtr>;
+
+std::vector<Algorithm> get_skeleton(const StepNodePtr& node_ptr) {
+    std::vector<Algorithm> skeleton;
+    Algorithm path = node_ptr->path;
+    StepNodePtr p = node_ptr->parent;
+    while (p != nullptr) {
+        skeleton.push_back(path);
+        path = p->path;
+        p = p->parent;
+    }
+    std::reverse(skeleton.begin(), skeleton.end());
+    return skeleton;
+}
+
+void show(const std::vector<Algorithm>& skeleton) {
+    for (Algorithm step : skeleton) {
+        step.show();
+    }
+}
+
+template <unsigned step, typename Mover, typename Pruner>
+auto make_step(const MultiNode::sptr root, unsigned step_depth,
+               const Mover& mover, const Pruner& pruner) {
+    return depth_first_search<false>(
+        root, mover.get_apply(), pruner.template get_estimator<step>(),
+        get_is_solved(root->state, step), step_depth);
+}
+
+template <typename Mover, typename Pruner, typename Splits>
+auto expand(const StepNodePtr step_node_ptr, const Mover& mover,
+            const Pruner& pruner, const Splits& splits) {
+    NodePtr node =
+        MultiNode::make_node(step_node_ptr->state, step_node_ptr->depth);
+    Solutions<NodePtr> solutions;
+    assert(step_node_ptr->number < 3);  // FIXME: any number of steps ?
+    switch (step_node_ptr->number) {
+        case 0:
+            solutions = make_step<0>(node, splits[0], mover, pruner);
+            break;
+        case 1:
+            solutions = make_step<1>(node, splits[1], mover, pruner);
+            break;
+        case 2:
+            solutions = make_step<2>(node, splits[2], mover, pruner);
+            break;
+        default:
+            std::cout << "Error in StepNode expansion" << std::endl;
+            abort();
+    }
+    Solutions<StepNodePtr> ret;
+    for (auto&& node_ptr : solutions) {
+        auto child = StepMultiNode::make_node(node_ptr->state, node_ptr->depth);
+        child->parent = step_node_ptr;
+        child->path = node_ptr->get_path();
+        child->number = step_node_ptr->number + 1;
+        ret.push_back(child);
+    }
+    return ret;
+}
+};  // namespace Method

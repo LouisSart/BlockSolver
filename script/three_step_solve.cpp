@@ -17,68 +17,8 @@ auto pruner = Pruner(load_table_ptr(Strategy::Optimal(block_1)),
 
 std::array<unsigned, 3> splits_move_counts{8, 12, 15};
 
-template <unsigned step>
-auto make_step(const Node<MultiBlockCube<3>>::sptr root, unsigned step_depth) {
-    return depth_first_search<false>(
-        root, mover.get_apply(), pruner.get_estimator<step>(),
-        get_is_solved(root->state, step), step_depth);
-}
-
-using MultiNode = Node<MultiBlockCube<3>>;
-using NodePtr = MultiNode::sptr;
-using StepMultiNode = StepNode<MultiBlockCube<3>>;
-using StepNodePtr = StepMultiNode::sptr;
-using StepSolutions = Solutions<StepNodePtr>;
-
-std::vector<Algorithm> get_skeleton(const StepNodePtr& node_ptr) {
-    std::vector<Algorithm> skeleton;
-    Algorithm path = node_ptr->path;
-    StepNodePtr p = node_ptr->parent;
-    while (p != nullptr) {
-        skeleton.push_back(path);
-        path = p->path;
-        p = p->parent;
-    }
-    std::reverse(skeleton.begin(), skeleton.end());
-    return skeleton;
-}
-
-void show(const std::vector<Algorithm>& skeleton) {
-    for (Algorithm step : skeleton) {
-        step.show();
-    }
-}
-
-auto expand(const StepNodePtr step_node_ptr) {
-    NodePtr node =
-        MultiNode::make_node(step_node_ptr->state, step_node_ptr->depth);
-    Solutions<NodePtr> solutions;
-    switch (step_node_ptr->number) {
-        case 0:
-            solutions = make_step<0>(node, splits_move_counts[0]);
-            break;
-        case 1:
-            solutions = make_step<1>(node, splits_move_counts[1]);
-            break;
-        case 2:
-            solutions = make_step<2>(node, splits_move_counts[2]);
-            break;
-        default:
-            std::cout << "Error in StepNode expansion" << std::endl;
-            abort();
-    }
-    Solutions<StepNodePtr> ret;
-    for (auto&& node_ptr : solutions) {
-        auto child = StepMultiNode::make_node(node_ptr->state, node_ptr->depth);
-        child->parent = step_node_ptr;
-        child->path = node_ptr->get_path();
-        child->number = step_node_ptr->number + 1;
-        ret.push_back(child);
-    }
-    return ret;
-}
-
 int main(int argc, const char* argv[]) {
+    using namespace Method;
     auto scramble = Algorithm::make_from_str(argv[argc - 1]);
     scramble.show();
     MultiBlockCube<3> cube;
@@ -86,19 +26,19 @@ int main(int argc, const char* argv[]) {
 
     // Step 1 : 2x2x2
     auto root = StepMultiNode::make_root(cube);
-    auto solutions = expand(root);
+    auto solutions = expand(root, mover, pruner, splits_move_counts);
 
     // Step 2 : 2x2x3
     StepSolutions step2_solutions;
     for (auto node : solutions) {
-        auto tmp = expand(node);
+        auto tmp = expand(node, mover, pruner, splits_move_counts);
         step2_solutions.insert(step2_solutions.end(), tmp.begin(), tmp.end());
     }
 
     // Step 3 : F2L-1
     StepSolutions step3_solutions;
     for (auto node : step2_solutions) {
-        auto tmp = expand(node);
+        auto tmp = expand(node, mover, pruner, splits_move_counts);
         step3_solutions.insert(step3_solutions.end(), tmp.begin(), tmp.end());
     }
     std::cout << "Three step F2L-1 solutions" << std::endl;
