@@ -60,14 +60,14 @@ struct BlockMoveTable {
         cbc.set(ccl, cel, ccp, cep, cco, ceo);
     }
 
-    void apply_inverse(const unsigned& move, CoordinateBlockCube& cbc) {
+    void apply_inverse(const unsigned& move, CoordinateBlockCube& cbc) const {
         apply(inverse_of_HTM_Moves_and_rotations[move], cbc);
     }
 
     void apply_inverse(const Algorithm& alg, CoordinateBlockCube& cbc) const {
         for (auto move = alg.sequence.rbegin(); move != alg.sequence.rend();
              ++move) {
-            apply_inverse(move, cbc);
+            apply_inverse(*move, cbc);
         }
     }
 
