@@ -47,6 +47,12 @@ struct CoordinateBlockCube {
 
 template <unsigned nb>
 struct MultiBlockCube : std::array<CoordinateBlockCube, nb> {
+    void set_solved() {
+        for (CoordinateBlockCube &cbc : *this) {
+            cbc.set(0, 0, 0, 0, 0, 0);
+        }
+    }
+
     void show() const {
         std::cout << "MultiBlockCube<" << nb << ">" << std::endl;
         for (unsigned k = 0; k < nb; ++k) {
