@@ -15,22 +15,29 @@ auto pruner = Pruner(load_table_ptr(Strategy::Optimal(block_1)),
                      load_table_ptr(Strategy::Optimal(block_2)),
                      load_table_ptr(Strategy::Optimal(block_3)));
 
-std::array<unsigned, 3> splits_move_counts{8, 12, 15};
+std::array<unsigned, 3> splits_move_counts{6, 14, 14};
+std::vector<Algorithm> rotations;
+
+using namespace Method;
 
 int main(int argc, const char* argv[]) {
-    using namespace Method;
     auto scramble = Algorithm::make_from_str(argv[argc - 1]);
     scramble.show();
     MultiBlockCube<3> cube;
     mover.apply(scramble, cube);
 
+    auto roots = init_roots(scramble, rotations, mover);
+
     // Step 1 : 2x2x2
-    auto root = StepMultiNode::make_root(cube);
-    auto solutions = expand(root, mover, pruner, splits_move_counts);
+    StepSolutions step1_solutions;
+    for (auto root : roots) {
+        auto tmp = expand(root, mover, pruner, splits_move_counts);
+        step1_solutions.insert(step1_solutions.end(), tmp.begin(), tmp.end());
+    }
 
     // Step 2 : 2x2x3
     StepSolutions step2_solutions;
-    for (auto node : solutions) {
+    for (auto node : step1_solutions) {
         auto tmp = expand(node, mover, pruner, splits_move_counts);
         step2_solutions.insert(step2_solutions.end(), tmp.begin(), tmp.end());
     }

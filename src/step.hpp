@@ -33,8 +33,23 @@ struct Mover {
         }
     }
 
+    template <unsigned step>
+    void apply_inverse(const Algorithm& seq,
+                       MultiBlockCube<_NTABLES>& mbc) const {
+        static_assert(step < _NTABLES);
+        std::get<step>(_mts)->apply_inverse(seq, mbc[step]);
+        if constexpr (step > 0) {
+            apply_inverse<step - 1>(seq, mbc);
+        }
+    }
+
     void apply(const Algorithm& seq, MultiBlockCube<_NTABLES>& mbc) const {
         apply<_NTABLES - 1>(seq, mbc);
+    }
+
+    void apply_inverse(const Algorithm& seq,
+                       MultiBlockCube<_NTABLES>& mbc) const {
+        apply_inverse<_NTABLES - 1>(seq, mbc);
     }
 
     auto get_apply() const {
@@ -133,6 +148,25 @@ using NodePtr = MultiNode::sptr;
 using StepMultiNode = StepNode<MultiBlockCube<3>>;
 using StepNodePtr = StepMultiNode::sptr;
 using StepSolutions = Solutions<StepNodePtr>;
+
+template <typename Mover>
+StepSolutions init_roots(const Algorithm& scramble,
+                         std::vector<Algorithm> symmetries,
+                         const Mover& mover) {
+    StepSolutions ret;
+    MultiBlockCube<3> cube;
+    StepNodePtr root;
+    for (auto sym : symmetries) {
+        cube.set_solved();
+        mover.apply_inverse(sym, cube);
+        mover.apply(scramble, cube);
+        mover.apply(sym, cube);
+        root = StepMultiNode::make_root(cube);
+        root->path = Algorithm({sym});
+        ret.push_back(root);
+    }
+    return ret;
+}
 
 std::vector<Algorithm> get_skeleton(const StepNodePtr& node_ptr) {
     std::vector<Algorithm> skeleton;
