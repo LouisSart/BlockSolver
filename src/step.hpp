@@ -171,10 +171,11 @@ StepSolutions init_roots(const Algorithm& scramble,
 std::vector<Algorithm> get_skeleton(const StepNodePtr& node_ptr) {
     std::vector<Algorithm> skeleton;
     Algorithm path = node_ptr->path;
+    skeleton.push_back(path);
     StepNodePtr p = node_ptr->parent;
     while (p != nullptr) {
-        skeleton.push_back(path);
         path = p->path;
+        skeleton.push_back(path);
         p = p->parent;
     }
     std::reverse(skeleton.begin(), skeleton.end());

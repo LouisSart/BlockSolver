@@ -109,7 +109,7 @@ void Algorithm::show() const {
     for (auto&& m : sequence) {
         std::cout << move_str[m] << " ";
     }
-    std::cout << "(" << size() << ")" << std::endl;
+    if (sequence.size() > 0) std::cout << "(" << size() << ")" << std::endl;
 }
 
 std::array<Move, N_HTM_MOVES> HTM_Moves{U, U2, U3, D, D2, D3, R, R2, R3,
