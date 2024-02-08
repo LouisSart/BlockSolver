@@ -1,0 +1,9 @@
+- Take splits as command line argument (file for options ?)
+- Skeleton and algorithm show() method (Rotations, comments)
+- Use StepNode in a real search algorithm (depth first)
+- Static Reference to move/pruning tables in Node (expand node class memeber)
+- Any number of steps
+- EO step
+- Convert move sequences according to cube rotations 
+- Change step order depending on the case (Step id from 0 to 2**nsteps - 1)
+- NISS at any step
