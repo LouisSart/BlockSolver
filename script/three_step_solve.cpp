@@ -1,5 +1,6 @@
 #include <tuple>
 
+#include "option.hpp"
 #include "pruning_table.hpp"
 #include "search.hpp"
 #include "step.hpp"
@@ -15,13 +16,16 @@ auto pruner = Pruner(load_table_ptr(Strategy::Optimal(block_1)),
                      load_table_ptr(Strategy::Optimal(block_2)),
                      load_table_ptr(Strategy::Optimal(block_3)));
 
-std::array<unsigned, 3> splits_move_counts{6, 14, 14};
 std::vector<Algorithm> rotations{{},   {x},     {x2},     {x3},
                                  {y2}, {y2, x}, {y2, x2}, {y2, x3}};
 
 using namespace Method;
 
 int main(int argc, const char* argv[]) {
+    std::array<unsigned, 3> splits_move_counts{
+        get_option<unsigned>("-s0", argc, argv),
+        get_option<unsigned>("-s1", argc, argv),
+        get_option<unsigned>("-s2", argc, argv)};
     auto scramble = Algorithm::make_from_str(argv[argc - 1]);
     scramble.show();
     MultiBlockCube<3> cube;
