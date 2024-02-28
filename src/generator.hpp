@@ -1,7 +1,6 @@
 #include <vector>
 
 #include "move_table.hpp"
-#include "node.hpp"
 
 template <bool verbose = false>
 struct Advancement {
@@ -66,28 +65,45 @@ struct Advancement {
     }
 };
 
+// Basic Nodes for pruning table generation
+struct GenNode {
+    CoordinateBlockCube state;
+    uint8_t depth;
+
+    template <typename MTable>
+    auto expand(const MTable& mt) {
+        std::vector<GenNode> ret;
+        CoordinateBlockCube next;
+        for (const Move move : HTM_Moves) {
+            next = state;
+            mt.apply(move, next);
+            ret.emplace_back(next, depth + 1);
+        }
+        return ret;
+    }
+};
+
+struct CompressedNode {
+    unsigned state;  // single-digit representation of a cube state
+    uint8_t depth;
+};
+
 template <bool verbose, typename PruningTable, typename Strategy>
 void compute_pruning_table_backwards(PruningTable& p_table, Strategy& strat,
                                      Advancement<verbose>& advancement) {
     assert(p_table.size() == strat.table_size);
     assert(p_table.size() == advancement.table_size);
     BlockMoveTable m_table(strat.block);
-    auto apply = [&m_table](const Move& move, CoordinateBlockCube& CBC) {
-        m_table.apply(move, CBC);
-    };
-    auto h_zero = [](const CoordinateBlockCube& cube) { return 0; };
-
-    using WorkNode = Node<CoordinateBlockCube>;
 
     while (advancement.encountered < p_table.size()) {
         for (unsigned k = 0; k < p_table.size(); ++k) {
             if (p_table[k] == PruningTable::unassigned) {
-                auto node = WorkNode::make_node(strat.from_index(k),
-                                                PruningTable::unassigned);
-                auto children = node->expand(apply, h_zero, HTM_Moves);
+                auto node =
+                    GenNode{strat.from_index(k), PruningTable::unassigned};
+                auto children = node.expand(m_table);
                 for (auto&& child : children) {
                     advancement.add_generated();
-                    auto table_entry = strat.index(child->state);
+                    auto table_entry = strat.index(child.state);
                     auto child_depth = p_table[table_entry];
                     if (child_depth == advancement.depth - 1) {
                         advancement.add_encountered();
@@ -105,24 +121,17 @@ void compute_pruning_table_backwards(PruningTable& p_table, Strategy& strat,
 template <bool verbose, typename PruningTable, typename Strategy>
 void compute_pruning_table(PruningTable& p_table, Strategy& strat,
                            Advancement<verbose>& advancement) {
-    using StorageNode = CompressedNode<unsigned>;
-    using WorkNode = Node<CoordinateBlockCube>;
     assert(p_table.size() == advancement.table_size);
     assert(p_table.size() == strat.table_size);
     BlockMoveTable m_table(strat.block);
-    auto apply = [&m_table](const Move& move, CoordinateBlockCube& CBC) {
-        m_table.apply(move, CBC);
+    auto compress = [](const GenNode& big) {
+        return CompressedNode{Strategy::index(big.state), big.depth};
     };
-    auto compress = [](const WorkNode::sptr big) {
-        return StorageNode(Strategy::index(big->state), big->depth);
+    auto uncompress = [](const CompressedNode& archived) {
+        return GenNode{Strategy::from_index(archived.state), archived.depth};
     };
-    auto uncompress = [](const StorageNode& archived) {
-        return WorkNode::make_node(Strategy::from_index(archived.state),
-                                   archived.depth);
-    };
-    auto h_zero = [](const CoordinateBlockCube& cube) { return 0; };
     p_table.reset();
-    StorageNode root;
+    CompressedNode root{0, 0};
     auto queue = std::deque{root};
     advancement.add_encountered();
     unsigned table_entry{0};
@@ -131,16 +140,16 @@ void compute_pruning_table(PruningTable& p_table, Strategy& strat,
 
     while (queue.size() > 0 && !advancement.stop_breadth_first_generator()) {
         auto node = uncompress(queue.back());
-        assert(strat.index(node->state) < p_table.size());
-        assert(p_table[strat.index(node->state)] != PruningTable::unassigned);
-        auto children = node->expand(apply, h_zero, HTM_Moves);
+        assert(strat.index(node.state) < p_table.size());
+        assert(p_table[strat.index(node.state)] != PruningTable::unassigned);
+        auto children = node.expand(m_table);
         for (auto&& child : children) {
             advancement.add_generated();
-            table_entry = strat.index(child->state);
+            table_entry = strat.index(child.state);
             if (p_table[table_entry] == PruningTable::unassigned) {
                 queue.push_front(compress(child));
-                p_table[table_entry] = child->depth;
-                advancement.update(child->depth);
+                p_table[table_entry] = child.depth;
+                advancement.update(child.depth);
                 advancement.add_encountered();
             }
         }

@@ -75,13 +75,3 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
         std::cout << " Pruning value: " << estimate << std::endl;
     }
 };
-
-template <typename index_type>
-struct CompressedNode {
-    index_type state;  // single-digit representation of a cube state
-    uint8_t depth;
-
-    CompressedNode() : state{0}, depth{0} {}
-    CompressedNode(index_type state, uint8_t depth)
-        : state{state}, depth{depth} {}
-};
