@@ -157,8 +157,9 @@ struct StepNode : public std::enable_shared_from_this<StepNode<Cube>> {
     }
 };
 
-template <unsigned _NBLOCKS>
+template <typename Mover, typename Pruner>
 struct Method {
+    static constexpr unsigned _NBLOCKS = Mover::_NTABLES;
     using MultiCube = MultiBlockCube<_NBLOCKS>;
     using MultiNode = Node<MultiCube>;
     using NodePtr = MultiNode::sptr;
@@ -166,10 +167,15 @@ struct Method {
     using StepNodePtr = StepMultiNode::sptr;
     using StepSolutions = Solutions<StepNodePtr>;
 
-    template <typename Mover>
+    Mover mover;
+    Pruner pruner;
+
+    Method(Mover& m, Pruner& p) : pruner{p}, mover{m} {
+        static_assert(Pruner::_NTABLES == Mover::_NTABLES);
+    }
+
     StepSolutions init_roots(const Algorithm& scramble,
-                             std::vector<Algorithm> symmetries,
-                             const Mover& mover) {
+                             std::vector<Algorithm> symmetries) {
         // Generates all symmetries of the scramble as MultiBlockCubes<blocks>
         // state = S^-1 * M * S, where S is the symmetry (rotation) and M is the
         // scramble
@@ -188,9 +194,8 @@ struct Method {
         return ret;
     }
 
-    template <unsigned... blocks, typename Mover, typename Pruner>
-    auto make_step(const StepNodePtr step_node_ptr, const Mover& mover,
-                   const Pruner& pruner, unsigned step_depth) {
+    template <unsigned... blocks>
+    auto make_step(const StepNodePtr step_node_ptr, unsigned step_depth) {
         NodePtr root =
             MultiNode::make_node(step_node_ptr->state, step_node_ptr->depth);
         auto solutions = depth_first_search<false>(
@@ -208,3 +213,9 @@ struct Method {
         return ret;
     }
 };
+
+// template <typename... BlockTypes>
+// auto make_method(const BlockTypes& blocks) {
+//     auto mover = Mover(new BlockMoveTable(blocks)...);
+//     auo Pruner = Pruner(load_table_ptr(blocks)...);
+// }

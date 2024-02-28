@@ -18,10 +18,12 @@ auto pruner = Pruner(load_table_ptr(Strategy::Optimal(block_1)),
                      load_table_ptr(Strategy::Optimal(block_2)),
                      load_table_ptr(Strategy::Optimal(block_3)));
 
-auto method = Method<_NBLOCKS>();
+auto method = Method(mover, pruner);
 
 std::vector<Algorithm> rotations{{},   {x},     {x2},     {x3},
                                  {y2}, {y2, x}, {y2, x2}, {y2, x3}};
+
+using StepSolutions = Solutions<StepNode<MultiBlockCube<_NBLOCKS>>::sptr>;
 
 int main(int argc, const char* argv[]) {
     std::array<unsigned, 3> splits_move_counts{
@@ -30,32 +32,27 @@ int main(int argc, const char* argv[]) {
         get_option<unsigned>("-s2", argc, argv)};
     auto scramble = Algorithm(argv[argc - 1]);
     scramble.show();
-    Method<_NBLOCKS>::MultiCube cube;
-    mover.apply(scramble, cube);
 
-    auto roots = method.init_roots(scramble, rotations, mover);
+    auto roots = method.init_roots(scramble, rotations);
 
     // Step 1 : 2x2x2
-    Method<_NBLOCKS>::StepSolutions step1_solutions;
+    StepSolutions step1_solutions;
     for (auto root : roots) {
-        auto tmp =
-            method.make_step<0>(root, mover, pruner, splits_move_counts[0]);
+        auto tmp = method.make_step<0>(root, splits_move_counts[0]);
         step1_solutions.insert(step1_solutions.end(), tmp.begin(), tmp.end());
     }
 
     // // Step 2 : 2x2x3
-    Method<_NBLOCKS>::StepSolutions step2_solutions;
+    StepSolutions step2_solutions;
     for (auto node : step1_solutions) {
-        auto tmp =
-            method.make_step<0, 1>(node, mover, pruner, splits_move_counts[1]);
+        auto tmp = method.make_step<0, 1>(node, splits_move_counts[1]);
         step2_solutions.insert(step2_solutions.end(), tmp.begin(), tmp.end());
     }
 
     // Step 3 : F2L-1
-    Method<_NBLOCKS>::StepSolutions step3_solutions;
+    StepSolutions step3_solutions;
     for (auto node : step2_solutions) {
-        auto tmp = method.make_step<0, 1, 2>(node, mover, pruner,
-                                             splits_move_counts[2]);
+        auto tmp = method.make_step<0, 1, 2>(node, splits_move_counts[2]);
         step3_solutions.insert(step3_solutions.end(), tmp.begin(), tmp.end());
     }
 
