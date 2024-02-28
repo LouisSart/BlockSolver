@@ -1,22 +1,30 @@
 #include <iostream>
 
-#include "block_cube.hpp"
-#include "pruning_table.hpp"
-#include "solve.hpp"
+#include "option.hpp"
+#include "step.hpp"
 
-auto LF_column = Block<2, 1>("LF_column", {ULF, DLB}, {LF});
-auto DLB_222 = Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB});
-auto DL_223 = Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL});
-auto DLB_F2Lm1 =
-    Block<3, 7>("DLB_F2L-1", {DLF, DLB, DRB}, {LF, LB, DF, DB, DL, RB, DR});
+auto method =
+    make_method(Block<2, 3>("RouxFB", {DLF, DLB}, {DL, LB, LF}),
+                Block<2, 3>("DB_123", {DLB, DRB}, {DB, RB, LB}),
+                Block<3, 3>("someWeirdThing", {DLF, DLB, DRB}, {DL, LB, DB}),
+                Block<0, 4>("BottomCross", {}, {DF, DR, DB, DL}));
 
-int main() {
-    Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
-                        U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
+std::vector<Algorithm> rotations{
+    {},       {x},     {x2},    {x3},     {x, y},  {x2, y}, {x3, y},  {y},
+    {x3, z3}, {z3},    {x, z3}, {x2, z3}, {y2},    {y2, x}, {y2, x2}, {y2, x3},
+    {y, x3},  {x, z3}, {x, y},  {z},      {y3, z}, {x2, y}, {z, y3},  {y3}};
 
-    auto b = DLB_F2Lm1;
-    auto strat = Strategy::Split(b);
-    auto solutions = ask_if_generate_and_solve(scramble, strat);
-    show(solutions);
-    assert(solutions.size() == 1);
+int main(int argc, const char* argv[]) {
+    auto scramble = Algorithm(argv[argc - 1]);
+    scramble.show();
+    auto max_depth = get_option<unsigned>("-d", argc, argv);
+
+    auto solutions = method.init_roots(scramble, rotations);
+    solutions = method.make_step<0, 1, 2, 3>(solutions, max_depth);
+
+    std::cout << "Optimal solutions to F2L-1" << std::endl;
+    for (auto solution : solutions) {
+        show(solution->get_skeleton());
+        std::cout << std::endl;
+    }
 }
