@@ -213,6 +213,17 @@ struct Method {
         }
         return ret;
     }
+
+    template <unsigned... blocks>
+    auto make_step(const StepSolutions& prev_step_solutions,
+                   unsigned step_depth) {
+        StepSolutions step_solutions;
+        for (auto node : prev_step_solutions) {
+            auto tmp = make_step<blocks...>(node, step_depth);
+            step_solutions.insert(step_solutions.end(), tmp.begin(), tmp.end());
+        }
+        return step_solutions;
+    }
 };
 
 template <typename... BlockTypes>
