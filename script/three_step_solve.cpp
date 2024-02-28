@@ -5,6 +5,8 @@
 #include "search.hpp"
 #include "step.hpp"
 
+constexpr unsigned _NBLOCKS = 3;
+
 Block<1, 3> block_1("DLB_222", {DLB}, {DL, LB, DB});
 Block<1, 2> block_2("DL_F_sq", {DLF}, {DF, LF});
 Block<1, 2> block_3("DB_R_sq", {DRB}, {RB, DR});
@@ -16,22 +18,22 @@ auto pruner = Pruner(load_table_ptr(Strategy::Optimal(block_1)),
                      load_table_ptr(Strategy::Optimal(block_2)),
                      load_table_ptr(Strategy::Optimal(block_3)));
 
+auto method = Method<_NBLOCKS>();
+
 std::vector<Algorithm> rotations{{},   {x},     {x2},     {x3},
                                  {y2}, {y2, x}, {y2, x2}, {y2, x3}};
-
-using namespace Method;
 
 int main(int argc, const char* argv[]) {
     std::array<unsigned, 3> splits_move_counts{
         get_option<unsigned>("-s0", argc, argv),
         get_option<unsigned>("-s1", argc, argv),
         get_option<unsigned>("-s2", argc, argv)};
-    auto scramble = Algorithm::make_from_str(argv[argc - 1]);
+    auto scramble = Algorithm(argv[argc - 1]);
     scramble.show();
     MultiBlockCube<3> cube;
     mover.apply(scramble, cube);
 
-    auto roots = init_roots(scramble, rotations, mover);
+    auto roots = method.init_roots(scramble, rotations, mover);
 
     // Step 1 : 2x2x2
     // StepSolutions step1_solutions;
