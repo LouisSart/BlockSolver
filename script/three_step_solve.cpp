@@ -30,38 +30,39 @@ int main(int argc, const char* argv[]) {
         get_option<unsigned>("-s2", argc, argv)};
     auto scramble = Algorithm(argv[argc - 1]);
     scramble.show();
-    MultiBlockCube<3> cube;
+    Method<_NBLOCKS>::MultiCube cube;
     mover.apply(scramble, cube);
 
     auto roots = method.init_roots(scramble, rotations, mover);
 
     // Step 1 : 2x2x2
-    // StepSolutions step1_solutions;
-    // for (auto root : roots) {
-    //     auto tmp = expand(root, mover, pruner, splits_move_counts);
-    //     step1_solutions.insert(step1_solutions.end(), tmp.begin(),
-    //     tmp.end());
-    // }
+    Method<_NBLOCKS>::StepSolutions step1_solutions;
+    for (auto root : roots) {
+        auto tmp =
+            method.make_step<0>(root, mover, pruner, splits_move_counts[0]);
+        step1_solutions.insert(step1_solutions.end(), tmp.begin(), tmp.end());
+    }
 
     // // Step 2 : 2x2x3
-    // StepSolutions step2_solutions;
-    // for (auto node : step1_solutions) {
-    //     auto tmp = expand(node, mover, pruner, splits_move_counts);
-    //     step2_solutions.insert(step2_solutions.end(), tmp.begin(),
-    //     tmp.end());
-    // }
+    Method<_NBLOCKS>::StepSolutions step2_solutions;
+    for (auto node : step1_solutions) {
+        auto tmp =
+            method.make_step<0, 1>(node, mover, pruner, splits_move_counts[1]);
+        step2_solutions.insert(step2_solutions.end(), tmp.begin(), tmp.end());
+    }
 
-    // // Step 3 : F2L-1
-    // StepSolutions step3_solutions;
-    // for (auto node : step2_solutions) {
-    //     auto tmp = expand(node, mover, pruner, splits_move_counts);
-    //     step3_solutions.insert(step3_solutions.end(), tmp.begin(),
-    //     tmp.end());
-    // }
-    // std::cout << "Three step F2L-1 solutions" << std::endl;
-    // for (auto solution : step3_solutions) {
-    //     show(get_skeleton(solution));
-    //     std::cout << std::endl;
-    // }
+    // Step 3 : F2L-1
+    Method<_NBLOCKS>::StepSolutions step3_solutions;
+    for (auto node : step2_solutions) {
+        auto tmp = method.make_step<0, 1, 2>(node, mover, pruner,
+                                             splits_move_counts[2]);
+        step3_solutions.insert(step3_solutions.end(), tmp.begin(), tmp.end());
+    }
+
+    std::cout << "Three step F2L-1 solutions" << std::endl;
+    for (auto solution : step3_solutions) {
+        show(solution->get_skeleton());
+        std::cout << std::endl;
+    }
     return 0;
 }

@@ -100,7 +100,7 @@ bool is_solved(const Cube& cube) {
 
 template <unsigned... steps, typename Cube>
 auto get_is_solved(const Cube& cube) {
-    static_assert(sizeof...(steps) <= cube.size());
+    assert(sizeof...(steps) <= cube.size());
     return [](const Cube& cube) -> bool { return is_solved<steps...>(cube); };
 }
 
@@ -113,7 +113,6 @@ struct StepNode : public std::enable_shared_from_this<StepNode<Cube>> {
     unsigned depth = 0;
     unsigned estimate = 0;
     Algorithm path;
-    unsigned number = 0;
 
     static sptr make_root(const Cube& cube) {
         return sptr(new StepNode(cube, 0));
@@ -149,7 +148,6 @@ struct StepNode : public std::enable_shared_from_this<StepNode<Cube>> {
 
     void show() const {
         std::cout << "Step object:" << std::endl;
-        std::cout << "   Step number: " << number << std::endl;
         std::cout << "   Depth: " << depth << std::endl;
         std::cout << "   Estimate: " << estimate << std::endl;
         if (parent != nullptr) {
@@ -162,6 +160,8 @@ struct StepNode : public std::enable_shared_from_this<StepNode<Cube>> {
 template <unsigned _NBLOCKS>
 struct Method {
     using MultiCube = MultiBlockCube<_NBLOCKS>;
+    using MultiNode = Node<MultiCube>;
+    using NodePtr = MultiNode::sptr;
     using StepMultiNode = StepNode<MultiCube>;
     using StepNodePtr = StepMultiNode::sptr;
     using StepSolutions = Solutions<StepNodePtr>;
@@ -174,7 +174,7 @@ struct Method {
         // state = S^-1 * M * S, where S is the symmetry (rotation) and M is the
         // scramble
         StepSolutions ret;
-        MultiBlockCube<_NBLOCKS> cube;
+        MultiCube cube;
         StepNodePtr root;
         for (auto sym : symmetries) {
             cube.set_solved();
@@ -188,42 +188,23 @@ struct Method {
         return ret;
     }
 
-    // template <unsigned... blocks, typename Mover, typename Pruner>
-    // auto make_step(const MultiNode::sptr root, unsigned step_depth,
-    //                const Mover& mover, const Pruner& pruner) {
-    //     return depth_first_search<false>(
-    //         root, mover.get_apply(), pruner.template get_estimator<step>(),
-    //         get_is_solved(root->state, step), step_depth);
-    // }
+    template <unsigned... blocks, typename Mover, typename Pruner>
+    auto make_step(const StepNodePtr step_node_ptr, const Mover& mover,
+                   const Pruner& pruner, unsigned step_depth) {
+        NodePtr root =
+            MultiNode::make_node(step_node_ptr->state, step_node_ptr->depth);
+        auto solutions = depth_first_search<false>(
+            root, mover.get_apply(), pruner.template get_estimator<blocks...>(),
+            get_is_solved<blocks...>(root->state), step_depth);
 
-    // template <typename Mover, typename Pruner, typename Splits>
-    // auto expand(const StepNodePtr step_node_ptr, const Mover& mover,
-    //             const Pruner& pruner, const Splits& splits) {
-    //     NodePtr node =
-    //         MultiNode::make_node(step_node_ptr->state, step_node_ptr->depth);
-    //     Solutions<NodePtr> solutions;
-    //     assert(step_node_ptr->number < 3);  // FIXME: any number of steps ?
-    //     switch (step_node_ptr->number) {
-    //         case 0:
-    //             solutions = make_step<0>(node, splits[0], mover, pruner);
-    //             break;
-    //         case 1:
-    //             solutions = make_step<1>(node, splits[1], mover, pruner);
-    //             break;
-    //         case 2:
-    //             solutions = make_step<2>(node, splits[2], mover, pruner);
-    //             break;
-    //         default:
-    //             std::cout << "Error in StepNode expansion" << std::endl;
-    //             abort();
-    //     }
-    //     Solutions<StepNodePtr> ret;
-    //     for (auto&& node_ptr : solutions) {
-    //         auto child = StepMultiNode::make_node(node_ptr->state,
-    //         node_ptr->depth); child->parent = step_node_ptr; child->path =
-    //         node_ptr->get_path(); child->number = step_node_ptr->number + 1;
-    //         ret.push_back(child);
-    //     }
-    //     return ret;
-    // }
+        StepSolutions ret;
+        for (auto&& node_ptr : solutions) {
+            auto child =
+                StepMultiNode::make_node(node_ptr->state, node_ptr->depth);
+            child->parent = step_node_ptr;
+            child->path = node_ptr->get_path();
+            ret.push_back(child);
+        }
+        return ret;
+    }
 };
