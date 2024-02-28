@@ -96,6 +96,12 @@ struct Algorithm {
     void show() const;
 };
 
+void show(const std::vector<Algorithm>& skeleton) {
+    for (Algorithm step : skeleton) {
+        step.show();
+    }
+}
+
 constexpr unsigned N_HTM_MOVES = 18;
 constexpr unsigned N_HTM_MOVES_AND_ROTATIONS = 27;
 constexpr unsigned N_HTM_MOVES_AND_SYMMETRIES = 29;
