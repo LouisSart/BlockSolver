@@ -11,14 +11,7 @@ Block<1, 3> block_1("DLB_222", {DLB}, {DL, LB, DB});
 Block<1, 2> block_2("DL_F_sq", {DLF}, {DF, LF});
 Block<1, 2> block_3("DB_R_sq", {DRB}, {RB, DR});
 
-auto mover = Mover(new BlockMoveTable(block_1), new BlockMoveTable(block_2),
-                   new BlockMoveTable(block_3));
-
-auto pruner = Pruner(load_table_ptr(Strategy::Optimal(block_1)),
-                     load_table_ptr(Strategy::Optimal(block_2)),
-                     load_table_ptr(Strategy::Optimal(block_3)));
-
-auto method = Method(mover, pruner);
+auto method = make_method(block_1, block_2, block_3);
 
 std::vector<Algorithm> rotations{{},   {x},     {x2},     {x3},
                                  {y2}, {y2, x}, {y2, x2}, {y2, x3}};

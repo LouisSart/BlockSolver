@@ -2,6 +2,7 @@
 
 #include "coordinate_block_cube.hpp"
 #include "move_table.hpp"
+#include "pruning_table.hpp"
 #include "search.hpp"
 
 template <typename... MTs>
@@ -214,8 +215,9 @@ struct Method {
     }
 };
 
-// template <typename... BlockTypes>
-// auto make_method(const BlockTypes& blocks) {
-//     auto mover = Mover(new BlockMoveTable(blocks)...);
-//     auo Pruner = Pruner(load_table_ptr(blocks)...);
-// }
+template <typename... BlockTypes>
+auto make_method(const BlockTypes&... blocks) {
+    auto mover = Mover(new BlockMoveTable(blocks)...);
+    auto pruner = Pruner(load_table_ptr(Strategy::Optimal(blocks))...);
+    return Method(mover, pruner);
+}
