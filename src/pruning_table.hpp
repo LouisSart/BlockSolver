@@ -307,6 +307,18 @@ Strategy::table_t* gen_table_ptr(const Strategy& strat) {
 template <typename Strategy>
 Strategy::table_t* load_table_ptr(const Strategy& strat) {
     auto table = new Strategy::table_t(strat.block.id);
-    *table = strat.template load_table();
+    try {
+        *table = strat.template load_table();
+    } catch (LoadError error) {
+        std::cout << "Do you want to generate pruning table ? (y/n) "
+                  << std::endl;
+        std::string answer;
+        std::cin >> answer;
+        if (answer == "y") {
+            *table = strat.template gen_table();
+        } else {
+            abort();
+        };
+    }
     return table;
 }
