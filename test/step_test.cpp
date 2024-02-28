@@ -13,25 +13,34 @@ auto apply = mover.get_apply();
 void step_first_test() {
     MultiBlockCube<2> cube;
     assert(cube.is_solved());
-    apply(U, cube);
-    assert(!cube.is_solved());
+
+    apply(L, cube);  // Only breaks block1
+    assert(!is_solved<0>(cube));
+    assert(is_solved<1>(cube));
+    assert((!is_solved<0, 1>(cube)));
+    auto one_step_estimator = pruner.get_estimator<0>();
+    assert(0 < pruner.get_estimate<0>(cube));
+    assert(0 < one_step_estimator(cube));
+    auto second_step_estimator = pruner.get_estimator<1>();
+    assert(0 == pruner.get_estimate<1>(cube));
+    assert(0 == second_step_estimator(cube));
+    auto two_step_estimator = pruner.get_estimator<0, 1>();
+    assert((0 < pruner.get_estimate<0, 1>(cube)));
+    assert(0 < two_step_estimator(cube));
+
     Algorithm seq({R, U, D, B2});
     mover.apply(seq, cube);
     mover.apply(U, cube);
-
-    auto estimator = pruner.get_estimator<0>();
-    assert(0 < pruner.get_estimate<0>(cube));
-    assert(0 < estimator(cube));
-
-    auto is_solved = get_is_solved(cube, 0);
-    assert(!is_solved(cube));
+    assert(2 == one_step_estimator(cube));
+    assert(1 == second_step_estimator(cube));
+    assert(2 == two_step_estimator(cube));
 }
 
 void second_step_test() {
     MultiBlockCube<2> cube;
     auto root = Node<MultiBlockCube<2>>::make_root(cube);
-    auto children =
-        root->expand(mover.get_apply(), pruner.get_estimator<1>(), HTM_Moves);
+    auto children = root->expand(mover.get_apply(),
+                                 pruner.get_estimator<0, 1>(), HTM_Moves);
     assert(children[R]->estimate == 0);
     assert(children[U]->estimate == 1);
     assert(children[F]->estimate == 1);
