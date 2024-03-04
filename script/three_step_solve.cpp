@@ -32,6 +32,7 @@ int main(int argc, const char* argv[]) {
     // Step 1 : L5C skeleton
     solutions = method.make_step<0, 1, 2, 3>(solutions, splits_move_counts[2]);
 
+    solutions.sort_by_depth();
     std::cout << "Three step corner skeletons" << std::endl;
     for (auto solution : solutions) {
         show(solution->get_skeleton());

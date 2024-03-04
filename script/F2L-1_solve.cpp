@@ -20,7 +20,7 @@ int main(int argc, const char* argv[]) {
     auto max_depth = get_option<unsigned>("-d", argc, argv);
 
     auto solutions = method.init_roots(scramble, rotations);
-    solutions = method.make_step<0, 1, 2, 3>(solutions, max_depth);
+    solutions = method.make_step<0, 1, 2, 3>(solutions, max_depth, OPT_ONLY);
 
     std::cout << "Optimal solutions to F2L-1" << std::endl;
     for (auto solution : solutions) {

@@ -196,12 +196,22 @@ struct Method {
     }
 
     template <unsigned... blocks>
-    auto make_step(const StepNodePtr step_node_ptr, unsigned step_depth) {
+    StepSolutions make_step(const StepNodePtr step_node_ptr,
+                            unsigned step_depth, const bool opt_only = false) {
         NodePtr root =
             MultiNode::make_node(step_node_ptr->state, step_node_ptr->depth);
-        auto solutions = depth_first_search<false>(
-            root, mover.get_apply(), pruner.template get_estimator<blocks...>(),
-            get_is_solved<blocks...>(root->state), step_depth);
+        Solutions<NodePtr> solutions;
+        if (opt_only) {  // Only find optimal solutions
+            solutions = IDAstar<false>(
+                root, mover.get_apply(),
+                pruner.template get_estimator<blocks...>(),
+                get_is_solved<blocks...>(root->state), step_depth);
+        } else {  // Find all solutions that are shorter than max_depth
+            solutions = depth_first_search<false>(
+                root, mover.get_apply(),
+                pruner.template get_estimator<blocks...>(),
+                get_is_solved<blocks...>(root->state), step_depth);
+        }
 
         StepSolutions ret;
         for (auto&& node_ptr : solutions) {
@@ -215,11 +225,26 @@ struct Method {
     }
 
     template <unsigned... blocks>
-    auto make_step(const StepSolutions& prev_step_solutions,
-                   unsigned step_depth) {
+    StepSolutions make_step(const StepSolutions& prev_step_solutions,
+                            unsigned step_depth, const bool opt_only = false) {
         StepSolutions step_solutions;
+        auto max_depth = step_depth;
         for (auto node : prev_step_solutions) {
-            auto tmp = make_step<blocks...>(node, step_depth);
+            auto tmp = make_step<blocks...>(node, step_depth, opt_only);
+            if (tmp.size() > 0) {
+                if (opt_only) {
+                    // Clear current solutions if previous ones
+                    // were shorter
+                    // and update max_depth if solutions for current node are
+                    // shorter
+                    if (tmp[0]->depth > max_depth) {
+                        tmp.clear();
+                    } else if (tmp[0]->depth < max_depth) {
+                        step_solutions.clear();
+                        max_depth = tmp[0]->depth;
+                    }
+                }
+            }
             step_solutions.insert(step_solutions.end(), tmp.begin(), tmp.end());
         }
         return step_solutions;
@@ -232,3 +257,6 @@ auto make_method(const BlockTypes&... blocks) {
     auto pruner = Pruner(load_table_ptr(Strategy::Optimal(blocks))...);
     return Method(mover, pruner);
 }
+
+constexpr bool OPT_ONLY = true;
+constexpr bool FIND_ALL = false;

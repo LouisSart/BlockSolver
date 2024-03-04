@@ -16,7 +16,7 @@ int main(int argc, const char* argv[]) {
     auto max_depth = get_option<unsigned>("-d", argc, argv);
 
     auto roots = method.init_roots(scramble, rotations);
-    auto solutions = method.make_step<0, 1, 2>(roots, max_depth);
+    auto solutions = method.make_step<0, 1, 2>(roots, max_depth, OPT_ONLY);
 
     std::cout << "Solutions to 2x2x3" << std::endl;
     for (auto solution : solutions) {

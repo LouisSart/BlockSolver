@@ -6,7 +6,14 @@
 #include "node.hpp"
 
 template <typename NodePtr>
-using Solutions = std::vector<NodePtr>;
+struct Solutions : public std::vector<NodePtr> {
+    void sort_by_depth() {
+        std::sort(this->begin(), this->end(),
+                  [](const NodePtr node1, const NodePtr node2) {
+                      return (node1->depth < node2->depth);
+                  });
+    }
+};
 
 template <typename NodePtr>
 auto standard_directions(const NodePtr node) {
