@@ -1,9 +1,9 @@
-#include <tuple>
+#include <tuple>  // tables stored as tuples in Mover and Pruner
 
-#include "coordinate_block_cube.hpp"
-#include "move_table.hpp"
-#include "pruning_table.hpp"
-#include "search.hpp"
+#include "coordinate_block_cube.hpp"  // MultiBlockCube
+#include "move_table.hpp"             // BlockMoveTable
+#include "pruning_table.hpp"          // load_ptr(Strategy)
+#include "search.hpp"                 // DFS and IDA*
 
 template <typename... MTs>
 struct Mover {

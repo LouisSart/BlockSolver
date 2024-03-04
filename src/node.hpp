@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
-#include <memory>
-#include <vector>
+#include <memory>  // shared_ptr
+#include <vector>  // expand() return type
 
 #include "algorithm.hpp"
 

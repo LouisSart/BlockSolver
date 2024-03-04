@@ -1,13 +1,12 @@
 #pragma once
 #include <array>
-#include <cstdlib>
 #include <ctime>
 #include <iostream>
 #include <set>
 #include <vector>
 
-#include "algorithm.hpp"
-#include "coordinate.hpp"
+#include "algorithm.hpp"   // scramble
+#include "coordinate.hpp"  // ipow
 #include "cubie.hpp"
 
 struct CubieCube {

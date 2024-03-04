@@ -1,8 +1,8 @@
 #pragma once
-#include <filesystem>
-#include <fstream>
-#include <memory>  // std::unique_ptr
-#include <tuple>
+#include <filesystem>  // locate move table files
+#include <fstream>     // write tabes into files
+#include <memory>      // std::unique_ptr
+#include <tuple>       // return ccl and ccp at the same time
 
 #include "algorithm.hpp"
 #include "block_cube.hpp"
