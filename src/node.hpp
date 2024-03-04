@@ -1,5 +1,4 @@
 #pragma once
-#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -35,9 +34,8 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
     template <typename F, typename H, typename MoveContainer>
     std::vector<sptr> expand(const F &apply, const H &heuristic,
                              const MoveContainer &directions) {
-        // Generates the children nodes, computes their estimate using the
-        // heuristic function and then sorts them by decreasing pruning values
-        // (so that children.back() is the child with the lowest estimate.)
+        // Generates the children nodes and computes their estimate using the
+        // heuristic function
         std::vector<sptr> children;
         Cube next;
         for (auto &&move : directions) {
