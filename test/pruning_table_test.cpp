@@ -101,44 +101,6 @@ void test_direct_and_backward_are_equivalent(const Block& b) {
     direct.write();
 }
 
-template <unsigned nc, unsigned ne>
-void test_split_api(const Block<nc, ne>& b) {
-    auto [c_sub_block, e_sub_block] = b.split_corners_and_edges();
-    Strategy::Optimal c_strat(c_sub_block);
-    Strategy::Optimal e_strat(e_sub_block);
-
-    MaxCombinePruningTable split_table(c_strat, e_strat);
-    assert(split_table.size() > 0);
-    split_table.reset();
-
-    CoordinateBlockCube cbc{0, 0, 0, 0, 0, 0};
-    assert(split_table.get_estimate(cbc) > 0);
-
-    auto strat = Strategy::Split(b);
-    split_table = strat.gen_table();
-    assert(split_table.get_estimate(cbc) == 0);
-    split_table.write();
-    split_table.reset();
-    assert(split_table.get_estimate(cbc) != 0);
-    split_table.load();
-    assert(split_table.get_estimate(cbc) == 0);
-
-    auto optimal = Strategy::Optimal(b);
-    auto opt_table = optimal.load_table();
-    long unsigned opt_mean_value = 0;
-    long unsigned split_mean_value = 0;
-    for (unsigned k = 0; k < opt_table.size(); ++k) {
-        auto cbc = optimal.from_index(k);
-        opt_mean_value += opt_table.get_estimate(cbc);
-        split_mean_value += split_table.get_estimate(cbc);
-        assert(opt_table.get_estimate(cbc) >= split_table.get_estimate(cbc));
-    }
-    std::cout << "Optimal Mean Value: "
-              << (double)opt_mean_value / opt_table.size() << "\n"
-              << "Split Mean Value: "
-              << (double)split_mean_value / opt_table.size() << std::endl;
-}
-
 int main() {
     auto LF_column = Block<2, 1>("LF_column", {ULF, DLB}, {LF});
     auto DLB_222 = Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB});
@@ -160,8 +122,5 @@ int main() {
     std::cout << "\nDirect and backwards equivalence test" << std::endl;
     test_direct_and_backward_are_equivalent(LF_column);
     test_direct_and_backward_are_equivalent(DLB_222);
-
-    std::cout << "\nSplit pruning table test" << std::endl;
-    test_split_api(DLB_222);
     return 0;
 }

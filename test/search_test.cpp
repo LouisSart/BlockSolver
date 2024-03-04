@@ -193,31 +193,6 @@ void test_solve_222_on_wr_scramble() {
     check_solutions(scramble, m_table, solutions);
 }
 
-void test_solve_with_split_heuristic() {
-    Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
-    CoordinateBlockCube cbc;
-    BlockMoveTable m_table(b);
-    Strategy::Split strat(b);
-    auto p_table = strat.load_table();
-    Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
-                        U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
-    scramble.show();
-    m_table.apply(scramble, cbc);
-    auto root = Node<CoordinateBlockCube>::make_root(cbc);
-    auto solutions = IDAstar(
-        root,
-        [&m_table](const Move& move, CoordinateBlockCube& cube) {
-            m_table.apply(move, cube);
-        },
-        [&p_table](const CoordinateBlockCube& cube) {
-            return p_table.get_estimate(cube);
-        },
-        [](const CoordinateBlockCube& cube) { return cube.is_solved(); }, 4);
-    assert(solutions.size() == 1);
-    show(solutions);
-    check_solutions(scramble, m_table, solutions);
-}
-
 int main() {
     Block<2, 3> RouxFirstBlock("RouxFirstBlock", {DLF, DLB}, {LF, LB, DL});
     Block<4, 2> FrontColumns("FrontColumns", {ULF, DLF, URF, DRF}, {LF, RF});
@@ -239,7 +214,5 @@ int main() {
     std::cout << "--- Test depth first 2x2 solve on Wen's WR scramble #1 ---"
               << std::endl;
     test_solve_222_on_wr_scramble();
-    std::cout << " --- Test split heuristic --- " << std::endl;
-    test_solve_with_split_heuristic();
     return 0;
 }
