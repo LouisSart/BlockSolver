@@ -48,13 +48,13 @@ Pruning tables are used to accelerate the search for solutions. Basically the ta
 
 More concretely if you are looking for solutions under a given depth threshold max_depth, and if after m moves you run into a state with estimate h such that m + h > max_depth, then you know you can avoid generating the children of that state because they will not lead you to a solution that satisfies the criterion max_depth. The closer the estimate is to the optimal solution length for the state, the more nodes the search algorithm will be able to prune.
 
-Usually the better pruning values require a lot of memory because they take into account the multiple caracteristics of each state (layout, permutation and orientation). As there are many possible combinations of those caracteristics, the number of entries in the table is higher. On the other hand a more 'lazy' heuristic table (that only takes into account the layout of the pieces for instance) will have a lower memory footprint but will store values that are further away from the optimal solution length on average. Which pruning value is best is mainly a tradeoff between RAM usage and mean value.
+Usually the better pruning values require a lot of memory because they take into account the multiple characteristics of each state (layout, permutation and orientation). As there are many possible combinations of those characteristics, the number of entries in the table is higher. On the other hand a more 'lazy' heuristic table (that only takes into account the layout of the pieces for instance) will have a lower memory footprint but will store values that are further away from the optimal solution length on average. Which pruning value is best is mainly a tradeoff between RAM usage and mean value.
 
-TODO: Description of the algorithms for pruning table generation
+Pruning tables are generated using a breadth-first algorithm from the solved state. It iteratively generates all nodes at depth 1, then 2 ... Each newly encountered position is converted to a coordinate integer, and the depth at which it was found is written into an array. This array is then used as a lookup table by the search algorithms. As we get into deeper parts of the tree, it gets more and more rare to find a position that hasn't been visited yet and the generator slows down. To accelerate the generation algorithm, a backwards generator is used. The backwards generator starts from a not-yet-encoutered state S and generates its children. If one of them is a known position C, then depth(S) = depth(C) + 1. The table can thus be filled from the outer parts of the tree. The backwards generator cannot be used alone because at the beginning only the solved position is known at depth 0, and most of the unknown positions aren't connected with it. In this program the backwards search is triggered when most of the table is already set and only the outer layers of the tree are left to visit.
 
 ### Optimal Pruning Value ###
 
-This is the optimal pruning value. It is exactly equal to the optimal solution length and allows the search algorithm to prune every sub-optimal path, leaving only those which are optimal. This makes the search optimally fast, as it allows to only generate the path to the shortest solutions.
+This is the optimal pruning value. It is exactly equal to the optimal solution length and allows the search algorithm to prune every sub-optimal path, leaving only those which are optimal. This makes the search optimally fast, as it allows to only generate the paths to the shortest solutions.
 
 Pros: Finds the optimal path directly
 Cons: Big table size, cannot be used for big blocks
@@ -65,13 +65,6 @@ This corresponds to the optimal number of moves needed to restore the block piec
 
 Pros: Small table, usable for bigger blocks
 Cons: The set of all estimate zero states is not the solved state alone, but a much bigger space. This means having a low PPV doesn't necessarily mean the state is close to solved. PPV is not good for low value states.
-
-# Split Pruning Value #
-
-The split heuristic computes the optimal solution lengths for corners and edges and takes the maximum of the two as the pruning value. It is limited by the table size with the most possible states (either corners or edges). For higher edge (resp. corner) numbers, I think we could split again the set of edges (resp. corners) and take the maximum value of the two sets as the pruning value. This is not implemented yet as we are not really interested in optimal solutions for very big blocks because they are often not humanly findable.
-
-Pros: Small table size, the estimate-zero space is the solved state alone, extendable to bigger blocks
-Cons: No cons really
 
 # Search Algorithms #
 
