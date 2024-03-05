@@ -11,6 +11,5 @@ target_sources(block_solver-core INTERFACE
         node.hpp
         option.hpp
         search.hpp
-        solve.hpp
         step.hpp)
 target_include_directories(block_solver-core INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
