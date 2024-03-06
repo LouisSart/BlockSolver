@@ -230,16 +230,12 @@ struct Method {
         StepSolutions step_solutions;
         auto max_depth = step_depth;
         for (auto node : prev_step_solutions) {
-            auto tmp = make_step<blocks...>(node, step_depth, opt_only);
+            auto tmp = make_step<blocks...>(node, max_depth, opt_only);
             if (tmp.size() > 0) {
                 if (opt_only) {
-                    // Clear current solutions if previous ones
-                    // were shorter
-                    // and update max_depth if solutions for current node are
+                    // Update max_depth if solutions for current node are
                     // shorter
-                    if (tmp[0]->depth > max_depth) {
-                        tmp.clear();
-                    } else if (tmp[0]->depth < max_depth) {
+                    if (tmp[0]->depth < max_depth) {
                         step_solutions.clear();
                         max_depth = tmp[0]->depth;
                     }
