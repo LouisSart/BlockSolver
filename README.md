@@ -1,6 +1,38 @@
 # BlockSolver
 A Rubik's Cube block solver
 
+### Configuration ###
+
+cmake -B build
+
+### Compilation ###
+
+cmake --build build
+
+### Run script ###
+
+There are three main scripts that you may want to run: three_step_solve, 223_solve and F2L-1_solve. Usage:
+
+./SCRIPT_PATH [OPTIONS] SCRAMBLE
+
+223_solve and F2L-1_solve respectively solve the optimal 2x2x3 block and F2L-1 block of the given scramble. For example:
+
+./build/script/223_solve "R L U D F B"
+
+should return a bunch of 5 move solutions. Same for F2L-1_solve:
+
+./build/script/F2L-1_solve "R L U D F B"
+
+Note: On startup you will be prompted to generate a few tables. This can take a few minutes and is necessary for the program to run.
+
+three_step_solve finds a corner skeleton in three steps: first solve the DLB 2x2x2, then extend it to an F2L-1 and finally solve the top cross edges to leave 5 corners. The search depth at each step is required, you can pass it using the -s`i` options, where i is the step index starting at 0. 
+
+
+./build/script/three_step_solve -s0 6 -s1 13 -s2 18 "R L U D R2 L D F2 U' R' D2 L F' R2 F B R D F R' U2 L' F R2 F"
+
+
+This example will try to find a 5 corner skeleton starting with a 2x2x2 in 6 moves or fewer, followed by an F2L-1 in 13 or fewer, and a leave corner skeleton in 18 or better. The given threshold at each step is the total length for all steps cumulated, e.g. -s1 13 here means 2x2x2 + F2L-1 in 13 or fewer moves.
+
 # CubieCube #
 A struct defining 4 arrays for cp, co, ep and eo
 
