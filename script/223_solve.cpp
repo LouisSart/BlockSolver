@@ -13,10 +13,9 @@ std::vector<Algorithm> rotations{
 int main(int argc, const char* argv[]) {
     auto scramble = Algorithm(argv[argc - 1]);
     scramble.show();
-    auto max_depth = get_option<unsigned>("-d", argc, argv);
 
     auto roots = method.init_roots(scramble, rotations);
-    auto solutions = method.make_step<0, 1, 2>(roots, max_depth, OPT_ONLY);
+    auto solutions = method.make_step<0, 1, 2>(roots, 20, OPT_ONLY);
 
     std::cout << "Solutions to 2x2x3" << std::endl;
     for (auto solution : solutions) {
