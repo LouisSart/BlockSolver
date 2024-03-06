@@ -15,7 +15,7 @@ There are three main scripts that you may want to run: three_step_solve, 223_sol
 
 ./SCRIPT_PATH [OPTIONS] SCRAMBLE
 
-223_solve and F2L-1_solve respectively solve the optimal 2x2x3 block and F2L-1 block of the given scramble. For example:
+223_solve and F2L-1_solve respectively solve the optimal 2x2x3 block and F2L-1 block of the given scramble. All possible rotations of the cube are generated before starting the search. For example:
 
 ./build/script/223_solve "R L U D F B"
 
@@ -31,7 +31,29 @@ three_step_solve finds a corner skeleton in three steps: first solve the DLB 2x2
 ./build/script/three_step_solve -s0 6 -s1 13 -s2 18 "R L U D R2 L D F2 U' R' D2 L F' R2 F B R D F R' U2 L' F R2 F"
 
 
-This example will try to find a 5 corner skeleton starting with a 2x2x2 in 6 moves or fewer, followed by an F2L-1 in 13 or fewer, and a leave corner skeleton in 18 or better. The given threshold at each step is the total length for all steps cumulated, e.g. -s1 13 here means 2x2x2 + F2L-1 in 13 or fewer moves.
+This example will find 5 corner skeletons starting with a 2x2x2 in 6 moves or fewer, followed by an F2L-1 in 13 or fewer, and a leave corner skeleton in 18 or better. The given threshold at each step is the total length for all steps cumulated, e.g. -s1 13 here means 2x2x2 + F2L-1 in 13 or fewer moves.
+
+# Goal #
+
+The (not so clear) goal that I have is to make an FMC helper tool to find human-findable skeletons of all kinds. At first I was just hoping to get a computer implementation of a 'leave 3C solver' but it could become a 'custom solver' allowing the user to define their own methods. I am hoping that this program could give us amazing solutions that are humanly understandable. Imagine an optimal Roux, or blockino solver...
+
+# Limitations #
+
+The program is still under development, and I think there are quite a few things that can be done to make it really amazing for FMC solvers and cube enjoyers.
+
+### NISS ###
+
+For now the program doesn't understand or use NISS, which make pretty poor at finding good block solutions. Definitely one of the things I have to wrap my head around.
+
+### EO and DR ###
+
+Even if this program doesn't have the goal of becoming a Thistleswaithe or Kociemba solver, I'd like to combine solving blocks and solving domino (blockino solving fashion). As for EO it is a must have even for block FMC solvers. Solving EO or DR could be done at any stage of the method, so I'll have to think of a dynamic order of the steps.
+
+### More ###
+
+I have a lot of ideas for the program, which are mostly impossible because I haven't the skill to do it, but I'll put them here in case somebody feels like they could do it. First is parallelism. I'm pretty sure the computations that are run here could be made way faster with some multithreading magic. I don't want to make a super powerful solver, but some speed up would improve the user experience.
+
+Also maybe this code shouldn't do the impementation AND the application. I think turning buttons on and off, or adding more and more command line options isn't the way to go. I've thought of making it a Python library, but maybe just having input scripts to define your method and parameters is better.
 
 # CubieCube #
 A struct defining 4 arrays for cp, co, ep and eo
