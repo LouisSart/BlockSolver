@@ -1,6 +1,7 @@
+- README link to nissy and other FMC programs
+- Dump table information
+- EO step
 - Skeleton and algorithm show() method (Rotations, comments)
 - Use StepNode in a real search algorithm (depth first)
-- EO step
-- Convert move sequences according to cube rotations 
-- Change step order depending on the case (Step id from 0 to 2**nsteps - 1)
+- Convert move sequences according to cube rotations
 - NISS at any step
