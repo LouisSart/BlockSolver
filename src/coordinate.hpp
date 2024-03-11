@@ -101,7 +101,7 @@ uint eo_coord(uint* eo, uint n) {
     // eo: the orientation array of the edges
     // n: the number of edges to compute  the coordinate from.
     // For a complete cube, coord is computed from only the first
-    // 7 edges because the orientation of the last is forced by the others
+    // 11 edges because the orientation of the last is forced by the others
     uint coord{0};
     for (size_t i = 0; i < n; i++) {
         coord += eo[i] * ipow(2, i);
