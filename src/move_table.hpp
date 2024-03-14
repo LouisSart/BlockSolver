@@ -283,9 +283,9 @@ void load_binary(const std::filesystem::path& table_path, value_type* ptr,
 template <typename value_type>
 void write_binary(const std::filesystem::path& table_path, value_type* ptr,
                   size_t size) {
-    std::ifstream istrm(table_path, std::ios::binary);
-    istrm.read(reinterpret_cast<char*>(ptr), sizeof(value_type) * size);
-    istrm.close();
+    std::ofstream file(table_path, std::ios::binary);
+    file.write(reinterpret_cast<char*>(ptr), sizeof(value_type) * size);
+    file.close();
 }
 
 struct EOMoveTable {
@@ -334,14 +334,24 @@ struct EOMoveTable {
         }
     }
 
-    auto apply(EOCube& cube, const Move& move) {
+    auto apply(const Move& move, EOCube& cube) const {
         assert(cube.ceo * N_HTM_MOVES_AND_ROTATIONS + move < table_size);
         cube.ceo = table[cube.ceo * N_HTM_MOVES_AND_ROTATIONS + move];
     }
 
-    auto apply(EOCube& cube, const Algorithm& alg) {
+    auto apply(const Algorithm& alg, EOCube& cube) const {
         for (auto move : alg.sequence) {
-            apply(cube, move);
+            apply(move, cube);
         };
+    }
+    void apply_inverse(const Move& move, EOCube& cube) const {
+        apply(inverse_of_HTM_Moves_and_rotations[move], cube);
+    }
+
+    void apply_inverse(const Algorithm& alg, EOCube& cube) const {
+        for (auto move = alg.sequence.rbegin(); move != alg.sequence.rend();
+             ++move) {
+            apply_inverse(*move, cube);
+        }
     }
 };

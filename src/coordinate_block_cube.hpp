@@ -79,4 +79,5 @@ struct EOCube {
     unsigned ceo = 0;
 
     bool is_solved() const { return (ceo == 0); }
+    void show() const { std::cout << "EOCube: " << ceo << std::endl; }
 };

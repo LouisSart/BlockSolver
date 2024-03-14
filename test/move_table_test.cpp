@@ -84,8 +84,11 @@ void test_eo_table() {
     EOMoveTable table;
 
     EOCube cube;
-    table.apply(cube, {F});
-    table.apply(cube, {L2, U2, R2, U2, B});
+    table.apply({F}, cube);
+    table.apply({L2, U2, R2, D2, B}, cube);
+    assert(cube.is_solved());
+    table.apply({F, D, B, U, F}, cube);
+    table.apply_inverse({F, D, B, U, F}, cube);
     assert(cube.is_solved());
 }
 
