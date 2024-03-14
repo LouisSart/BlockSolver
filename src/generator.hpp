@@ -1,6 +1,8 @@
+#include <cassert>
 #include <vector>
 
-#include "move_table.hpp"
+#include "algorithm.hpp"
+#include "coordinate_block_cube.hpp"
 
 template <bool verbose = false>
 struct Advancement {

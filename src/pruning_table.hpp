@@ -1,12 +1,15 @@
 #pragma once
-#include <algorithm>  // std::fill(begin, end)
-#include <cstdint>    // uint8_t
-#include <deque>      // std::deque
-#include <limits>     // std::numeric_limits
-#include <memory>     // std::unique_ptr
+#include <algorithm>   // std::fill(begin, end)
+#include <cstdint>     // uint8_t
+#include <deque>       // std::deque
+#include <filesystem>  // locate table files
+#include <fstream>     // write tables into files
+#include <limits>      // std::numeric_limits
+#include <memory>      // std::unique_ptr
 
 #include "coordinate.hpp"
 #include "generator.hpp"
+#include "move_table.hpp"
 #include "node.hpp"
 
 namespace fs = std::filesystem;
@@ -27,17 +30,15 @@ struct PruningTable {
 
     std::unique_ptr<entry_type[]> table{new entry_type[Strategy::table_size]};
 
-    PruningTable(){};
-    PruningTable(const std::string block_id) {
-        table_path = table_dir / block_id;
-    };
-    template <typename Block>
-    PruningTable(const Block& block) {
-        table_path = table_dir / block.id;
-    };
-    PruningTable(const Strategy& strat) {
-        table_path = table_dir / strat.block.id;
-    }
+    PruningTable() { table_path = table_dir; }
+    PruningTable(const std::string id) { table_path = table_dir / id; }
+    // template <typename Block>
+    // PruningTable(const Block& block) {
+    //     table_path = table_dir / block.id;
+    // }
+    // PruningTable(const Strategy& strat) {
+    //     table_path = table_dir / strat.block.id;
+    // }
 
     void write() const {
         fs::create_directories(table_path);
@@ -282,7 +283,7 @@ struct OptimalEO {
     template <bool verbose = false>
     table_type gen_table() const {
         table_type table;
-        generate<verbose>(table, *this);
+        generate<verbose>(table, *this, EOMoveTable());
         return table;
     }
 

@@ -80,8 +80,8 @@ void test_direct_and_backward_are_equivalent(const Block& b) {
     b.show();
     Strategy::Permutation strat(b);
     BlockMoveTable m_table(b);
-    auto direct = PruningTable(strat);
-    auto backwards = PruningTable(strat);
+    auto direct = strat.load_table();
+    auto backwards = strat.load_table();
 
     std::cout << "Direct generator:" << std::endl;
     auto adv = Advancement(direct.size());
@@ -105,6 +105,12 @@ void test_direct_and_backward_are_equivalent(const Block& b) {
 void test_eo_table() {
     Strategy::OptimalEO strat;
     EOMoveTable m_table;
+    auto table = strat.gen_table();
+    auto table_check = strat.load_table();
+
+    for (unsigned k = 0; k < table.size(); ++k) {
+        assert(table[k] == table_check[k]);
+    }
 }
 
 int main() {
