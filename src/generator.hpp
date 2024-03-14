@@ -179,4 +179,16 @@ void generate(PruningTable& p_table, const Strategy& strat,
     compute_pruning_table_backwards(p_table, strat, m_table, adv);
     assert(adv.encountered == p_table.size());
     p_table.write();
+
+    {
+        std::ofstream file(p_table.table_path / "info.txt", std::ios::out);
+        file << strat.info() << std::endl;
+        file << "Depth Nodes" << std::endl;
+        int k = 0;
+        for (auto n : adv.nodes_per_depth) {
+            file << k << " " << n << std::endl;
+            k++;
+        }
+        file.close();
+    }
 }

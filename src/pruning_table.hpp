@@ -118,6 +118,23 @@ struct Optimal {
         return table;
     }
 
+    std::string info() const {
+        std::string ret = "Optimal strategy for block " + block.name;
+        ret += "\n";
+        ret += "Corners: ";
+        for (auto c : block.corners) {
+            ret += corner_str[c] + " ";
+        }
+        ret += "\n";
+        ret += "Edges: ";
+        for (auto c : block.edges) {
+            ret += edge_str[c] + " ";
+        }
+        ret += "\n";
+        ret += "Table size: " + std::to_string(table_size) + "\n";
+        return ret;
+    }
+
     static unsigned c_index(const CoordinateBlockCube& cbc) {
         unsigned index = cbc.ccl * n_cp * n_co + (cbc.ccp * n_co + cbc.cco);
         return index;
@@ -206,6 +223,24 @@ struct Permutation {
                                    0                                  // ceo
         );
     }
+
+    std::string info() const {
+        std::string ret = "Permutation strategy for block " + block.name;
+        ret += "\n";
+        ret += "Corners: ";
+        for (auto c : block.corners) {
+            ret += corner_str[c] + " ";
+        }
+        ret += "\n";
+        ret += "Edges: ";
+        for (auto c : block.edges) {
+            ret += edge_str[c] + " ";
+        }
+        ret += "\n";
+        ret += "Table size: " + std::to_string(table_size) + "\n";
+        return ret;
+    }
+
     void show() const {
         std::cout << "Strategy Object:" << std::endl;
         std::cout << "   Type: " << name << std::endl;
@@ -226,6 +261,12 @@ struct OptimalEO {
 
     static CoordinateBlockCube from_index(const unsigned& index) {
         return CoordinateBlockCube(0, 0, 0, 0, 0, index);
+    }
+
+    std::string info() const {
+        std::string ret = "Optimal strategy for full EO:\n";
+        ret += "Table size: " + std::to_string(table_size);
+        return ret;
     }
 
     template <bool verbose = false>
