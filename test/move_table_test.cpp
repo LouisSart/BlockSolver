@@ -80,6 +80,15 @@ void test_load() {
     }
 }
 
+void test_eo_table() {
+    EOMoveTable table;
+
+    EOCube cube;
+    table.apply(cube, {F});
+    table.apply(cube, {L2, U2, R2, U2, B});
+    assert(cube.is_solved());
+}
+
 int main() {
     assert_move_table_is_correct(Block<8, 0>(
         "AllCorners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {}));
@@ -95,5 +104,6 @@ int main() {
     test_inverse_move_apply(
         Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL}));
     test_load();
+    test_eo_table();
     return 0;
 }

@@ -74,3 +74,9 @@ struct MultiBlockCube : std::array<CoordinateBlockCube, nb> {
         return true;
     }
 };
+
+struct EOCube {
+    unsigned ceo = 0;
+
+    bool is_solved() const { return (ceo == 0); }
+};

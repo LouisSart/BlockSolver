@@ -271,3 +271,77 @@ struct BlockMoveTable {
         }
     }
 };
+
+template <typename value_type>
+void load_binary(const std::filesystem::path& table_path, value_type* ptr,
+                 size_t size) {
+    std::ifstream istrm(table_path, std::ios::binary);
+    istrm.read(reinterpret_cast<char*>(ptr), sizeof(value_type) * size);
+    istrm.close();
+}
+
+template <typename value_type>
+void write_binary(const std::filesystem::path& table_path, value_type* ptr,
+                  size_t size) {
+    std::ifstream istrm(table_path, std::ios::binary);
+    istrm.read(reinterpret_cast<char*>(ptr), sizeof(value_type) * size);
+    istrm.close();
+}
+
+struct EOMoveTable {
+    static constexpr unsigned table_size =
+        ipow(2, NE - 1) * N_HTM_MOVES_AND_ROTATIONS;
+    std::unique_ptr<unsigned[]> table{new unsigned[table_size]};
+
+    EOMoveTable() {
+        if (fs::exists(table_path())) {
+            this->load();
+        } else {
+            std::cout
+                << "EO move table directory not found, building the table\n";
+            compute_table();
+            this->write();
+        };
+    }
+
+    std::filesystem::path table_dir_path() const {
+        return fs::current_path() / "move_tables/";
+    }
+    std::filesystem::path table_path() const { return table_dir_path() / "eo"; }
+    void load() const {
+        load_binary<unsigned>(table_path(), table.get(), table_size);
+    }
+    void write() const {
+        write_binary<unsigned>(table_path(), table.get(), table_size);
+    }
+    void compute_table() {
+        CubieCube cube, tmp;
+
+        for (unsigned eo_c = 0; eo_c < ipow(2, NE - 1); ++eo_c) {
+            cube.eo[NE - 1] = 0;
+            eo_from_coord(eo_c, NE - 1, cube.eo);
+            if (!cube.has_consistent_eo()) {
+                cube.eo[NE - 1] = 1;
+            }
+            assert(cube.has_consistent_eo());
+            for (Move move : HTM_Moves_and_rotations) {
+                tmp = cube;
+                tmp.apply(move);
+                assert(eo_c * N_HTM_MOVES_AND_ROTATIONS + move < table_size);
+                table[eo_c * N_HTM_MOVES_AND_ROTATIONS + move] =
+                    eo_coord(tmp.eo, NE - 1);
+            }
+        }
+    }
+
+    auto apply(EOCube& cube, const Move& move) {
+        assert(cube.ceo * N_HTM_MOVES_AND_ROTATIONS + move < table_size);
+        cube.ceo = table[cube.ceo * N_HTM_MOVES_AND_ROTATIONS + move];
+    }
+
+    auto apply(EOCube& cube, const Algorithm& alg) {
+        for (auto move : alg.sequence) {
+            apply(cube, move);
+        };
+    }
+};
