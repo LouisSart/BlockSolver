@@ -32,13 +32,6 @@ struct PruningTable {
 
     PruningTable() { table_path = table_dir; }
     PruningTable(const std::string id) { table_path = table_dir / id; }
-    // template <typename Block>
-    // PruningTable(const Block& block) {
-    //     table_path = table_dir / block.id;
-    // }
-    // PruningTable(const Strategy& strat) {
-    //     table_path = table_dir / strat.block.id;
-    // }
 
     void write() const {
         fs::create_directories(table_path);
@@ -79,51 +72,6 @@ struct PruningTable {
 
     unsigned size() const { return Strategy::table_size; }
 };
-
-// template <typename FirstStrategy, typename SecondStrategy>
-// struct MaxCombinePruningTable {
-//     PruningTable<FirstStrategy> table_one;
-//     PruningTable<SecondStrategy> table_two;
-
-//     MaxCombinePruningTable(const FirstStrategy& strat_one,
-//                            const SecondStrategy& strat_two)
-//         : table_one{strat_one}, table_two{strat_two} {
-//         assert(FirstStrategy::n_edge_states == 1);
-//         assert(SecondStrategy::n_corner_states == 1);
-//     }
-
-//     void write() const {
-//         table_one.write();
-//         table_two.write();
-//     }
-
-//     void load() const {
-//         table_one.load();
-//         table_two.load();
-//     }
-
-//     void reset() const {
-//         table_one.reset();
-//         table_two.reset();
-//     }
-
-//     unsigned get_estimate(const CoordinateBlockCube& cbc) const {
-//         CoordinateBlockCube c_cbc(cbc.ccl, 0, cbc.ccp, 0, cbc.cco, 0);
-//         CoordinateBlockCube e_cbc(0, cbc.cel, 0, cbc.cep, 0, cbc.ceo);
-//         auto corner_estimate = table_one.get_estimate(c_cbc);
-//         auto edge_estimate = table_two.get_estimate(e_cbc);
-//         return (corner_estimate < edge_estimate) ? edge_estimate
-//                                                  : corner_estimate;
-//     }
-
-//     MaxCombinePruningTable<FirstStrategy, SecondStrategy>* get_ptr() {
-//         return this;
-//     }
-
-//     unsigned size() const {
-//         return FirstStrategy::table_size + SecondStrategy::table_size;
-//     }
-// };
 
 struct NullPruningTable {
     template <typename Cube>
