@@ -101,6 +101,8 @@ void test_direct_and_backward_are_equivalent(const Block& b) {
     direct.write();
 }
 
+void test_eo_table() { Strategy::OptimalEO table; }
+
 int main() {
     auto LF_column = Block<2, 1>("LF_column", {ULF, DLB}, {LF});
     auto DLB_222 = Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB});
@@ -122,5 +124,8 @@ int main() {
     std::cout << "\nDirect and backwards equivalence test" << std::endl;
     test_direct_and_backward_are_equivalent(LF_column);
     test_direct_and_backward_are_equivalent(DLB_222);
+
+    std::cout << "\nEO table test" << std::endl;
+    test_eo_table();
     return 0;
 }

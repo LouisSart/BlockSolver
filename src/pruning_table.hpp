@@ -263,6 +263,35 @@ struct Permutation {
         block.show();
     }
 };
+
+struct OptimalEO {
+    using table_type = PruningTable<OptimalEO>;
+    static constexpr unsigned table_size = ipow(2, NE - 1);
+    static constexpr std::string_view name = "eo";
+
+    static unsigned index(const CoordinateBlockCube& cbc) {
+        auto index = cbc.ceo;
+        assert(index < table_size);
+        return index;
+    }
+
+    static CoordinateBlockCube from_index(const unsigned& index) {
+        return CoordinateBlockCube(0, 0, 0, 0, 0, index);
+    }
+
+    template <bool verbose = false>
+    table_type gen_table() const {
+        table_type table;
+        generate<verbose>(table, *this);
+        return table;
+    }
+
+    table_type load_table() const {
+        table_type table;
+        table.load();
+        return table;
+    }
+};
 }  // namespace Strategy
 
 template <bool verbose = false, typename Strategy>
