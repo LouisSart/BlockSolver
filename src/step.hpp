@@ -254,5 +254,13 @@ auto make_method(const BlockTypes&... blocks) {
     return Method(mover, pruner);
 }
 
+template <typename... BlockTypes>
+auto make_eo_method(const BlockTypes&... blocks) {
+    auto mover = Mover(new EOMoveTable(), new BlockMoveTable(blocks)...);
+    auto pruner = Pruner(load_table_ptr(Strategy::OptimalEO()),
+                         load_table_ptr(Strategy::Optimal(blocks))...);
+    return Method(mover, pruner);
+}
+
 constexpr bool OPT_ONLY = true;
 constexpr bool FIND_ALL = false;

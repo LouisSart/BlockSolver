@@ -5,10 +5,10 @@
 #include "search.hpp"
 #include "step.hpp"
 
-auto method = make_method(Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB}),
-                          Block<1, 2>("DL_F_sq", {DLF}, {DF, LF}),
-                          Block<1, 2>("DB_R_sq", {DRB}, {RB, DR}),
-                          Block<0, 4>("TopCross", {}, {UF, UR, UB, UL}));
+auto method = make_eo_method(Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB}),
+                             Block<1, 2>("DL_F_sq", {DLF}, {DF, LF}),
+                             Block<1, 2>("DB_R_sq", {DRB}, {RB, DR}),
+                             Block<0, 4>("TopCross", {}, {UF, UR, UB, UL}));
 
 std::vector<Algorithm> rotations{
     {},       {x},     {x2},    {x3},     {x, y},  {x2, y}, {x3, y},  {y},
@@ -19,18 +19,22 @@ int main(int argc, const char* argv[]) {
     std::array<unsigned, 4> splits_move_counts{
         get_option<unsigned>("-s0", argc, argv),
         get_option<unsigned>("-s1", argc, argv),
-        get_option<unsigned>("-s2", argc, argv)};
+        get_option<unsigned>("-s2", argc, argv),
+        get_option<unsigned>("-s3", argc, argv)};
     auto scramble = Algorithm(argv[argc - 1]);
     scramble.show();
 
     auto solutions = method.init_roots(scramble, rotations);
 
-    // Step 1 : 2x2x2
+    // Step 1 : EO
     solutions = method.make_step<0>(solutions, splits_move_counts[0]);
+    // Step 1 : 2x2x2
+    solutions = method.make_step<0, 1>(solutions, splits_move_counts[1]);
     // Step 1 : F2L-1
-    solutions = method.make_step<0, 1, 2>(solutions, splits_move_counts[1]);
-    // Step 1 : L5C skeleton
     solutions = method.make_step<0, 1, 2, 3>(solutions, splits_move_counts[2]);
+    // Step 1 : L5C skeleton
+    solutions =
+        method.make_step<0, 1, 2, 3, 4>(solutions, splits_move_counts[3]);
 
     solutions.sort_by_depth();
     std::cout << "Three step corner skeletons" << std::endl;
