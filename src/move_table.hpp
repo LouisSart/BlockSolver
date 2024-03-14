@@ -8,6 +8,21 @@
 #include "block_cube.hpp"
 
 namespace fs = std::filesystem;
+template <typename value_type>
+void load_binary(const std::filesystem::path& table_path, value_type* ptr,
+                 size_t size) {
+    std::ifstream istrm(table_path, std::ios::binary);
+    istrm.read(reinterpret_cast<char*>(ptr), sizeof(value_type) * size);
+    istrm.close();
+}
+
+template <typename value_type>
+void write_binary(const std::filesystem::path& table_path, value_type* ptr,
+                  size_t size) {
+    std::ofstream file(table_path, std::ios::binary);
+    file.write(reinterpret_cast<char*>(ptr), sizeof(value_type) * size);
+    file.close();
+}
 
 template <uint nc, uint ne>
 struct BlockMoveTable {
@@ -121,24 +136,11 @@ struct BlockMoveTable {
         std::filesystem::path co_table_file = table_path / "co_table.dat";
         std::filesystem::path ep_table_file = table_path / "ep_table.dat";
         std::filesystem::path eo_table_file = table_path / "eo_table.dat";
-        {
-            std::ofstream file(cp_table_file, std::ios::binary);
-            file.write(reinterpret_cast<char*>(cp_table.get()),
-                       sizeof(uint) * cp_table_size);
-            file.close();
-            file.open(co_table_file, std::ios::binary);
-            file.write(reinterpret_cast<char*>(co_table.get()),
-                       sizeof(uint) * co_table_size);
-            file.close();
-            file.open(ep_table_file, std::ios::binary);
-            file.write(reinterpret_cast<char*>(ep_table.get()),
-                       sizeof(uint) * ep_table_size);
-            file.close();
-            file.open(eo_table_file, std::ios::binary);
-            file.write(reinterpret_cast<char*>(eo_table.get()),
-                       sizeof(uint) * eo_table_size);
-            file.close();
-        }
+
+        write_binary<unsigned>(cp_table_file, cp_table.get(), cp_table_size);
+        write_binary<unsigned>(co_table_file, co_table.get(), co_table_size);
+        write_binary<unsigned>(ep_table_file, ep_table.get(), ep_table_size);
+        write_binary<unsigned>(eo_table_file, eo_table.get(), eo_table_size);
     }
 
     void load(const std::filesystem::path& table_path) const {
@@ -148,22 +150,10 @@ struct BlockMoveTable {
         std::filesystem::path ep_table_path = table_path / "ep_table.dat";
         std::filesystem::path eo_table_path = table_path / "eo_table.dat";
 
-        std::ifstream istrm(cp_table_path, std::ios::binary);
-        istrm.read(reinterpret_cast<char*>(cp_table.get()),
-                   sizeof(uint) * cp_table_size);
-        istrm.close();
-        istrm.open(co_table_path, std::ios::binary);
-        istrm.read(reinterpret_cast<char*>(co_table.get()),
-                   sizeof(uint) * co_table_size);
-        istrm.close();
-        istrm.open(ep_table_path, std::ios::binary);
-        istrm.read(reinterpret_cast<char*>(ep_table.get()),
-                   sizeof(uint) * ep_table_size);
-        istrm.close();
-        istrm.open(eo_table_path, std::ios::binary);
-        istrm.read(reinterpret_cast<char*>(eo_table.get()),
-                   sizeof(uint) * eo_table_size);
-        istrm.close();
+        load_binary<unsigned>(cp_table_path, cp_table.get(), cp_table_size);
+        load_binary<unsigned>(co_table_path, co_table.get(), co_table_size);
+        load_binary<unsigned>(ep_table_path, ep_table.get(), ep_table_size);
+        load_binary<unsigned>(eo_table_path, eo_table.get(), eo_table_size);
     }
 
     void compute_edge_move_tables(const Block<nc, ne>& b) {
@@ -271,22 +261,6 @@ struct BlockMoveTable {
         }
     }
 };
-
-template <typename value_type>
-void load_binary(const std::filesystem::path& table_path, value_type* ptr,
-                 size_t size) {
-    std::ifstream istrm(table_path, std::ios::binary);
-    istrm.read(reinterpret_cast<char*>(ptr), sizeof(value_type) * size);
-    istrm.close();
-}
-
-template <typename value_type>
-void write_binary(const std::filesystem::path& table_path, value_type* ptr,
-                  size_t size) {
-    std::ofstream file(table_path, std::ios::binary);
-    file.write(reinterpret_cast<char*>(ptr), sizeof(value_type) * size);
-    file.close();
-}
 
 struct EOMoveTable {
     static constexpr unsigned table_size =
