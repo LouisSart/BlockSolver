@@ -101,8 +101,6 @@ int main() {
         Block<1, 1>("OneCornerAndOneEdge", {ULF}, {UF}));
     assert_move_table_is_correct(
         Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL}));
-    // assert_move_table_is_correct(Block<3, 7>("DLB_F2L-1", {DLF, DLB, DRB},
-    //                                          {LF, LB, DF, DB, DL, RB, DR}));
     test_222_block_alg_apply();
     test_inverse_move_apply(
         Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL}));
