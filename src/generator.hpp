@@ -88,12 +88,13 @@ struct CompressedNode {
     uint8_t depth;
 };
 
-template <bool verbose, typename PruningTable, typename Strategy>
+template <bool verbose, typename PruningTable, typename Strategy,
+          typename MoveTable>
 void compute_pruning_table_backwards(PruningTable& p_table, Strategy& strat,
+                                     const MoveTable& m_table,
                                      Advancement<verbose>& advancement) {
     assert(p_table.size() == strat.table_size);
     assert(p_table.size() == advancement.table_size);
-    BlockMoveTable m_table(strat.block);
 
     while (advancement.encountered < p_table.size()) {
         for (unsigned k = 0; k < p_table.size(); ++k) {
@@ -118,12 +119,13 @@ void compute_pruning_table_backwards(PruningTable& p_table, Strategy& strat,
     }
 }
 
-template <bool verbose, typename PruningTable, typename Strategy>
+template <bool verbose, typename PruningTable, typename Strategy,
+          typename MoveTable>
 void compute_pruning_table(PruningTable& p_table, Strategy& strat,
+                           const MoveTable& m_table,
                            Advancement<verbose>& advancement) {
     assert(p_table.size() == advancement.table_size);
     assert(p_table.size() == strat.table_size);
-    BlockMoveTable m_table(strat.block);
     auto compress = [](const GenNode& big) {
         return CompressedNode{Strategy::index(big.state), big.depth};
     };
@@ -157,20 +159,22 @@ void compute_pruning_table(PruningTable& p_table, Strategy& strat,
     }
 }
 
-template <bool verbose = false, typename PruningTable, typename Strategy>
-void generate(PruningTable& p_table, const Strategy& strat) {
+template <bool verbose = false, typename PruningTable, typename Strategy,
+          typename MoveTable>
+void generate(PruningTable& p_table, const Strategy& strat,
+              const MoveTable& m_table) {
     p_table.reset();
     p_table[0] = 0;
     const float percent_switch = 70.0;
     const float encounter_ratio_switch = 0.3;
     Advancement<verbose> adv(p_table.size(), percent_switch,
                              encounter_ratio_switch);
-    compute_pruning_table(p_table, strat, adv);
+    compute_pruning_table(p_table, strat, m_table, adv);
     if constexpr (verbose) {
         std::cout << "Switching to backwards search" << std::endl;
     }
     adv.show();
-    compute_pruning_table_backwards(p_table, strat, adv);
+    compute_pruning_table_backwards(p_table, strat, m_table, adv);
     assert(adv.encountered == p_table.size());
     p_table.write();
 }

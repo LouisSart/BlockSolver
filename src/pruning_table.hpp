@@ -159,7 +159,7 @@ struct Optimal {
     template <bool verbose = false>
     PruningTable<Optimal<nc, ne>> gen_table() const {
         PruningTable<Optimal<nc, ne>> table(block.id);
-        generate<verbose>(table, *this);
+        generate<verbose>(table, *this, BlockMoveTable(block));
         return table;
     }
 
@@ -222,7 +222,7 @@ struct Permutation {
     template <bool verbose = false>
     PruningTable<Permutation<nc, ne>> gen_table() const {
         PruningTable<Permutation<nc, ne>> table(block.id);
-        generate<verbose>(table, *this);
+        generate<verbose>(table, *this, BlockMoveTable(block));
         return table;
     }
 

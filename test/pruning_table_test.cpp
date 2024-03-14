@@ -79,12 +79,13 @@ template <typename Block>
 void test_direct_and_backward_are_equivalent(const Block& b) {
     b.show();
     Strategy::Permutation strat(b);
+    BlockMoveTable m_table(b);
     auto direct = PruningTable(strat);
     auto backwards = PruningTable(strat);
 
     std::cout << "Direct generator:" << std::endl;
     auto adv = Advancement(direct.size());
-    compute_pruning_table<false>(direct, strat, adv);
+    compute_pruning_table<false>(direct, strat, m_table, adv);
     adv.update(adv.depth + 1);
 
     std::cout << "Backwards generator:" << std::endl;
@@ -93,7 +94,7 @@ void test_direct_and_backward_are_equivalent(const Block& b) {
     adv.update();
     backwards.reset();
     backwards.table[0] = 0;
-    compute_pruning_table_backwards(backwards, strat, adv);
+    compute_pruning_table_backwards(backwards, strat, m_table, adv);
 
     for (unsigned k = 0; k < direct.size(); ++k) {
         assert(backwards.table[k] == direct.table[k]);
@@ -101,7 +102,10 @@ void test_direct_and_backward_are_equivalent(const Block& b) {
     direct.write();
 }
 
-void test_eo_table() { Strategy::OptimalEO table; }
+void test_eo_table() {
+    Strategy::OptimalEO strat;
+    EOMoveTable m_table;
+}
 
 int main() {
     auto LF_column = Block<2, 1>("LF_column", {ULF, DLB}, {LF});
