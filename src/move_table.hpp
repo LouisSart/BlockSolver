@@ -308,21 +308,21 @@ struct EOMoveTable {
         }
     }
 
-    auto apply(const Move& move, EOCube& cube) const {
+    auto apply(const Move& move, CoordinateBlockCube& cube) const {
         assert(cube.ceo * N_HTM_MOVES_AND_ROTATIONS + move < table_size);
         cube.ceo = table[cube.ceo * N_HTM_MOVES_AND_ROTATIONS + move];
     }
 
-    auto apply(const Algorithm& alg, EOCube& cube) const {
+    auto apply(const Algorithm& alg, CoordinateBlockCube& cube) const {
         for (auto move : alg.sequence) {
             apply(move, cube);
         };
     }
-    void apply_inverse(const Move& move, EOCube& cube) const {
+    void apply_inverse(const Move& move, CoordinateBlockCube& cube) const {
         apply(inverse_of_HTM_Moves_and_rotations[move], cube);
     }
 
-    void apply_inverse(const Algorithm& alg, EOCube& cube) const {
+    void apply_inverse(const Algorithm& alg, CoordinateBlockCube& cube) const {
         for (auto move = alg.sequence.rbegin(); move != alg.sequence.rend();
              ++move) {
             apply_inverse(*move, cube);

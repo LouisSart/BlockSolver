@@ -83,7 +83,7 @@ void test_load() {
 void test_eo_table() {
     EOMoveTable table;
 
-    EOCube cube;
+    CoordinateBlockCube cube;
     table.apply({F}, cube);
     table.apply({L2, U2, R2, D2, B}, cube);
     assert(cube.is_solved());
