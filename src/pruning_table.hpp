@@ -135,6 +135,8 @@ struct Optimal {
         return ret;
     }
 
+    std::string id() const { return block.id; }
+
     static unsigned c_index(const CoordinateBlockCube& cbc) {
         unsigned index = cbc.ccl * n_cp * n_co + (cbc.ccp * n_co + cbc.cco);
         return index;
@@ -246,10 +248,11 @@ struct Permutation {
         std::cout << "   Type: " << name << std::endl;
         block.show();
     }
+    std::string id() const { return block.id; }
 };
 
 struct OptimalEO {
-    using table_type = PruningTable<OptimalEO>;
+    using table_t = PruningTable<OptimalEO>;
     static constexpr unsigned table_size = ipow(2, NE - 1);
     static constexpr std::string_view name = "eo";
 
@@ -268,16 +271,17 @@ struct OptimalEO {
         ret += "Table size: " + std::to_string(table_size);
         return ret;
     }
+    std::string id() const { return ""; }
 
     template <bool verbose = false>
-    table_type gen_table() const {
-        table_type table;
+    table_t gen_table() const {
+        table_t table;
         generate<verbose>(table, *this, EOMoveTable());
         return table;
     }
 
-    table_type load_table() const {
-        table_type table;
+    table_t load_table() const {
+        table_t table;
         table.load();
         return table;
     }
@@ -286,14 +290,14 @@ struct OptimalEO {
 
 template <bool verbose = false, typename Strategy>
 Strategy::table_t* gen_table_ptr(const Strategy& strat) {
-    auto table = new Strategy::table_t(strat.block.id);
+    auto table = new Strategy::table_t(strat.id());
     *table = strat.template gen_table<verbose>();
     return table;
 }
 
 template <typename Strategy>
 Strategy::table_t* load_table_ptr(const Strategy& strat) {
-    auto table = new Strategy::table_t(strat.block.id);
+    auto table = new Strategy::table_t(strat.id());
     try {
         *table = strat.template load_table();
     } catch (LoadError error) {
