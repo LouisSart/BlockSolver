@@ -24,29 +24,29 @@ void write_binary(const std::filesystem::path& table_path, value_type* ptr,
     file.close();
 }
 
-template <uint nc, uint ne>
+template <unsigned nc, unsigned ne>
 struct BlockMoveTable {
-    static constexpr uint n_cl = binomial(NC, nc);
-    static constexpr uint n_cp = factorial(nc);
-    static constexpr uint cp_table_size =
+    static constexpr unsigned n_cl = binomial(NC, nc);
+    static constexpr unsigned n_cp = factorial(nc);
+    static constexpr unsigned cp_table_size =
         n_cp * n_cl * N_HTM_MOVES_AND_ROTATIONS;
-    std::unique_ptr<uint[]> cp_table{new uint[cp_table_size]};
+    std::unique_ptr<unsigned[]> cp_table{new unsigned[cp_table_size]};
 
-    static constexpr uint n_co = ipow(3, nc);
-    static constexpr uint co_table_size =
+    static constexpr unsigned n_co = ipow(3, nc);
+    static constexpr unsigned co_table_size =
         n_cl * n_co * N_HTM_MOVES_AND_ROTATIONS;
-    std::unique_ptr<uint[]> co_table{new uint[co_table_size]};
+    std::unique_ptr<unsigned[]> co_table{new unsigned[co_table_size]};
 
-    static constexpr uint n_el = binomial(NE, ne);
-    static constexpr uint n_ep = factorial(ne);
-    static constexpr uint ep_table_size =
+    static constexpr unsigned n_el = binomial(NE, ne);
+    static constexpr unsigned n_ep = factorial(ne);
+    static constexpr unsigned ep_table_size =
         n_ep * n_el * N_HTM_MOVES_AND_ROTATIONS;
-    std::unique_ptr<uint[]> ep_table{new uint[ep_table_size]};
+    std::unique_ptr<unsigned[]> ep_table{new unsigned[ep_table_size]};
 
-    static constexpr uint n_eo = ipow(2, ne);
-    static constexpr uint eo_table_size =
+    static constexpr unsigned n_eo = ipow(2, ne);
+    static constexpr unsigned eo_table_size =
         n_el * n_eo * N_HTM_MOVES_AND_ROTATIONS;
-    std::unique_ptr<uint[]> eo_table{new uint[eo_table_size]};
+    std::unique_ptr<unsigned[]> eo_table{new unsigned[eo_table_size]};
 
     BlockMoveTable() {}
     BlockMoveTable(const Block<nc, ne>& b) {
@@ -92,31 +92,31 @@ struct BlockMoveTable {
         }
     }
 
-    std::tuple<uint, uint> get_new_ccl_ccp(uint ccl, uint ccp,
-                                           uint move) const {
+    std::tuple<unsigned, unsigned> get_new_ccl_ccp(unsigned ccl, unsigned ccp,
+                                                   unsigned move) const {
         assert(N_HTM_MOVES_AND_ROTATIONS * (ccl * n_cp + ccp) + move <
                cp_table_size);
-        uint new_cp_idx =
+        unsigned new_cp_idx =
             cp_table[N_HTM_MOVES_AND_ROTATIONS * (ccl * n_cp + ccp) + move];
         return std::make_tuple(new_cp_idx / n_cp, new_cp_idx % n_cp);
     }
 
-    std::tuple<uint, uint> get_new_cel_cep(uint cel, uint cep,
-                                           uint move) const {
+    std::tuple<unsigned, unsigned> get_new_cel_cep(unsigned cel, unsigned cep,
+                                                   unsigned move) const {
         assert(N_HTM_MOVES_AND_ROTATIONS * (cel * n_ep + cep) + move <
                ep_table_size);
-        uint new_ep_idx =
+        unsigned new_ep_idx =
             ep_table[N_HTM_MOVES_AND_ROTATIONS * (cel * n_ep + cep) + move];
         return std::make_tuple(new_ep_idx / n_ep, new_ep_idx % n_ep);
     }
 
-    uint get_new_cco(uint ccl, uint cco, uint move) const {
+    unsigned get_new_cco(unsigned ccl, unsigned cco, unsigned move) const {
         assert(N_HTM_MOVES_AND_ROTATIONS * (ccl * n_co + cco) + move <
                co_table_size);
         return co_table[N_HTM_MOVES_AND_ROTATIONS * (ccl * n_co + cco) + move];
     }
 
-    uint get_new_ceo(uint cel, uint ceo, uint move) const {
+    unsigned get_new_ceo(unsigned cel, unsigned ceo, unsigned move) const {
         assert(N_HTM_MOVES_AND_ROTATIONS * (cel * n_eo + ceo) + move <
                eo_table_size);
         return eo_table[N_HTM_MOVES_AND_ROTATIONS * (cel * n_eo + ceo) + move];
@@ -160,12 +160,12 @@ struct BlockMoveTable {
         BlockCube<nc, ne> bc(b);
         CubieCube cc, cc_copy;
         CoordinateBlockCube cbc;
-        uint ccl = 0, cel = 0, ccp = 0, cep = 0, cco = 0, ceo = 0;
+        unsigned ccl = 0, cel = 0, ccp = 0, cep = 0, cco = 0, ceo = 0;
 
-        uint p_idx = 0, o_idx = 0, m_idx = 0;
-        for (uint il = 0; il < n_el; il++) {
+        unsigned p_idx = 0, o_idx = 0, m_idx = 0;
+        for (unsigned il = 0; il < n_el; il++) {
             // Loop for the permutation coordinate
-            for (uint ip = 0; ip < n_ep; ip++) {
+            for (unsigned ip = 0; ip < n_ep; ip++) {
                 m_idx = 0;
                 cbc.set(0, il, 0, ip, 0, 0);
                 cc = bc.to_cubie_cube(cbc);
@@ -185,7 +185,7 @@ struct BlockMoveTable {
                 }
                 p_idx++;
             }
-            for (uint io = 0; io < n_eo;
+            for (unsigned io = 0; io < n_eo;
                  io++)  // Loop for the orientation coordinate
             {
                 m_idx = 0;
@@ -214,11 +214,11 @@ struct BlockMoveTable {
         BlockCube<nc, ne> bc(b);
         CubieCube cc, cc_copy;
         CoordinateBlockCube cbc;
-        uint ccl = 0, cel = 0, ccp = 0, cep = 0, cco = 0, ceo = 0;
+        unsigned ccl = 0, cel = 0, ccp = 0, cep = 0, cco = 0, ceo = 0;
 
-        uint p_idx = 0, o_idx = 0, m_idx = 0;
-        for (uint il = 0; il < n_cl; il++) {
-            for (uint ip = 0; ip < n_cp; ip++) {
+        unsigned p_idx = 0, o_idx = 0, m_idx = 0;
+        for (unsigned il = 0; il < n_cl; il++) {
+            for (unsigned ip = 0; ip < n_cp; ip++) {
                 m_idx = 0;
                 cbc.set(il, 0, ip, 0, 0, 0);
                 cc = bc.to_cubie_cube(cbc);
@@ -238,7 +238,7 @@ struct BlockMoveTable {
                 }
                 p_idx++;
             }
-            for (uint io = 0; io < n_co; io++) {
+            for (unsigned io = 0; io < n_co; io++) {
                 m_idx = 0;
                 cbc.set(il, 0, 0, 0, io, 0);
                 cc = bc.to_cubie_cube(cbc);
