@@ -1,6 +1,5 @@
+- Remove StepNode
 - README link to nissy and other FMC programs
-- Dump table information
-- EO step
 - Skeleton and algorithm show() method (Rotations, comments)
 - Use StepNode in a real search algorithm (depth first)
 - Convert move sequences according to cube rotations
