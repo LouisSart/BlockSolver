@@ -70,26 +70,24 @@ Solutions<NodePtr> depth_first_search(const NodePtr root, const Mover &apply,
     Solutions<NodePtr> all_solutions;
     root->estimate = estimate(root->state);
     std::deque<NodePtr> queue = {root};
-    auto node = queue.back();
+    NodePtr node;
     int node_counter = 0;
 
     while (queue.size() > 0) {
-        auto node = queue.back();
+        node = queue.back();
+        queue.pop_back();
         ++node_counter;
-        if (is_solved(node->state)) {
-            all_solutions.push_back(node);
-            queue.pop_back();
-        } else {
-            queue.pop_back();
-            if (node->depth + node->estimate <= max_depth) {
-                auto children =
-                    node->expand(apply, estimate, standard_directions(node));
-                for (auto &&child : children) {
-                    queue.push_back(child);
-                }
+        if (node->depth + node->estimate <= max_depth) {
+            if (is_solved(node->state)) {
+                all_solutions.push_back(node);
+            }
+            auto children =
+                node->expand(apply, estimate, standard_directions(node));
+            for (auto &&child : children) {
+                queue.push_back(child);
             }
         }
-        assert(queue.size() < 1000000);  // Avoiding memory flood
+        assert(queue.size() < 10000);  // Avoiding memory flood
     }
     if constexpr (verbose) {
         std::cout << "Nodes generated: " << node_counter << std::endl;
