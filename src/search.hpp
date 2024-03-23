@@ -121,7 +121,7 @@ Solutions<NodePtr> IDAstar(const NodePtr root, const Mover &apply,
         // I don' think this can be avoided since we need to
         // know optimal to introduce slackness
         solutions = depth_first_search<verbose>(
-            root, apply, estimate, is_solved, search_depth + slackness);
+            root, apply, estimate, is_solved, search_depth + slackness - 1);
     }
     if constexpr (verbose) {
         if (solutions.size() == 0) {

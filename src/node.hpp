@@ -8,6 +8,7 @@
 template <typename Cube>
 struct Node : public std::enable_shared_from_this<Node<Cube>> {
     using sptr = std::shared_ptr<Node<Cube>>;
+    using csptr = std::shared_ptr<Node<Cube> const>;
     Cube state;         // The cube state this node corresponds to
     sptr parent;        // The shared_ptr to the parent
     unsigned depth;     // The number of moves made to get this state
@@ -31,6 +32,8 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
     }
 
    public:
+    bool is_root() const { return parent == nullptr; }
+
     template <typename F, typename H, typename MoveContainer>
     std::vector<sptr> expand(const F &apply, const H &heuristic,
                              const MoveContainer &directions) {
@@ -50,11 +53,23 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
 
     Algorithm get_path() const {
         Algorithm path;
-        Move move = last_move;
-        sptr p = parent;
-        while (p != nullptr) {
-            path.append(move);
-            move = p->last_move;
+        csptr p = this->shared_from_this();
+        while (p->parent != nullptr) {
+            path.append(p->last_move);
+            p = p->parent;
+        }
+        std::reverse(path.sequence.begin(), path.sequence.end());
+        return path;
+    }
+
+    Algorithm get_sub_path(sptr ancestor) const {
+        Algorithm path;
+        csptr p = this->shared_from_this();
+        while (p->parent != ancestor) {
+            if (ancestor != nullptr) {
+                assert(p->parent != nullptr);  // wrong ancestor ?
+            }
+            path.append(p->last_move);
             p = p->parent;
         }
         std::reverse(path.sequence.begin(), path.sequence.end());

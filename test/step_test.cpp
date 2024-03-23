@@ -6,8 +6,8 @@ Block<1, 0> block_1("ULF corner", {ULF}, {});
 Block<0, 1> block_2("UF edge", {}, {UF});
 
 auto mover = Mover{new BlockMoveTable(block_1), new BlockMoveTable(block_2)};
-auto pruner = Pruner(gen_table_ptr(Strategy::Optimal(block_1)),
-                     gen_table_ptr(Strategy::Optimal(block_2)));
+auto pruner = Pruner(load_table_ptr(Strategy::Optimal(block_1)),
+                     load_table_ptr(Strategy::Optimal(block_2)));
 auto apply = mover.get_apply();
 
 void step_first_test() {
@@ -49,8 +49,15 @@ void second_step_test() {
 
 void step_object_test() {
     MultiBlockCube<2> cube;
-    auto step_root = StepNode<MultiBlockCube<2>>::make_root(cube);
-    step_root->show();
+    mover.apply({L, F}, cube);
+    auto root = make_step_root(cube);
+    root->show();
+
+    auto step = make_block_step<0, 1>(pruner);
+    auto solutions = step.solve_optimal(root, mover, 20, 1);
+    for (auto s : solutions) {
+        s->get_path().show();
+    }
 }
 
 int main() {
