@@ -65,7 +65,7 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
     Algorithm get_sub_path(sptr ancestor) const {
         Algorithm path;
         csptr p = this->shared_from_this();
-        while (p->parent != ancestor) {
+        while (p != ancestor) {
             if (ancestor != nullptr) {
                 assert(p->parent != nullptr);  // wrong ancestor ?
             }
