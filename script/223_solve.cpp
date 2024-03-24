@@ -10,10 +10,9 @@ auto mover = make_mover(block1, block2, block3);
 
 auto pruner = make_pruner(block1, block2, block3);
 
-std::vector<Algorithm> rotations{
-    {},      {x},     {x2}, {x3},   {y},     {y, x},
-    {y, x2}, {y, x3}, {z},  {z, x}, {z, x2}, {z, x3},
-};
+std::vector<Algorithm> rotations{{},      {x},    {x2},     {x3},
+                                 {y},     {y2},   {y3},     {z2},
+                                 {x3, y}, {x, y}, {x3, y2}, {x, y2}};
 
 int main(int argc, const char* argv[]) {
     auto scramble = Algorithm(argv[argc - 1]);
@@ -22,12 +21,11 @@ int main(int argc, const char* argv[]) {
     auto roots = init_roots<Cube>(scramble, rotations, mover);
     auto solutions = depth_first_search<false>(
         roots, mover.get_apply(), pruner.template get_estimator<0, 1, 2>(),
-        get_is_solved<0, 1, 2>(roots[0]->state), 1);
+        get_is_solved<0, 1, 2>(roots[0]->state), 9);
 
     std::cout << "Solutions to 2x2x3" << std::endl;
     for (auto solution : solutions) {
         solution->get_path().show();
-        std::cout << std::endl;
     }
     return 0.;
 }
