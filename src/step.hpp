@@ -60,6 +60,11 @@ struct Mover {
     }
 };
 
+template <typename... BlockTypes>
+auto make_mover(const BlockTypes&... blocks) {
+    return Mover(new BlockMoveTable(blocks)...);
+}
+
 template <typename... PTs>
 struct Pruner {
     static constexpr unsigned _NTABLES = sizeof...(PTs);
@@ -95,6 +100,11 @@ struct Pruner {
         };
     }
 };
+
+template <typename... BlockTypes>
+auto make_pruner(const BlockTypes&... blocks) {
+    return Pruner(load_table_ptr(Strategy::Optimal(blocks))...);
+}
 
 template <unsigned... steps, typename Cube>
 bool is_solved(const Cube& cube) {
@@ -202,6 +212,30 @@ auto make_block_step(const Pruner& pruner) {
     return BlockStep<Pruner, blocks...>(pruner);
 }
 
+template <typename Cube, typename Mover>
+auto init_roots(const Algorithm& scramble, std::vector<Algorithm> symmetries,
+                const Mover& mover) {
+    // Generates all symmetries of the scramble as
+    // MultiBlockCubes<blocks>
+    // state = S^-1 * M * S, where S is the symmetry (rotation) and M is
+    // the
+    // scramble
+    using NodePtr = Node<Cube>::sptr;
+    Solutions<NodePtr> ret;
+    Cube cube;
+    NodePtr root;
+    for (auto sym : symmetries) {
+        cube.set_solved();
+        mover.apply_inverse(sym, cube);
+        mover.apply(scramble, cube);
+        mover.apply(sym, cube);
+        root = make_root(cube);
+        root->last_moves = sym;
+        ret.push_back(root);
+    }
+    return ret;
+}
+
 // template <typename Mover, typename Pruner>
 // struct Method {
 //     static constexpr unsigned _NBLOCKS = Mover::_NTABLES;
@@ -217,28 +251,6 @@ auto make_block_step(const Pruner& pruner) {
 
 //     Method(Mover& m, Pruner& p) : pruner{p}, mover{m} {
 //         static_assert(Pruner::_NTABLES == Mover::_NTABLES);
-//     }
-
-//     StepSolutions init_roots(const Algorithm& scramble,
-//                              std::vector<Algorithm> symmetries) {
-//         // Generates all symmetries of the scramble as
-//         MultiBlockCubes<blocks>
-//         // state = S^-1 * M * S, where S is the symmetry (rotation) and M is
-//         the
-//         // scramble
-//         StepSolutions ret;
-//         MultiCube cube;
-//         StepNodePtr root;
-//         for (auto sym : symmetries) {
-//             cube.set_solved();
-//             mover.apply_inverse(sym, cube);
-//             mover.apply(scramble, cube);
-//             mover.apply(sym, cube);
-//             root = StepMultiNode::make_root(cube);
-//             root->path = Algorithm({sym});
-//             ret.push_back(root);
-//         }
-//         return ret;
 //     }
 
 //     template <unsigned... blocks>
