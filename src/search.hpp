@@ -34,12 +34,15 @@ void show(SolutionContainer solutions) {
 
 template <typename NodePtr, typename Mover, typename Pruner,
           typename SolveCheck>
-Solutions<NodePtr> breadth_first_search(const NodePtr root, Mover &&apply,
-                                        const Pruner &&estimate,
+Solutions<NodePtr> breadth_first_search(const Solutions<NodePtr> &roots,
+                                        Mover &&apply, const Pruner &&estimate,
                                         SolveCheck &&is_solved,
                                         const unsigned max_depth = 4) {
+    for (auto root : roots) {
+        root->estimate = estimate(root->state);
+    }
     Solutions<NodePtr> all_solutions;
-    std::deque<NodePtr> queue = {root};
+    std::deque<NodePtr> queue(roots.begin(), roots.end());
     auto node = queue.back();
 
     while (queue.size() != 0) {

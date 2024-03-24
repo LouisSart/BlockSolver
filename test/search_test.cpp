@@ -38,7 +38,7 @@ void test_expand_cbc(const Block& b) {
     CoordinateBlockCube cbc;
     BlockMoveTable table(b);
 
-    auto root = Node<CoordinateBlockCube>::make_root(cbc);  // shared_ptr
+    auto root = make_root(cbc);  // shared_ptr
     auto children = root->expand(
         [&table](const Move& move, CoordinateBlockCube& CBC) {
             table.apply(move, CBC);
@@ -62,7 +62,7 @@ void test_expand_cbc_with_heuristic(const Block& b) {
     BlockMoveTable table(b);
     int k = 0;
 
-    auto root = Node<CoordinateBlockCube>::make_root(cbc);
+    auto root = make_root(cbc);
     auto children = root->expand(
         [&table](const Move& move, CoordinateBlockCube& CBC) {
             table.apply(move, CBC);
@@ -87,7 +87,7 @@ void test_breadth_first_search() {
     BlockMoveTable m_table(b);
     m_table.apply(scramble, cbc);
 
-    auto root = Node<CoordinateBlockCube>::make_root(cbc);
+    auto root = Solutions<Node<CoordinateBlockCube>::sptr>({make_root(cbc)});
     auto solutions = breadth_first_search(
         root,
         [&m_table](const Move& move, CoordinateBlockCube& CBC) {
@@ -106,7 +106,7 @@ void test_depth_first_search() {
     BlockMoveTable m_table(b);
     m_table.apply(scramble, cbc);
 
-    auto root = Node<CoordinateBlockCube>::make_root(cbc);
+    auto root = Solutions<Node<CoordinateBlockCube>::sptr>({make_root(cbc)});
     auto solutions = depth_first_search(
         root,
         [&m_table](const Move& move, CoordinateBlockCube& cube) {
@@ -126,7 +126,7 @@ void test_depth_first_search_with_heuristic() {
     PruningTable p_table = Strategy::Optimal(b).load_table();
     m_table.apply(scramble, cbc);
 
-    auto root = Node<CoordinateBlockCube>::make_root(cbc);
+    auto root = Solutions<Node<CoordinateBlockCube>::sptr>({make_root(cbc)});
     auto solutions = depth_first_search(
         root,
         [&m_table](const Move& move, CoordinateBlockCube& cube) {
@@ -149,7 +149,7 @@ void test_successive_expansions() {
                         U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
     m_table.apply(scramble, cbc);
 
-    auto root = Node<CoordinateBlockCube>::make_root(cbc);
+    auto root = make_root(cbc);
     auto mover = [&m_table](const Move& move, CoordinateBlockCube& cube) {
         m_table.apply(move, cube);
     };
@@ -178,7 +178,7 @@ void test_solve_222_on_wr_scramble() {
     scramble.show();
     m_table.apply(scramble, cbc);
 
-    auto root = Node<CoordinateBlockCube>::make_root(cbc);
+    auto root = Solutions<Node<CoordinateBlockCube>::sptr>({make_root(cbc)});
     auto solutions = depth_first_search(
         root,
         [&m_table](const Move& move, CoordinateBlockCube& cube) {
