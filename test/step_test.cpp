@@ -38,7 +38,7 @@ void step_first_test() {
 
 void second_step_test() {
     MultiBlockCube<2> cube;
-    auto root = Node<MultiBlockCube<2>>::make_root(cube);
+    auto root = make_root(cube);
     auto children = root->expand(mover.get_apply(),
                                  pruner.get_estimator<0, 1>(), HTM_Moves);
     assert(children[R]->estimate == 0);
@@ -50,7 +50,7 @@ void second_step_test() {
 void step_object_test() {
     MultiBlockCube<2> cube;
     mover.apply({L, F}, cube);
-    auto root = Node<MultiBlockCube<2>>::make_root(cube);
+    auto root = make_root(cube);
     root->show();
 
     auto step = make_block_step<0, 1>(pruner);

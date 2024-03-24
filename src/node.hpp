@@ -18,11 +18,6 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
     Algorithm last_moves;  // The moves which yielded this state
     int step_number = 0;   // The step which was solved
 
-    static sptr make_root(const Cube &cube) { return sptr(new Node(cube, 0)); }
-    static sptr make_node(const Cube &cube, const unsigned &depth) {
-        return sptr(new Node(cube, depth));
-    }
-
    private:
     Node() : state{Cube()}, depth{0}, parent{nullptr}, estimate{0} {}
     Node(const Cube &c, const unsigned &d = 0, sptr p = nullptr,
@@ -80,4 +75,17 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
         std::cout << " Cube type: " << typeid(state).name() << std::endl;
         std::cout << " Pruning value: " << estimate << std::endl;
     }
+
+    friend sptr make_root<>(const Cube &cube);
+    friend sptr make_node<>(const Cube &cube, const unsigned &depth);
 };
+
+template <typename Cube>
+Node<Cube>::sptr make_root(const Cube &cube) {
+    return typename Node<Cube>::sptr(new Node(cube, 0));
+}
+
+template <typename Cube>
+Node<Cube>::sptr make_node(const Cube &cube, const unsigned &depth) {
+    return typename Node<Cube>::sptr(new Node(cube, depth));
+}
