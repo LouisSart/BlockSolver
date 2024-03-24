@@ -48,26 +48,11 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
         Algorithm path;
         csptr p = this->shared_from_this();
         while (p != nullptr) {
-            path.append(p->last_moves);
+            path.prepend(p->last_moves);
             p = p->parent;
         }
-        std::reverse(path.sequence.begin(), path.sequence.end());
         return path;
     }
-
-    // Algorithm get_sub_path(sptr ancestor) const {
-    //     Algorithm path;
-    //     csptr p = this->shared_from_this();
-    //     while (p != ancestor) {
-    //         if (ancestor != nullptr) {
-    //             assert(p->parent != nullptr);  // wrong ancestor ?
-    //         }
-    //         path.append(p->last_moves);
-    //         p = p->parent;
-    //     }
-    //     std::reverse(path.sequence.begin(), path.sequence.end());
-    //     return path;
-    // }
 
     void show() const {
         std::cout << "Node object: " << std::endl;
