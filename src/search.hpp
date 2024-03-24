@@ -104,18 +104,23 @@ Solutions<NodePtr> depth_first_search(const Solutions<NodePtr> roots,
 
 template <bool verbose = true, typename NodePtr, typename Mover,
           typename Pruner, typename SolveCheck>
-Solutions<NodePtr> IDAstar(const NodePtr root, const Mover &apply,
+Solutions<NodePtr> IDAstar(const Solutions<NodePtr> roots, const Mover &apply,
                            const Pruner &estimate, const SolveCheck &is_solved,
                            const unsigned max_depth = 20,
                            const unsigned slackness = 0) {
-    auto search_depth = estimate(root->state);
-    Solutions<NodePtr> solutions;
+    unsigned search_depth = roots[0]->depth;
+    for (auto root : roots) {
+        search_depth = estimate(root->state) < search_depth
+                           ? estimate(root->state)
+                           : search_depth;
+    }
 
+    Solutions<NodePtr> solutions;
     while (solutions.size() == 0 && search_depth <= max_depth) {
         if constexpr (verbose) {
             std::cout << "Searching at depth " << search_depth << std::endl;
         }
-        solutions = depth_first_search<verbose>(root, apply, estimate,
+        solutions = depth_first_search<verbose>(roots, apply, estimate,
                                                 is_solved, search_depth);
         ++search_depth;
     }
@@ -126,39 +131,12 @@ Solutions<NodePtr> IDAstar(const NodePtr root, const Mover &apply,
         // I don' think this can be avoided since we need to
         // know optimal to introduce slackness
         solutions = depth_first_search<verbose>(
-            root, apply, estimate, is_solved, search_depth + slackness - 1);
+            roots, apply, estimate, is_solved, search_depth + slackness - 1);
     }
     if constexpr (verbose) {
         if (solutions.size() == 0) {
             std::cout << "IDA*: No solution found" << std::endl;
         }
-    }
-    return solutions;
-}
-
-template <bool verbose = true, typename NodePtr, typename Mover,
-          typename Pruner, typename SolveCheck>
-Solutions<NodePtr> IDAstar(const Solutions<NodePtr> &roots, const Mover &apply,
-                           const Pruner &estimate, const SolveCheck &is_solved,
-                           const unsigned max_depth = 20) {
-    // A version of IDAstar which returns the optimal
-    // solutions over a set of different roots
-    // Is used to find the optimal block given
-    // various initial rotations of the cube
-    Solutions<NodePtr> solutions;
-    auto search_depth = max_depth;
-    for (auto root : roots) {
-        auto tmp =
-            IDAstar<verbose>(root, apply, estimate, is_solved, search_depth);
-        if (tmp.size() > 0) {
-            // Update max_depth if solutions for current node are
-            // shorter
-            if (tmp[0]->depth < search_depth) {
-                solutions.clear();
-                search_depth = tmp[0]->depth;
-            }
-        }
-        solutions.insert(solutions.end(), tmp.begin(), tmp.end());
     }
     return solutions;
 }
