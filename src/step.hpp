@@ -117,76 +117,6 @@ auto get_is_solved(const Cube& cube) {
     return [](const Cube& cube) -> bool { return is_solved<steps...>(cube); };
 }
 
-template <typename Cube>
-struct StepNode : public std::enable_shared_from_this<StepNode<Cube>> {
-    using sptr = std::shared_ptr<StepNode>;
-
-    Node<Cube>::sptr node;
-    unsigned step_length = 0;
-    sptr step_parent = nullptr;
-    Algorithm setup;
-
-   private:
-    StepNode() { node = Node<Cube>::make_root(); }
-    StepNode(const Cube& cube) { node = Node<Cube>::make_root(cube); }
-    StepNode(const Node<Cube>::sptr node) : node{node} {}
-
-   public:
-    bool is_root() const { return step_parent == nullptr; }
-
-    Algorithm get_path() const {
-        auto ret = setup;
-        typename Node<Cube>::sptr n;
-        if (is_root()) {
-            n = nullptr;
-        } else {
-            n = step_parent->node;
-        }
-        ret.append(node->get_sub_path(n));
-        return ret;
-    }
-
-    std::vector<Algorithm> get_skeleton() const {
-        std::vector<Algorithm> skeleton;
-        Algorithm path;
-        sptr p = this->shared_from_this();
-        while (p->parent != nullptr) {
-            path = p->get_path();
-            skeleton.push_back(path);
-            p = p->parent;
-        }
-        std::reverse(skeleton.begin(), skeleton.end());
-        return skeleton;
-    }
-
-    void show() const {
-        std::cout << "Step object:" << std::endl;
-        std::cout << "   Depth: " << node->depth << std::endl;
-        std::cout << "   Step length: " << step_length << std::endl;
-        std::cout << "   Setup : " << std::endl;
-        setup.show();
-        if (step_parent != nullptr) {
-            std::cout << "    Step solution:" << std::endl;
-            get_path().show();
-        }
-    }
-
-    unsigned get_depth() const { return node->depth; }
-
-    friend auto make_step_root<>(const Cube& cube);
-    friend auto make_step_node<>(Node<Cube>::sptr cube);
-};
-
-template <typename Cube>
-auto make_step_root(const Cube& cube) {
-    return typename StepNode<Cube>::sptr(new StepNode<Cube>(cube));
-}
-
-template <typename Cube>
-auto make_step_node(std::shared_ptr<Node<Cube>> node) {
-    return typename StepNode<Cube>::sptr(new StepNode<Cube>(node));
-}
-
 struct StepBase {};
 
 template <typename Pruner, unsigned... blocks>
@@ -199,8 +129,10 @@ struct BlockStep : StepBase {
     template <typename Mover>
     auto solve_optimal(NodePtr root, const Mover& mover,
                        unsigned max_depth = 20, unsigned slackness = 0) {
+        auto roots = Solutions<NodePtr>({root});
         auto node_sols = IDAstar<false>(
-            root, mover.get_apply(), pruner.template get_estimator<blocks...>(),
+            roots, mover.get_apply(),
+            pruner.template get_estimator<blocks...>(),
             get_is_solved<blocks...>(root->state), max_depth, slackness);
         node_sols.sort_by_depth();
         return node_sols;
