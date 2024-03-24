@@ -63,15 +63,17 @@ Solutions<NodePtr> breadth_first_search(const NodePtr root, Mover &&apply,
 }
 template <bool verbose = true, typename NodePtr, typename Mover,
           typename Pruner, typename SolveCheck>
-Solutions<NodePtr> depth_first_search(const NodePtr root, const Mover &apply,
+Solutions<NodePtr> depth_first_search(const Solutions<NodePtr> roots,
+                                      const Mover &apply,
                                       const Pruner &estimate,
                                       const SolveCheck &is_solved,
                                       const unsigned max_depth = 4) {
+    for (auto root : roots) {
+        root->estimate = estimate(root->state);
+    }
     Solutions<NodePtr> all_solutions;
-    root->estimate = estimate(root->state);
-    std::deque<NodePtr> queue = {root};
-    auto node = queue.back();
     int node_counter = 0;
+    std::deque<NodePtr> queue(roots.begin(), roots.end());
 
     while (queue.size() > 0) {
         auto node = queue.back();
@@ -93,6 +95,9 @@ Solutions<NodePtr> depth_first_search(const NodePtr root, const Mover &apply,
     }
     if constexpr (verbose) {
         std::cout << "Nodes generated: " << node_counter << std::endl;
+    }
+    for (auto sol : all_solutions) {
+        sol->step_number++;
     }
     return all_solutions;
 }

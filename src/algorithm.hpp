@@ -74,6 +74,17 @@ struct Algorithm {
                         other.sequence.end());
     }
 
+    void prepend(const Algorithm& other) {
+        sequence.insert(sequence.begin(), other.sequence.begin(),
+                        other.sequence.end());
+    }
+
+    Algorithm reversed() const {
+        auto ret = *this;
+        std::reverse(ret.sequence.begin(), ret.sequence.end());
+        return ret;
+    }
+
     void append(const Move& move) { sequence.push_back(move); }
 
     Move back() { return sequence.back(); }
