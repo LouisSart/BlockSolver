@@ -50,7 +50,7 @@ void second_step_test() {
 void step_object_test() {
     MultiBlockCube<2> cube;
     mover.apply({L, F}, cube);
-    auto root = make_step_root(cube);
+    auto root = Node<MultiBlockCube<2>>::make_root(cube);
     root->show();
 
     auto step = make_block_step<0, 1>(pruner);

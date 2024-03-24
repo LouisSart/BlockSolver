@@ -182,26 +182,18 @@ struct StepBase {};
 template <typename Pruner, unsigned... blocks>
 struct BlockStep : StepBase {
     using Cube = typename Pruner::Cube;
-    using StepNodePtr = typename StepNode<Cube>::sptr;
+    using NodePtr = typename Node<Cube>::sptr;
     Pruner pruner;
 
     BlockStep(const Pruner& pruner) : pruner{pruner} {};
     template <typename Mover>
-    auto solve_optimal(StepNodePtr root, const Mover& mover,
+    auto solve_optimal(NodePtr root, const Mover& mover,
                        unsigned max_depth = 20, unsigned slackness = 0) {
         auto node_sols = IDAstar<false>(
-            root->node, mover.get_apply(),
-            pruner.template get_estimator<blocks...>(),
-            get_is_solved<blocks...>(root->node->state), max_depth, slackness);
+            root, mover.get_apply(), pruner.template get_estimator<blocks...>(),
+            get_is_solved<blocks...>(root->state), max_depth, slackness);
         node_sols.sort_by_depth();
-        Solutions<StepNodePtr> ret;
-        for (auto node : node_sols) {
-            auto step_node = make_step_node(node);
-            // step_node->step_parent = root;
-            step_node->step_length = (node->depth - root->node->depth);
-            ret.push_back(step_node);
-        }
-        return ret;
+        return node_sols;
     }
 };
 

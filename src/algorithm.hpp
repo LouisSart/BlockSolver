@@ -75,11 +75,6 @@ struct Algorithm {
     }
 
     void append(const Move& move) { sequence.push_back(move); }
-    void concatenate(const Algorithm& other) {
-        for (const auto& move : other.sequence) {
-            sequence.push_back(move);
-        };
-    }
 
     Move back() { return sequence.back(); }
 
