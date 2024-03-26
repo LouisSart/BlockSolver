@@ -14,6 +14,12 @@ struct Solutions : public std::vector<NodePtr> {
                       return (node1->depth < node2->depth);
                   });
     }
+
+    void show() const {
+        for (auto node : *this) {
+            node->get_path().show();
+        }
+    }
 };
 
 template <typename NodePtr>
@@ -22,13 +28,6 @@ auto standard_directions(const NodePtr node) {
         return default_directions;
     } else {
         return allowed_next(node->last_moves.back());
-    }
-}
-
-template <typename SolutionContainer>
-void show(SolutionContainer solutions) {
-    for (auto &&node : solutions) {
-        node->get_path().show();
     }
 }
 
@@ -99,9 +98,6 @@ Solutions<NodePtr> depth_first_search(const Solutions<NodePtr> roots,
     if constexpr (verbose) {
         std::cout << "Nodes generated: " << node_counter << std::endl;
     }
-    for (auto sol : all_solutions) {
-        sol->step_number++;
-    }
     return all_solutions;
 }
 
@@ -142,4 +138,29 @@ Solutions<NodePtr> IDAstar(const Solutions<NodePtr> roots, const Mover &apply,
         }
     }
     return solutions;
+}
+
+template <typename NodePtr, typename Phase>
+Solutions<NodePtr> multi_phase_search(const Solutions<NodePtr> roots,
+                                      const std::vector<Phase *> &phases) {
+    Solutions<NodePtr> all_solutions;
+    auto mover = phases[0]->mover;
+    std::deque<NodePtr> queue(roots.begin(), roots.end());
+    NodePtr node;
+
+    while (queue.size() > 0) {
+        node = queue.back();
+        queue.pop_back();
+        if (node->state.is_solved()) {
+            all_solutions.push_back(node);
+        } else {
+            if (node->step_number < phases.size()) {
+                auto phase_solutions =
+                    phases[node->step_number]->solve_optimal(node);
+                queue.insert(queue.end(), phase_solutions.begin(),
+                             phase_solutions.end());
+            }
+        }
+    }
+    return all_solutions;
 }

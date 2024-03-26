@@ -10,6 +10,7 @@ struct Mover {
     static constexpr unsigned _NTABLES = sizeof...(MTs);
     std::tuple<MTs*...> _mts;
 
+    Mover() {}
     Mover(MTs*... mts) { _mts = std::tuple(mts...); }
 
     template <unsigned step>
@@ -117,31 +118,44 @@ auto get_is_solved(const Cube& cube) {
     return [](const Cube& cube) -> bool { return is_solved<steps...>(cube); };
 }
 
-struct StepBase {};
+template <typename NodePtr, typename Mover>
+struct StepBase {
+    Mover mover;
+    StepBase() {}
+    virtual Solutions<NodePtr> solve_optimal(NodePtr root,
+                                             unsigned max_depth = 20,
+                                             unsigned slackness = 0) = 0;
+    virtual ~StepBase() = default;
+};
 
-template <typename Pruner, unsigned... blocks>
-struct BlockStep : StepBase {
+template <typename NodePtr, typename Mover, typename Pruner, unsigned... blocks>
+struct BlockStep : StepBase<NodePtr, Mover> {
     using Cube = typename Pruner::Cube;
-    using NodePtr = typename Node<Cube>::sptr;
     Pruner pruner;
+    Mover mover;
 
-    BlockStep(const Pruner& pruner) : pruner{pruner} {};
-    template <typename Mover>
-    auto solve_optimal(NodePtr root, const Mover& mover,
-                       unsigned max_depth = 20, unsigned slackness = 0) {
+    BlockStep(const Mover& mover, const Pruner& pruner)
+        : mover{mover}, pruner{pruner} {};
+
+    Solutions<NodePtr> solve_optimal(NodePtr root, unsigned max_depth = 20,
+                                     unsigned slackness = 0) {
         auto roots = Solutions<NodePtr>({root});
         auto node_sols = IDAstar<false>(
             roots, mover.get_apply(),
             pruner.template get_estimator<blocks...>(),
             get_is_solved<blocks...>(root->state), max_depth, slackness);
         node_sols.sort_by_depth();
+        for (auto node : node_sols) {
+            node->step_number++;
+        }
         return node_sols;
     }
 };
 
-template <unsigned... blocks, typename Pruner>
-auto make_block_step(const Pruner& pruner) {
-    return BlockStep<Pruner, blocks...>(pruner);
+template <unsigned... blocks, typename Mover, typename Pruner>
+auto make_block_step(const Mover& mover, const Pruner& pruner) {
+    using NodePtr = typename Node<typename Pruner::Cube>::sptr;
+    return BlockStep<NodePtr, Mover, Pruner, blocks...>(mover, pruner);
 }
 
 template <typename Cube, typename Mover>
