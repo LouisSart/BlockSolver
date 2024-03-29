@@ -111,6 +111,18 @@ std::array<std::string, N_HTM_MOVES_AND_SYMMETRIES> move_str{
     "L2", "L'", "F",  "F2", "F'", "B",  "B2", "B'",  "x",    "x2",
     "x'", "y",  "y2", "y'", "z",  "z2", "z'", "x y", "x' z'"};
 
+std::ostream& operator<<(std::ostream& os, const Move& move) {
+    os << move_str[move];
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const Algorithm& alg) {
+    for (auto move : alg.sequence) {
+        os << move << " ";
+    }
+    return os;
+}
+
 void Algorithm::show() const {
     for (auto&& m : sequence) {
         std::cout << move_str[m] << " ";
