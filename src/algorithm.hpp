@@ -93,6 +93,7 @@ struct Algorithm {
         return my_size;
     }
 
+    Algorithm get_inverse() const;
     void show() const;
 };
 
@@ -138,6 +139,15 @@ std::array<Move, N_HTM_MOVES_AND_ROTATIONS> HTM_Moves_and_rotations{
 std::array<Move, N_HTM_MOVES_AND_ROTATIONS> inverse_of_HTM_Moves_and_rotations{
     U3, U2, U,  D3, D2, D,  R3, R2, R,  L3, L2, L,  F3, F2,
     F,  B3, B2, B,  x3, x2, x,  y3, y2, y,  z3, z2, z};
+
+Algorithm Algorithm::get_inverse() const {
+    auto ret = *this;
+    std::reverse(ret.sequence.begin(), ret.sequence.end());
+    for (auto& m : ret.sequence) {
+        m = inverse_of_HTM_Moves_and_rotations[m];
+    }
+    return ret;
+}
 
 std::vector<Move> default_directions{U, U2, U3, D, D2, D3, R, R2, R3,
                                      L, L2, L3, F, F2, F3, B, B2, B3};
