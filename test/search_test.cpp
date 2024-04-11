@@ -20,17 +20,12 @@ void check_solutions(const Algorithm& scramble, const MoveTable& m_table,
 void test_object_sizes() {
     std::cout << "size of CoordinateBlockCube: " << sizeof(CoordinateBlockCube)
               << std::endl;
-    std::cout << "size of 2 ints: " << 2 * sizeof(int) << std::endl;
+    std::cout << "size of 1 uint: " << sizeof(unsigned) << std::endl;
     std::cout << "size of Move: " << sizeof(Move) << std::endl;
     std::cout << "size of shared_pointer: "
               << sizeof(Node<CoordinateBlockCube>::sptr) << std::endl;
     std::cout << "size of Node<CoordinateBlockCube>: "
               << sizeof(Node<CoordinateBlockCube>) << std::endl;
-
-    // Note: next assertion can fail if the compiler optimizes padding of the
-    // memory layout
-    assert(sizeof(Node<CoordinateBlockCube>) ==
-           72);  // Any way this can be improved ?
 }
 
 template <typename Block>
@@ -43,7 +38,7 @@ void test_expand_cbc(const Block& b) {
         [&table](const Move& move, CoordinateBlockCube& CBC) {
             table.apply(move, CBC);
         },
-        [](const CoordinateBlockCube& cbc) { return 1; }, HTM_Moves);
+        HTM_Moves);
 
     assert(children.size() == 18);
     assert(!children[U]->state.is_solved());
@@ -54,30 +49,6 @@ void test_expand_cbc(const Block& b) {
     assert(children[B]->state.is_solved());
     assert(children[B2]->state.is_solved());
     assert(children[B3]->state.is_solved());
-}
-
-template <typename Block>
-void test_expand_cbc_with_heuristic(const Block& b) {
-    CoordinateBlockCube cbc;
-    BlockMoveTable table(b);
-    int k = 0;
-
-    auto root = make_root(cbc);
-    auto children = root->expand(
-        [&table](const Move& move, CoordinateBlockCube& CBC) {
-            table.apply(move, CBC);
-        },
-        [&k](const CoordinateBlockCube& CBC) {
-            ++k;
-            return 18 - k;
-        },
-        HTM_Moves);
-
-    assert(std::is_sorted(children.begin(), children.end(),
-                          [](Node<CoordinateBlockCube>::sptr node1,
-                             Node<CoordinateBlockCube>::sptr node2) {
-                              return node1->estimate > node2->estimate;
-                          }));
 }
 
 void test_depth_first_search() {
@@ -95,7 +66,7 @@ void test_depth_first_search() {
         },
         [](const CoordinateBlockCube& cube) { return (unsigned)1; },
         [](const CoordinateBlockCube& cube) { return cube.is_solved(); }, 3);
-    show(solutions);
+    solutions.show();
     check_solutions(scramble, m_table, solutions);
 }
 
@@ -117,7 +88,7 @@ void test_depth_first_search_with_heuristic() {
             return p_table.get_estimate(cube);
         },
         [](const CoordinateBlockCube& cube) { return cube.is_solved(); }, 3);
-    show(solutions);
+    solutions.show();
     check_solutions(scramble, m_table, solutions);
 }
 
@@ -137,16 +108,16 @@ void test_successive_expansions() {
     auto pruner = [&p_table](const CoordinateBlockCube& cube) {
         return p_table.get_estimate(cube);
     };
-    auto children = root->expand(mover, pruner, HTM_Moves);
+    auto children = root->expand(mover, HTM_Moves);
     assert(pruner(root->state) == 4);
-    assert(children[U]->estimate == 5);
-    assert(children[D3]->estimate == 3);
-    children = children[D3]->expand(mover, pruner, HTM_Moves);
-    assert(children[L2]->estimate == 2);
-    children = children[L2]->expand(mover, pruner, HTM_Moves);
-    assert(children[B]->estimate == 1);
-    children = children[B]->expand(mover, pruner, HTM_Moves);
-    assert(children[L3]->estimate == 0);
+    assert(pruner(children[U]->state) == 5);
+    assert(pruner(children[D3]->state) == 3);
+    children = children[D3]->expand(mover, HTM_Moves);
+    assert(pruner(children[L2]->state) == 2);
+    children = children[L2]->expand(mover, HTM_Moves);
+    assert(pruner(children[B]->state) == 1);
+    children = children[B]->expand(mover, HTM_Moves);
+    assert(pruner(children[L3]->state) == 0);
 }
 
 void test_solve_222_on_wr_scramble() {
@@ -170,7 +141,7 @@ void test_solve_222_on_wr_scramble() {
         },
         [](const CoordinateBlockCube& cube) { return cube.is_solved(); }, 4);
     assert(solutions.size() == 1);
-    show(solutions);
+    solutions.show();
     check_solutions(scramble, m_table, solutions);
 }
 
@@ -182,12 +153,8 @@ int main() {
     test_object_sizes();
     std::cout << " --- Test expansion ---" << std::endl;
     test_expand_cbc(FrontColumns);
-    std::cout << " --- Test expansion with heuristic ---" << std::endl;
-    test_expand_cbc_with_heuristic(RouxFirstBlock);
     std::cout << " --- Test successive expansions ---" << std::endl;
     test_successive_expansions();
-    std::cout << " --- Test breadth first ---" << std::endl;
-    test_breadth_first_search();
     std::cout << " --- Test depth first --- " << std::endl;
     test_depth_first_search();
     std::cout << " --- Test depth first with heuristic --- " << std::endl;

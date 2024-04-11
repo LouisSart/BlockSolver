@@ -38,9 +38,6 @@ Solutions<NodePtr> depth_first_search(const Solutions<NodePtr> roots,
                                       const Pruner &estimate,
                                       const SolveCheck &is_solved,
                                       const unsigned max_depth = 4) {
-    for (auto root : roots) {
-        root->estimate = estimate(root->state);
-    }
     Solutions<NodePtr> all_solutions;
     int node_counter = 0;
     std::deque<NodePtr> queue(roots.begin(), roots.end());
@@ -53,7 +50,7 @@ Solutions<NodePtr> depth_first_search(const Solutions<NodePtr> roots,
             queue.pop_back();
         } else {
             queue.pop_back();
-            if (node->depth + node->estimate <= max_depth) {
+            if (node->depth + estimate(node->state) <= max_depth) {
                 auto children =
                     node->expand(apply, estimate, standard_directions(node));
                 for (auto &&child : children) {

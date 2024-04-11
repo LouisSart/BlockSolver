@@ -41,12 +41,13 @@ void step_first_test() {
 void second_step_test() {
     MultiBlockCube<2> cube;
     auto root = make_root(cube);
-    auto children = root->expand(mover.get_apply(),
-                                 pruner.get_estimator<0, 1>(), HTM_Moves);
-    assert(children[R]->estimate == 0);
-    assert(children[U]->estimate == 1);
-    assert(children[F]->estimate == 1);
-    assert(children[L]->estimate == 1);
+    auto estimate = pruner.get_estimator<0, 1>();
+
+    auto children = root->expand(mover.get_apply(), HTM_Moves);
+    assert(estimate(children[R]->state) == 0);
+    assert(estimate(children[U]->state) == 1);
+    assert(estimate(children[F]->state) == 1);
+    assert(estimate(children[L]->state) == 1);
 }
 
 void step_object_test() {
