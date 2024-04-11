@@ -31,38 +31,6 @@ auto standard_directions(const NodePtr node) {
     }
 }
 
-template <typename NodePtr, typename Mover, typename Pruner,
-          typename SolveCheck>
-Solutions<NodePtr> breadth_first_search(const Solutions<NodePtr> &roots,
-                                        Mover &&apply, const Pruner &&estimate,
-                                        SolveCheck &&is_solved,
-                                        const unsigned max_depth = 4) {
-    for (auto root : roots) {
-        root->estimate = estimate(root->state);
-    }
-    Solutions<NodePtr> all_solutions;
-    std::deque<NodePtr> queue(roots.begin(), roots.end());
-    auto node = queue.back();
-
-    while (queue.size() != 0) {
-        auto node = queue.back();
-        if (is_solved(node->state)) {
-            all_solutions.push_back(node);
-            queue.pop_back();
-        } else {
-            queue.pop_back();
-            if (node->depth < max_depth) {
-                auto children =
-                    node->expand(apply, estimate, standard_directions(node));
-                for (auto &&child : children) {
-                    queue.push_front(child);
-                }
-            }
-        }
-        assert(queue.size() < 1000000);  // Avoiding memory flood
-    }
-    return all_solutions;
-}
 template <bool verbose = true, typename NodePtr, typename Mover,
           typename Pruner, typename SolveCheck>
 Solutions<NodePtr> depth_first_search(const Solutions<NodePtr> roots,

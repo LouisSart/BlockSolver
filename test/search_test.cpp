@@ -80,25 +80,6 @@ void test_expand_cbc_with_heuristic(const Block& b) {
                           }));
 }
 
-void test_breadth_first_search() {
-    Algorithm scramble({F2, D, R, U});
-    Block<2, 3> b("RouxFirstBlock", {DLF, DLB}, {LF, LB, DL});
-    CoordinateBlockCube cbc;
-    BlockMoveTable m_table(b);
-    m_table.apply(scramble, cbc);
-
-    auto root = Solutions<Node<CoordinateBlockCube>::sptr>({make_root(cbc)});
-    auto solutions = breadth_first_search(
-        root,
-        [&m_table](const Move& move, CoordinateBlockCube& CBC) {
-            m_table.apply(move, CBC);
-        },
-        [](const CoordinateBlockCube& cbc) { return 1; },
-        [](const CoordinateBlockCube& cube) { return cube.is_solved(); }, 4);
-    show(solutions);
-    check_solutions(scramble, m_table, solutions);
-}
-
 void test_depth_first_search() {
     Algorithm scramble({R, L2, D, F});
     Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
