@@ -289,15 +289,15 @@ struct OptimalEO {
 }  // namespace Strategy
 
 template <bool verbose = false, typename Strategy>
-Strategy::table_t* gen_table_ptr(const Strategy& strat) {
-    auto table = new Strategy::table_t(strat.id());
+typename Strategy::table_t* gen_table_ptr(const Strategy& strat) {
+    auto table = new typename Strategy::table_t(strat.id());
     *table = strat.template gen_table<verbose>();
     return table;
 }
 
 template <typename Strategy>
-Strategy::table_t* load_table_ptr(const Strategy& strat) {
-    auto table = new Strategy::table_t(strat.id());
+typename Strategy::table_t* load_table_ptr(const Strategy& strat) {
+    auto table = new typename Strategy::table_t(strat.id());
     try {
         *table = strat.template load_table();
     } catch (LoadError error) {
