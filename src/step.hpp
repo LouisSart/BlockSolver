@@ -166,7 +166,7 @@ auto init_roots(const Algorithm& scramble, std::vector<Algorithm> symmetries,
     // state = S^-1 * M * S, where S is the symmetry (rotation) and M is
     // the
     // scramble
-    using NodePtr = Node<Cube>::sptr;
+    using NodePtr = typename Node<Cube>::sptr;
     Solutions<NodePtr> ret;
     Cube cube;
     NodePtr root;

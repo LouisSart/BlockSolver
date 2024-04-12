@@ -10,11 +10,11 @@ struct Node : public std::enable_shared_from_this<Node<Cube>> {
     using sptr = std::shared_ptr<Node<Cube>>;
     using csptr = std::shared_ptr<Node<Cube> const>;
 
-    Cube state;            // The cube state this node corresponds to
-    sptr parent;           // The shared_ptr to the parent
-    unsigned depth;        // The number of moves made to get this state
-    Algorithm last_moves;  // The moves which yielded this state
-    int step_number = 0;   // The step which was solved
+    Cube state;                // The cube state this node corresponds to
+    sptr parent;               // The shared_ptr to the parent
+    unsigned depth;            // The number of moves made to get this state
+    Algorithm last_moves;      // The moves which yielded this state
+    unsigned step_number = 0;  // The step to be solved next
 
     Node() : state{Cube()}, depth{0}, parent{nullptr} {}
     Node(const Cube &c, const unsigned &d = 0, sptr p = nullptr,
