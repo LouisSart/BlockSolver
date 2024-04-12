@@ -160,7 +160,6 @@ struct BlockMoveTable {
         BlockCube<nc, ne> bc(b);
         CubieCube cc, cc_copy;
         CoordinateBlockCube cbc;
-        unsigned ccl = 0, cel = 0, ccp = 0, cep = 0, cco = 0, ceo = 0;
 
         unsigned p_idx = 0, o_idx = 0, m_idx = 0;
         for (unsigned il = 0; il < n_el; il++) {
@@ -214,7 +213,6 @@ struct BlockMoveTable {
         BlockCube<nc, ne> bc(b);
         CubieCube cc, cc_copy;
         CoordinateBlockCube cbc;
-        unsigned ccl = 0, cel = 0, ccp = 0, cep = 0, cco = 0, ceo = 0;
 
         unsigned p_idx = 0, o_idx = 0, m_idx = 0;
         for (unsigned il = 0; il < n_cl; il++) {
