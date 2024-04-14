@@ -8,6 +8,7 @@
 template <typename... MTs>
 struct Mover {
     static constexpr unsigned _NTABLES = sizeof...(MTs);
+    using Cube = MultiBlockCube<_NTABLES>;
     std::tuple<MTs*...> _mts;
 
     Mover() {}
@@ -128,22 +129,21 @@ struct StepBase {
     virtual ~StepBase() = default;
 };
 
-template <typename NodePtr, typename Mover, typename Pruner, unsigned... blocks>
-struct BlockStep : StepBase<NodePtr, Mover> {
+template <typename NodePtr, typename Mover, typename Pruner, unsigned... steps>
+struct Step : StepBase<NodePtr, Mover> {
     using Cube = typename Pruner::Cube;
     Pruner pruner;
     Mover mover;
 
-    BlockStep(const Mover& mover, const Pruner& pruner)
+    Step(const Mover& mover, const Pruner& pruner)
         : mover{mover}, pruner{pruner} {};
 
     Solutions<NodePtr> solve_optimal(NodePtr root, unsigned max_depth = 20,
                                      unsigned slackness = 0) {
         auto roots = Solutions<NodePtr>({root});
         auto node_sols = IDAstar<false>(
-            roots, mover.get_apply(),
-            pruner.template get_estimator<blocks...>(),
-            get_is_solved<blocks...>(root->state), max_depth, slackness);
+            roots, mover.get_apply(), pruner.template get_estimator<steps...>(),
+            get_is_solved<steps...>(root->state), max_depth, slackness);
         node_sols.sort_by_depth();
         for (auto node : node_sols) {
             node->step_number++;
@@ -152,17 +152,17 @@ struct BlockStep : StepBase<NodePtr, Mover> {
     }
 };
 
-template <unsigned... blocks, typename Mover, typename Pruner>
-auto make_block_step(const Mover& mover, const Pruner& pruner) {
+template <unsigned... steps, typename Mover, typename Pruner>
+auto make_step(const Mover& mover, const Pruner& pruner) {
     using NodePtr = typename Node<typename Pruner::Cube>::sptr;
-    return BlockStep<NodePtr, Mover, Pruner, blocks...>(mover, pruner);
+    return Step<NodePtr, Mover, Pruner, steps...>(mover, pruner);
 }
 
 template <typename Cube, typename Mover>
 auto init_roots(const Algorithm& scramble, std::vector<Algorithm> symmetries,
                 const Mover& mover) {
     // Generates all symmetries of the scramble as
-    // MultiBlockCubes<blocks>
+    // MultiBlockCubes<steps>
     // state = S^-1 * M * S, where S is the symmetry (rotation) and M is
     // the
     // scramble
