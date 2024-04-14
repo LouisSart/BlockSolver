@@ -57,12 +57,12 @@ void step_object_test() {
     root->show();
 
     auto step = make_step<1>(mover, pruner);
-    auto solutions = step.solve_optimal(root);
+    auto solutions = step->solve_optimal(root);
     std::cout << "Step 1:" << std::endl;
     solutions.show();
 
     auto step2 = make_step<0, 1>(mover, pruner);
-    solutions = step2.solve_optimal({solutions[0]});
+    solutions = step2->solve_optimal({solutions[0]});
     std::cout << "Step 2:" << std::endl;
     solutions.show();
 }
@@ -76,7 +76,7 @@ void multi_phase_test() {
     auto step = make_step<1>(mover, pruner);
     auto step2 = make_step<0, 1>(mover, pruner);
     std::vector<StepBase<typename Node<Cube>::sptr, decltype(mover)>*> steps = {
-        &step, &step2};
+        step, step2};
 
     auto solutions = multi_phase_search(Sol({root}), steps);
     solutions.show();

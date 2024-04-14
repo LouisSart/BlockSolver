@@ -107,7 +107,10 @@ Solutions<NodePtr> IDAstar(const Solutions<NodePtr> roots, const Mover &apply,
 
 template <typename NodePtr, typename Phase>
 Solutions<NodePtr> multi_phase_search(const Solutions<NodePtr> roots,
-                                      const std::vector<Phase *> &phases) {
+                                      const std::vector<Phase *> &phases,
+                                      const std::vector<unsigned> &splits,
+                                      unsigned slackness) {
+    assert(splits.size() == phases.size());
     Solutions<NodePtr> all_solutions;
     auto mover = phases[0]->mover;
     std::deque<NodePtr> queue(roots.begin(), roots.end());
@@ -120,8 +123,8 @@ Solutions<NodePtr> multi_phase_search(const Solutions<NodePtr> roots,
             all_solutions.push_back(node);
         } else {
             if (node->step_number < phases.size()) {
-                auto phase_solutions =
-                    phases[node->step_number]->solve_optimal(node);
+                auto phase_solutions = phases[node->step_number]->solve_optimal(
+                    node, splits[node->step_number], slackness);
                 queue.insert(queue.end(), phase_solutions.begin(),
                              phase_solutions.end());
             }

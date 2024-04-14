@@ -5,10 +5,19 @@
 #include "search.hpp"
 #include "step.hpp"
 
-auto method = make_eo_method(Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB}),
-                             Block<1, 2>("DL_F_sq", {DLF}, {DF, LF}),
-                             Block<1, 2>("DB_R_sq", {DRB}, {RB, DR}),
-                             Block<0, 4>("TopCross", {}, {UF, UR, UB, UL}));
+auto block1 = Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB});
+auto block2 = Block<1, 2>("DL_F_sq", {DLF}, {DF, LF});
+auto block3 = Block<1, 2>("DB_R_sq", {DRB}, {RB, DR});
+auto block4 = Block<0, 4>("TopCross", {}, {UF, UR, UB, UL});
+
+auto mover = make_eo_mover(block1, block2, block3, block4);
+auto pruner = make_eo_pruner(block1, block2, block3, block4);
+auto step1 = make_step<0>(mover, pruner);
+auto step2 = make_step<0, 1>(mover, pruner);
+auto step3 = make_step<0, 1, 2>(mover, pruner);
+auto step4 = make_step<0, 1, 2, 3>(mover, pruner);
+auto step5 = make_step<0, 1, 2, 3, 4>(mover, pruner);
+auto steps = make_steps({step1, step2, step3, step4, step5});
 
 std::vector<Algorithm> rotations{
     {},       {x},     {x2},    {x3},     {x, y},  {x2, y}, {x3, y},  {y},
@@ -16,31 +25,16 @@ std::vector<Algorithm> rotations{
     {y, x3},  {x, z3}, {x, y},  {z},      {y3, z}, {x2, y}, {z, y3},  {y3}};
 
 int main(int argc, const char* argv[]) {
-    std::array<unsigned, 4> splits_move_counts{
-        get_option<unsigned>("-s0", argc, argv),
-        get_option<unsigned>("-s1", argc, argv),
-        get_option<unsigned>("-s2", argc, argv),
-        get_option<unsigned>("-s3", argc, argv)};
     auto scramble = Algorithm(argv[argc - 1]);
     scramble.show();
 
-    auto solutions = method.init_roots(scramble, rotations);
+    auto solutions = init_roots(scramble, rotations, mover);
 
-    // Step 1 : EO
-    solutions = method.make_step<0>(solutions, splits_move_counts[0]);
-    // Step 1 : 2x2x2
-    solutions = method.make_step<0, 1>(solutions, splits_move_counts[1]);
-    // Step 1 : F2L-1
-    solutions = method.make_step<0, 1, 2, 3>(solutions, splits_move_counts[2]);
-    // Step 1 : L5C skeleton
-    solutions =
-        method.make_step<0, 1, 2, 3, 4>(solutions, splits_move_counts[3]);
+    // Solve
+    solutions = multi_phase_search(solutions, steps, {5, 10, 15, 20, 21}, 1);
 
     solutions.sort_by_depth();
     std::cout << "Three step corner skeletons" << std::endl;
-    for (auto solution : solutions) {
-        show(solution->get_skeleton());
-        std::cout << std::endl;
-    }
+    solutions.show();
     return 0;
 }

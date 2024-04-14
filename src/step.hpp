@@ -67,6 +67,11 @@ auto make_mover(const BlockTypes&... blocks) {
     return Mover(new BlockMoveTable(blocks)...);
 }
 
+template <typename... BlockTypes>
+auto make_eo_mover(const BlockTypes&... blocks) {
+    return Mover(new EOMoveTable(), new BlockMoveTable(blocks)...);
+}
+
 template <typename... PTs>
 struct Pruner {
     static constexpr unsigned _NTABLES = sizeof...(PTs);
@@ -106,6 +111,12 @@ struct Pruner {
 template <typename... BlockTypes>
 auto make_pruner(const BlockTypes&... blocks) {
     return Pruner(load_table_ptr(Strategy::Optimal(blocks))...);
+}
+
+template <typename... BlockTypes>
+auto make_eo_pruner(const BlockTypes&... blocks) {
+    return Pruner(load_table_ptr(Strategy::OptimalEO()),
+                  load_table_ptr(Strategy::Optimal(blocks))...);
 }
 
 template <unsigned... steps, typename Cube>
@@ -155,10 +166,15 @@ struct Step : StepBase<NodePtr, Mover> {
 template <unsigned... steps, typename Mover, typename Pruner>
 auto make_step(const Mover& mover, const Pruner& pruner) {
     using NodePtr = typename Node<typename Pruner::Cube>::sptr;
-    return Step<NodePtr, Mover, Pruner, steps...>(mover, pruner);
+    return new Step<NodePtr, Mover, Pruner, steps...>(mover, pruner);
 }
 
-template <typename Cube, typename Mover>
+template <typename Mover, typename Pruner>
+auto make_steps(std::initializer_list<StepBase<Mover, Pruner>*> args) {
+    return std::vector<StepBase<Mover, Pruner>*>(args);
+}
+
+template <typename Mover>
 auto init_roots(const Algorithm& scramble, std::vector<Algorithm> symmetries,
                 const Mover& mover) {
     // Generates all symmetries of the scramble as
@@ -166,6 +182,7 @@ auto init_roots(const Algorithm& scramble, std::vector<Algorithm> symmetries,
     // state = S^-1 * M * S, where S is the symmetry (rotation) and M is
     // the
     // scramble
+    using Cube = typename Mover::Cube;
     using NodePtr = typename Node<Cube>::sptr;
     Solutions<NodePtr> ret;
     Cube cube;
