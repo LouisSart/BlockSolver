@@ -78,7 +78,7 @@ void multi_phase_test() {
     std::vector<StepBase<typename Node<Cube>::sptr, decltype(mover)>*> steps = {
         step, step2};
 
-    auto solutions = multi_phase_search(Sol({root}), steps);
+    auto solutions = multi_phase_search(Sol({root}), steps, {1, 1}, 0);
     solutions.show();
 }
 

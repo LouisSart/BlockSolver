@@ -51,8 +51,7 @@ Solutions<NodePtr> depth_first_search(const Solutions<NodePtr> roots,
         } else {
             queue.pop_back();
             if (node->depth + estimate(node->state) <= max_depth) {
-                auto children =
-                    node->expand(apply, estimate, standard_directions(node));
+                auto children = node->expand(apply, standard_directions(node));
                 for (auto &&child : children) {
                     queue.push_back(child);
                 }
