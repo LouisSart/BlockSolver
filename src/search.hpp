@@ -93,8 +93,11 @@ Solutions<NodePtr> IDAstar(const Solutions<NodePtr> roots, const Mover &apply,
         // hence the job for those solutions is done twice.
         // I don' think this can be avoided since we need to
         // know optimal to introduce slackness
-        solutions = depth_first_search<verbose>(
-            roots, apply, estimate, is_solved, search_depth + slackness - 1);
+        auto depth = (max_depth < search_depth + slackness - 1)
+                         ? max_depth
+                         : search_depth + slackness - 1;
+        solutions = depth_first_search<verbose>(roots, apply, estimate,
+                                                is_solved, depth);
     }
     if constexpr (verbose) {
         if (solutions.size() == 0) {
