@@ -18,7 +18,7 @@ int main(int argc, const char* argv[]) {
     auto scramble = Algorithm(argv[argc - 1]);
     scramble.show();
 
-    auto roots = init_roots<Cube>(scramble, rotations, mover);
+    auto roots = init_roots(scramble, rotations, mover);
     auto solutions = IDAstar<false>(roots, mover.get_apply(),
                                     pruner.template get_estimator<0, 1, 2>(),
                                     get_is_solved<0, 1, 2>(roots[0]->state));
