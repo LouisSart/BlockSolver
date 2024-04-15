@@ -35,6 +35,9 @@ int main(int argc, const char* argv[]) {
 
     solutions.sort_by_depth();
     std::cout << "Three step corner skeletons" << std::endl;
-    solutions.show();
+    for (auto sol : solutions) {
+        sol->get_skeleton({"EO", "2x2x2", "2x2x3", "F2L-1", "xC"}).show();
+        std::cout << "-------------" << std::endl;
+    }
     return 0;
 }

@@ -99,15 +99,11 @@ struct Algorithm {
         return my_size;
     }
 
+    void operator<<(std::ostream& os) const;
+
     Algorithm get_inverse() const;
     void show() const;
 };
-
-void show(const std::vector<Algorithm>& skeleton) {
-    for (Algorithm step : skeleton) {
-        step.show();
-    }
-}
 
 constexpr unsigned N_HTM_MOVES = 18;
 constexpr unsigned N_HTM_MOVES_AND_ROTATIONS = 27;
@@ -136,6 +132,28 @@ void Algorithm::show() const {
     }
     if (sequence.size() > 0) std::cout << "(" << size() << ")" << std::endl;
 }
+
+struct StepAlgorithm : Algorithm {
+    std::string comment;
+
+    StepAlgorithm() {}
+    StepAlgorithm(Algorithm m, std::string c) : Algorithm{m}, comment{c} {}
+
+    void show(unsigned previous_moves = 0) const {
+        std::cout << sequence << "// " << comment << " (" << size() << "/"
+                  << size() + previous_moves << ")" << std::endl;
+    }
+};
+
+struct Skeleton : std::vector<StepAlgorithm> {
+    void show() const {
+        unsigned moves_made = 0;
+        for (auto step : *this) {
+            step.show(moves_made);
+            moves_made += step.size();
+        }
+    }
+};
 
 std::array<Move, N_HTM_MOVES> HTM_Moves{U, U2, U3, D, D2, D3, R, R2, R3,
                                         L, L2, L3, F, F2, F3, B, B2, B3};

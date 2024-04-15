@@ -73,13 +73,19 @@ void multi_phase_test() {
     mover.apply({L, F, L, R, D}, cube);
     auto root = make_root(cube);
 
+    // This is an empty skeleton
+    root->get_skeleton({""}).show();
+    std::cout << "----------------" << std::endl;
+
     auto step = make_step<1>(mover, pruner);
     auto step2 = make_step<0, 1>(mover, pruner);
-    std::vector<StepBase<typename Node<Cube>::sptr, decltype(mover)>*> steps = {
-        step, step2};
+    auto steps = make_steps({step, step2});
 
-    auto solutions = multi_phase_search(Sol({root}), steps, {1, 1}, 0);
-    solutions.show();
+    auto solutions = multi_phase_search(Sol({root}), steps, {2, 4}, 0);
+    for (auto node : solutions) {
+        node->get_skeleton({"Edge", "Corner"}).show();
+        std::cout << "----------------" << std::endl;
+    }
 }
 
 int main() {
