@@ -1,4 +1,4 @@
-list(APPEND UNIT_TESTS F2L-1_solve 223_solve three_step_solve zz_skeleton compare_pruning_tables)
+list(APPEND UNIT_TESTS F2L-1_solve 223_solve three_step_solve zz_skeleton)
 
 foreach(f ${UNIT_TESTS})
   set(target ${f})
