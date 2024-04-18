@@ -25,7 +25,7 @@ struct Block {
     Block() {}
     Block(std::string bname, const std::array<Corner, nc> &bc,
           const std::array<Edge, ne> &be)
-        : name{bname}, corners{bc}, edges{be} {
+        : corners{bc}, edges{be}, name{bname} {
         // Sort corners and edges for unicity
         std::sort(corners.begin(), corners.end(),
                   [](const Cubie &c1, const Cubie &c2) { return (c1 < c2); });
