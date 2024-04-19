@@ -189,3 +189,16 @@ void co_from_coord(uint c, uint n, uint* co) {
         cc = cc / 3;
     }
 }
+
+// Jaap Scherpuis implementation of the layout coordinate
+// unsigned layout_index(unsigned* layout, unsigned size, unsigned pieces) {
+//     unsigned t = 0;
+//     auto r = pieces;
+//     for (unsigned i = size - 1; i > 0; --i) {
+//         if (layout[i] == 1) {
+//             t += binomial(i, r);
+//             r -= 1;
+//         }
+//     }
+//     return t;
+// }
