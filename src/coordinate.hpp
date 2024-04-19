@@ -1,4 +1,6 @@
 #pragma once
+#include <array>
+#include <cassert>
 #include <iostream>
 #include <vector>
 
@@ -24,24 +26,32 @@ constexpr uint factorial(int n) {
         return n * factorial(n - 1);
     }
 };
-constexpr uint binomial(uint n, uint k) {
-    // binomial coefficient C_{n,k}
-    if (n < k) {
-        return 0;
-    } else {
-        return factorial(n) / (factorial(k) * factorial(n - k));
+
+constexpr auto binomial_table = [] {
+    // Using constexpr lambda to fill up binomial table
+    // at compile time
+    std::array<unsigned, (13) * (13)> arr = {};
+    for (unsigned n = 0; n <= 12; ++n) {
+        for (unsigned k = 0; k <= 12; ++k) {
+            if (n < k) {
+                arr[n * 13 + k] = 0;
+            } else if (k == 0 || k == n) {
+                arr[n * 13 + k] = 1;
+            } else {
+                arr[n * 13 + k] =
+                    arr[(n - 1) * 13 + k - 1] + arr[(n - 1) * 13 + k];
+            }
+        }
     }
-};
-extern uint perm_coord(uint*, uint);
-extern uint layout_coord(uint*, uint);
-extern uint co_coord(uint*, uint);
-extern uint eo_coord(uint*, uint);
-extern void perm_from_coord(uint, uint, uint*);
-extern void layout_from_coord(uint, uint, uint, uint*);
-extern void co_from_coord(uint, uint, uint*);
-extern void eo_from_coord(uint, uint, uint*);
-extern void corner_move_table_size(uint);
-extern void edge_move_table_size(uint);
+    return arr;
+}();
+
+constexpr unsigned binomial(unsigned n, unsigned k) {
+    // The function just does a lookup in the table for better performance
+    assert(n >= 0 && k >= 0);  // "No negative values"
+    assert(n < 13 && k < 13);  // "Binomial numbers computed up to n=12"
+    return binomial_table[n * 13 + k];
+}
 
 uint perm_coord(uint* p, uint n) {
     // p: the permutation array. Sorted position (coord = 0)
@@ -72,9 +82,9 @@ uint layout_coord(uint* l, uint n) {
     // layout (3 1s among 8 possible positions)
     // n: number of possible positions
     // (usually 12 for edges, 8 for corners)
-    // Solved position NEEDS to have all pieces on the left (c=0)
+    // "Solved position NEEDS to have all pieces on the left (c=0)
     // for the layout_from_coord function to work. Reorder the
-    // ep/cp array if necessary
+    // ep/cp array if necessary" => NOT TRUE ?
     uint c{0}, x{0};
     for (uint i = 0; i < n; i++) {
         if (l[i] == 1) {
@@ -138,21 +148,23 @@ void perm_from_coord(uint coord, uint n, uint* perm) {
     }
 }
 
-void layout_from_coord(uint c, uint n, uint k, uint* l) {
+void layout_from_coord(unsigned c, unsigned n, unsigned k, unsigned* l) {
     // c: the layout coordinate
     // n: number of possible positions (12 for edges, 8 for corners)
     // k: number of pieces
     // Builds the layout state that corresponds to c
 
-    int b, x = k, cc = c;
-    for (uint i = 0; i < n; i++) {
-        b = binomial(n - i - 1, x);
-        if (cc - b >= 0) {
-            l[n - 1 - i] = 1;
-            x -= 1;
-            cc -= b;
+    auto r = k;
+    auto t = c;
+    unsigned b;
+    for (int i = n - 1; i >= 0; --i) {
+        b = binomial(i, r);
+        if (t >= b) {
+            t = t - b;
+            l[i] = 1;
+            r = r - 1;
         } else {
-            l[n - 1 - i] = 0;
+            l[i] = 0;
         }
     }
 }
@@ -177,71 +189,3 @@ void co_from_coord(uint c, uint n, uint* co) {
         cc = cc / 3;
     }
 }
-
-void corner_move_table_size(uint k) {
-    std::cout << binomial(8, k) * factorial(k) << '\n';
-}
-
-void edge_move_table_size(uint k) {
-    std::cout << binomial(12, k) * factorial(k) << '\n';
-}
-
-// ########################## TESTS ##################################
-
-// void test_perm_coord()
-// {
-//   uint n=10;
-//   uint perm[] {1,2,0,4,7,5,8,9,3,6};
-//   uint c = perm_coord(perm, n);
-//   std::cout << c << '\n';
-//   std::cout << "-------------" << '\n';
-//
-//   uint* p;
-//   p = perm_from_coord(c, n);
-//   for (size_t i = 0; i < n; i++)
-//   {
-//     std::cout << *(p+i) << '\n';
-//   }
-// }
-//
-// void test_eo_coord()
-// {
-//   uint n {10};
-//   uint eo[n] = {0,1,1,0,0,1,0,1,0,1};
-//   uint c = eo_coord(eo, n);
-//   std::cout << c << '\n';
-//   uint* eeo = eo_from_coord(c, n);
-//   for (size_t i = 0; i < n; i++)
-//   {
-//     std::cout << eeo[i] << ' ';
-//   }
-//   std::cout << '\n';
-// }
-//
-// void test_co_coord()
-// {
-//   uint n {10};
-//   uint co[n] = {0,1,2,0,2,1,0,2,0,1};
-//   uint c = co_coord(co, n);
-//   std::cout << c << '\n';
-//   uint* cco = co_from_coord(c, n);
-//   for (size_t i = 0; i < n; i++)
-//   {
-//     std::cout << cco[i] << ' ';
-//   }
-//   std::cout << '\n';
-// }
-//
-// void test_layout_coord()
-// {
-//   uint n=8, k=3;
-//   uint cp[n]{0,0,0,1,0,0,1,1};
-//   uint c = layout_coord(cp, n);
-//   std::cout << c << '\n';
-//   uint* l = layout_from_coord(c, n, k);
-//   for (uint i=0;i<n;i++)
-//   {
-//     std::cout << l[i] << ' ';
-//   }
-//   std::cout << '\n';
-// }
