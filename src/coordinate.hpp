@@ -15,17 +15,19 @@ constexpr int ipow(int k, uint n) {
     return ret;
 };
 
-constexpr uint factorial(int n) {
-    // recursive impl of the factorial: n!
-    if (n < 0) {
-        std::cout << "factorial error: n= " << n << '\n';
-        return -1;
-    } else if (n == 0) {
-        return 1;
-    } else {
-        return n * factorial(n - 1);
+constexpr auto factorial_table = [] {
+    std::array<unsigned, 13> arr = {};
+    arr[0] = 1;
+    for (unsigned n = 1; n <= 12; ++n) {
+        arr[n] = n * arr[n - 1];
     }
-};
+    return arr;
+}();
+
+constexpr unsigned factorial(unsigned n) {
+    assert(n <= 12);
+    return factorial_table[n];
+}
 
 constexpr auto binomial_table = [] {
     // Using constexpr lambda to fill up binomial table
