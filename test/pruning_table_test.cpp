@@ -78,28 +78,28 @@ void test_permutation_is_correct(const Block& b) {
 template <typename Block>
 void test_direct_and_backward_are_equivalent(const Block& b) {
     b.show();
-    Strategy::Permutation strat(b);
+    Strategy::Optimal strat(b);
     BlockMoveTable m_table(b);
-    auto direct = strat.load_table();
-    auto backwards = strat.load_table();
+    auto direct = load_table_ptr(strat);
+    auto backwards = load_table_ptr(strat);
 
     std::cout << "Direct generator:" << std::endl;
-    auto adv = Advancement(direct.size());
-    compute_pruning_table<false>(direct, strat, m_table, adv);
+    auto adv = Advancement(direct->size());
+    compute_pruning_table<false>(*direct, strat, m_table, adv);
     adv.update(adv.depth + 1);
 
     std::cout << "Backwards generator:" << std::endl;
-    adv = Advancement(backwards.size());
+    adv = Advancement(backwards->size());
     adv.add_encountered();
     adv.update();
-    backwards.reset();
-    backwards.table[0] = 0;
-    compute_pruning_table_backwards(backwards, strat, m_table, adv);
+    backwards->reset();
+    backwards->table[0] = 0;
+    compute_pruning_table_backwards(*backwards, strat, m_table, adv);
 
-    for (unsigned k = 0; k < direct.size(); ++k) {
-        assert(backwards.table[k] == direct.table[k]);
+    for (unsigned k = 0; k < direct->size(); ++k) {
+        assert(backwards->table[k] == direct->table[k]);
     }
-    direct.write();
+    direct->write();
 }
 
 void test_eo_table() {
