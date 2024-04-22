@@ -84,8 +84,8 @@ void test_corner_permutation_table() {
 
 int main() {
     test_block();
-    auto OCOE = Block<1, 1>("OneCornerAndOneEdge", {ULF}, {UF});
-    test_to_cbc_from_cc_and_back(OCOE);
+    test_to_cbc_from_cc_and_back(
+        Block<1, 1>("OneCornerAndOneEdge", {ULF}, {UF}));
     test_to_cbc_from_cc_and_back(Block<8, 0>(
         "AllCorners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {}));
     test_to_cbc_from_cc_and_back(
