@@ -1,3 +1,4 @@
+#pragma once
 constexpr unsigned NC = 8, NE = 12;
 using Cubie = unsigned;
 using Orientation = unsigned;
