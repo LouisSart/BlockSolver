@@ -5,44 +5,17 @@
 
 #include "cubie.hpp"
 
-// unsigned layout_index(unsigned* layout, unsigned size, unsigned pieces) {
-//     unsigned t = 0;
-//     auto r = pieces;
-//     for (unsigned i = size - 1; i > 0; --i) {
-//         if (layout[i] == 1) {
-//             t = t + binomial(i, r);
-//             r = r - 1;
-//         }
-//     }
-//     return t;
-// }
-
-// void layout_from_index(unsigned index, unsigned size, unsigned pieces,
-//                        unsigned* layout) {
-//     auto r = pieces;
-//     auto t = index;
-//     for (int i = size - 1; i >= 0; --i) {
-//         if (t >= binomial(i, r)) {
-//             t = t - binomial(i, r);
-//             layout[i] = 1;
-//             r = r - 1;
-//         } else {
-//             layout[i] = 0;
-//         }
-//     }
-// }
-
-// void print_array(const unsigned* l, unsigned size) {
-//     for (unsigned i = 0; i < size; ++i) {
-//         std::cout << l[i] << " ";
-//     }
-//     std::cout << std::endl;
-// }
-
 void init_array(unsigned* l, unsigned size, unsigned value) {
     for (unsigned i = 0; i < size; ++i) {
         l[i] = value;
     }
+}
+
+void print_array(const unsigned* l, unsigned size) {
+    for (unsigned i = 0; i < size; ++i) {
+        std::cout << l[i] << " ";
+    }
+    std::cout << std::endl;
 }
 
 void test_layout_coord() {
@@ -57,19 +30,16 @@ void test_layout_coord() {
     }
 }
 
-// void test_perm_coord() {
-//     uint n = 10;
-//     uint perm[]{1, 2, 0, 4, 7, 5, 8, 9, 3, 6};
-//     uint c = perm_coord(perm, n);
-//     std::cout << c << '\n';
-//     std::cout << "-------------" << '\n';
+void test_perm_coord() {
+    constexpr unsigned n = 8;
+    unsigned perm[n];
 
-//     uint* p;
-//     p = perm_from_coord(c, n);
-//     for (size_t i = 0; i < n; i++) {
-//         std::cout << *(p + i) << '\n';
-//     }
-// }
+    for (unsigned c = 0; c < factorial(n); ++c) {
+        perm_from_coord(c, n, perm);
+        auto check = perm_coord(perm, n);
+        assert(c == check);
+    }
+}
 
 // void test_eo_coord() {
 //     uint n{10};
@@ -95,4 +65,7 @@ void test_layout_coord() {
 //     std::cout << '\n';
 // }
 
-int main() { test_layout_coord(); }
+int main() {
+    test_layout_coord();
+    test_perm_coord();
+}

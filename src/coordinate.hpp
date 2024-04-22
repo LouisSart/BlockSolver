@@ -55,27 +55,15 @@ constexpr unsigned binomial(unsigned n, unsigned k) {
     return binomial_table[n * 13 + k];
 }
 
-uint perm_coord(uint* p, uint n) {
-    // p: the permutation array. Sorted position (coord = 0)
-    // must have strictly increasing values
-    // n: the size of the array
-    uint count{0}, coord{0};
-    std::vector<uint> icount;
-
-    for (size_t i = 0; i < n; i++) {
-        count = 0;
-        for (size_t k = 0; k < i; k++) {
-            if (p[k] > p[i]) {
-                count++;
-            }
+unsigned perm_coord(unsigned* perm, unsigned size) {
+    unsigned c = 0;
+    for (unsigned i = 1; i < size; ++i) {
+        c *= (size - i + 1);
+        for (unsigned j = i + 1; j <= size; ++j) {
+            if (perm[i - 1] > perm[j - 1]) c += 1;
         }
-        icount.push_back(count);
     }
-
-    for (size_t i = 0; i < icount.size(); i++) {
-        coord += factorial(i) * icount[i];
-    }
-    return coord;
+    return c;
 }
 
 uint layout_coord(uint* l, uint n) {
@@ -121,32 +109,16 @@ uint eo_coord(uint* eo, uint n) {
     return coord;
 }
 
-void perm_from_coord(uint coord, uint n, uint* perm) {
-    // c: the coordinate of the permutation
-    // n: the length of the permutation
-    // out: the permutation, aka the array
-    // containing the uintegers 0 to n-1
-    // correctly permuted
-    uint icount[n]{0}, k{2};
-    uint c = coord;
-
-    while (c > 0) {
-        icount[k - 1] = c % k;
-        c = c / k;
-        k += 1;
-    }
-
-    uint l = n;
-    std::vector<uint> range(n);
-    for (uint i = 0; i < n; i++) {
-        range[i] = i;
-    }
-
-    for (int i = n - 1; i >= 0; i--) {
-        k = icount[i];
-        l = range.size() - k - 1;
-        perm[i] = range[l];
-        range.erase(range.begin() + l);
+void perm_from_coord(unsigned c, unsigned size, unsigned* perm) {
+    perm[size - 1] = 0;
+    for (unsigned i = size - 1; i > 0; --i) {
+        perm[i - 1] = (c % (size - i + 1));
+        c = c / (size - i + 1);
+        for (auto j = i + 1; j <= size; ++j) {
+            if (perm[j - 1] >= perm[i - 1]) {
+                perm[j - 1] = perm[j - 1] + 1;
+            }
+        }
     }
 }
 
