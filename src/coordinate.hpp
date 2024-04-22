@@ -4,12 +4,12 @@
 #include <iostream>
 #include <vector>
 
-constexpr int ipow(int k, uint n) {
+constexpr int ipow(int k, unsigned n) {
     // integer power
     // computes ret = k^n
     // k can be negative hence using int
-    uint ret{1};
-    for (uint i = 0; i < n; i++) {
+    unsigned ret{1};
+    for (unsigned i = 0; i < n; i++) {
         ret *= k;
     }
     return ret;
@@ -66,7 +66,7 @@ unsigned perm_coord(unsigned* perm, unsigned size) {
     return c;
 }
 
-uint layout_coord(uint* l, uint n) {
+unsigned layout_coord(unsigned* l, unsigned n) {
     // l: an array containing the positions of the
     // pieces, ex {0,1,1,0,0,1,0,0,0} for a 3-corner
     // layout (3 1s among 8 possible positions)
@@ -75,8 +75,8 @@ uint layout_coord(uint* l, uint n) {
     // "Solved position NEEDS to have all pieces on the left (c=0)
     // for the layout_from_coord function to work. Reorder the
     // ep/cp array if necessary" => NOT TRUE ?
-    uint c{0}, x{0};
-    for (uint i = 0; i < n; i++) {
+    unsigned c{0}, x{0};
+    for (unsigned i = 0; i < n; i++) {
         if (l[i] == 1) {
             c += binomial(i, x + 1);
             x += 1;
@@ -85,24 +85,24 @@ uint layout_coord(uint* l, uint n) {
     return c;
 }
 
-uint co_coord(uint* co, uint n) {
+unsigned co_coord(unsigned* co, unsigned n) {
     // co: the orientation array of the corners
     // n: the number of corners to compute  the coordinate from.
     // For a complete cube, coord is computed from only the first
     // 7 corners because the orientation of the last is forced by the others
-    uint coord{0};
+    unsigned coord{0};
     for (size_t i = 0; i < n; i++) {
         coord += co[i] * ipow(3, i);
     }
     return coord;
 }
 
-uint eo_coord(uint* eo, uint n) {
+unsigned eo_coord(unsigned* eo, unsigned n) {
     // eo: the orientation array of the edges
     // n: the number of edges to compute  the coordinate from.
     // For a complete cube, coord is computed from only the first
     // 11 edges because the orientation of the last is forced by the others
-    uint coord{0};
+    unsigned coord{0};
     for (size_t i = 0; i < n; i++) {
         coord += eo[i] * ipow(2, i);
     }
@@ -143,22 +143,22 @@ void layout_from_coord(unsigned c, unsigned n, unsigned k, unsigned* l) {
     }
 }
 
-void eo_from_coord(uint c, uint n, uint* eo) {
+void eo_from_coord(unsigned c, unsigned n, unsigned* eo) {
     // c: coordinate
     // n: number of edges of the block
-    uint cc = c;
-    for (uint i = 0; i < n; i++) {
+    unsigned cc = c;
+    for (unsigned i = 0; i < n; i++) {
         eo[i] = cc % 2;
         cc = cc / 2;
     }
 }
 
-void co_from_coord(uint c, uint n, uint* co) {
+void co_from_coord(unsigned c, unsigned n, unsigned* co) {
     // c: coordinate
     // n: number of corners in the block
 
-    uint cc = c;
-    for (uint i = 0; i < n; i++) {
+    unsigned cc = c;
+    for (unsigned i = 0; i < n; i++) {
         co[i] = cc % 3;
         cc = cc / 3;
     }
