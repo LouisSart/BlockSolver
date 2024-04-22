@@ -188,12 +188,16 @@ struct BlockCube {
             kl++;
         }
 
-        cbc.ccl = layout_coord(cl, NC);
-        cbc.cel = layout_coord(el, NE);
-        cbc.ccp = perm_coord(cp, nc);
-        cbc.cep = perm_coord(ep, ne);
-        cbc.cco = co_coord(co, nc);
-        cbc.ceo = eo_coord(eo, ne);
+        if constexpr (nc > 0) {
+            cbc.ccl = layout_coord(cl, NC);
+            cbc.ccp = perm_coord(cp, nc);
+            cbc.cco = co_coord(co, nc);
+        };
+        if constexpr (ne > 0) {
+            cbc.cel = layout_coord(el, NE);
+            cbc.cep = perm_coord(ep, ne);
+            cbc.ceo = eo_coord(eo, ne);
+        };
 
         return cbc;
     }
@@ -207,38 +211,43 @@ struct BlockCube {
         // left multiplicator
 
         CubieCube cc;
-        layout_from_coord(cbc.ccl, NC, nc, cl);
-        perm_from_coord(cbc.ccp, nc, cp);
-        co_from_coord(cbc.cco, nc, co);
-        layout_from_coord(cbc.cel, NE, ne, el);
-        perm_from_coord(cbc.cep, ne, ep);
-        eo_from_coord(cbc.ceo, ne, eo);
-
-        unsigned k = 0;
-        for (Cubie i = 0; i < NC; ++i) {
-            assert(k < NC);
-            if (cl[i] == 1) {
-                cc.cp[b.c_order[i]] = b.corners[cp[k]];
-                cc.co[b.c_order[i]] = co[k];
-                k++;
-            } else {
-                cc.cp[b.c_order[i]] = NC;
-                cc.co[b.c_order[i]] = 3;
+        unsigned k;
+        if constexpr (nc > 0) {
+            layout_from_coord(cbc.ccl, NC, nc, cl);
+            perm_from_coord(cbc.ccp, nc, cp);
+            co_from_coord(cbc.cco, nc, co);
+            k = 0;
+            for (Cubie i = 0; i < NC; ++i) {
+                assert(k < NC);
+                if (cl[i] == 1) {
+                    cc.cp[b.c_order[i]] = b.corners[cp[k]];
+                    cc.co[b.c_order[i]] = co[k];
+                    k++;
+                } else {
+                    cc.cp[b.c_order[i]] = NC;
+                    cc.co[b.c_order[i]] = 3;
+                }
             }
-        }
+        };
 
-        k = 0;
-        for (Cubie i = 0; i < NE; i++) {
-            assert(k < NE);
-            if (el[i] == 1) {
-                cc.ep[b.e_order[i]] = b.edges[ep[k]];
-                cc.eo[b.e_order[i]] = eo[k];
-                k++;
-            } else {
-                cc.ep[b.e_order[i]] = NE;
-                cc.eo[b.e_order[i]] = 2;
+        if constexpr (ne > 0) {
+            layout_from_coord(cbc.cel, NE, ne, el);
+            perm_from_coord(cbc.cep, ne, ep);
+            eo_from_coord(cbc.ceo, ne, eo);
+
+            k = 0;
+            for (Cubie i = 0; i < NE; i++) {
+                assert(k < NE);
+                if (el[i] == 1) {
+                    cc.ep[b.e_order[i]] = b.edges[ep[k]];
+                    cc.eo[b.e_order[i]] = eo[k];
+                    k++;
+                } else {
+                    cc.ep[b.e_order[i]] = NE;
+                    cc.eo[b.e_order[i]] = 2;
+                }
             }
-        }
+        };
         return cc;
     }
 

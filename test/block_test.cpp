@@ -32,23 +32,27 @@ void test_to_cbc_from_cc_and_back(Block<nc, ne> b) {
 
     // Assert cc and return_cc have the block
     // pieces in the same spots and orientation
-    for (int i = 0; i < 8; ++i) {
-        if (return_cc.cp[i] < 8) {
-            assert(return_cc.cp[i] == cc.cp[i]);
-        }
+    if (nc > 0) {
+        for (int i = 0; i < 8; ++i) {
+            if (return_cc.cp[i] < 8) {
+                assert(return_cc.cp[i] == cc.cp[i]);
+            }
 
-        if (return_cc.co[i] < 3) {
-            assert(return_cc.co[i] == cc.co[i]);
+            if (return_cc.co[i] < 3) {
+                assert(return_cc.co[i] == cc.co[i]);
+            }
         }
     }
 
-    for (int i = 0; i < 12; ++i) {
-        if (return_cc.ep[i] < 12) {
-            assert(return_cc.ep[i] == cc.ep[i]);
-        }
+    if (ne > 0) {
+        for (int i = 0; i < 12; ++i) {
+            if (return_cc.ep[i] < 12) {
+                assert(return_cc.ep[i] == cc.ep[i]);
+            }
 
-        if (return_cc.eo[i] < 2) {
-            assert(return_cc.eo[i] == cc.eo[i]);
+            if (return_cc.eo[i] < 2) {
+                assert(return_cc.eo[i] == cc.eo[i]);
+            }
         }
     }
 }
@@ -59,7 +63,6 @@ void test_corner_permutation_table() {
     uint num_layout = 8;
     uint num_perm = 1;
     CoordinateBlockCube cbc;
-
     for (uint ccl = 0; ccl < num_layout; ++ccl) {
         for (uint ccp = 0; ccp < num_perm; ++ccp) {
             cbc.ccl = ccl;
