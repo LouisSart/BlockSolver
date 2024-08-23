@@ -48,7 +48,7 @@ void test_parity() {
 void test_random_state() {
     auto cube = CubieCube::random_state();
     assert(cube.is_solvable());
-    assert(!cube.is_solved());  // This could be true once in while tho...
+    assert(!cube.is_solved());  // This could be true once in a while tho...
 }
 
 void test_inverse() {
