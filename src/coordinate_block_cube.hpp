@@ -8,7 +8,7 @@ struct CoordinateBlockCube {
     uint ccl, cel, ccp, cep, cco,
         ceo;  // Coordinates for cp, co, ep, eo, corner layout and edge layout
 
-    CoordinateBlockCube() : ccl{0}, cel{0}, ccp{}, cep{0}, cco{0}, ceo{0} {};
+    CoordinateBlockCube() : ccl{0}, cel{0}, ccp{0}, cep{0}, cco{0}, ceo{0} {};
 
     CoordinateBlockCube(uint ccl, uint cel, uint ccp, uint cep, uint cco,
                         uint ceo)
