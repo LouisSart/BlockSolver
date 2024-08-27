@@ -159,7 +159,7 @@ struct BlockMoveTable {
                 cbc.set(0, il, 0, ip, 0, 0);
                 cc = bc.to_cubie_cube(cbc);
                 for (auto&& move_idx : HTM_Moves) {
-                    auto move = elementary_transformations[move_idx];
+                    auto move = move_cc[move_idx];
                     cc_copy = cc;
                     cc_copy.edge_apply(move);
                     cbc = bc.to_coordinate_block_cube(cc_copy);
@@ -179,7 +179,7 @@ struct BlockMoveTable {
                 cbc.set(0, il, 0, 0, 0, io);
                 cc = bc.to_cubie_cube(cbc);
                 for (auto&& move_idx : HTM_Moves) {
-                    auto move = elementary_transformations[move_idx];
+                    auto move = move_cc[move_idx];
                     cc_copy = cc;
                     cc_copy.edge_apply(move);
                     cbc = bc.to_coordinate_block_cube(cc_copy);
@@ -207,7 +207,7 @@ struct BlockMoveTable {
                 cc = bc.to_cubie_cube(cbc);
                 for (auto&& move_idx : HTM_Moves) {
                     cc_copy = cc;
-                    auto move = elementary_transformations[move_idx];
+                    auto move = move_cc[move_idx];
                     cc_copy.corner_apply(move);
                     cbc = bc.to_coordinate_block_cube(cc_copy);
                     assert(N_HTM_MOVES * (cbc.ccl * n_cp + cbc.ccp) <
@@ -224,7 +224,7 @@ struct BlockMoveTable {
                 cbc.set(il, 0, 0, 0, io, 0);
                 cc = bc.to_cubie_cube(cbc);
                 for (auto&& move_idx : HTM_Moves) {
-                    auto move = elementary_transformations[move_idx];
+                    auto move = move_cc[move_idx];
                     cc_copy = cc;
                     cc_copy.corner_apply(move);
                     cbc = bc.to_coordinate_block_cube(cc_copy);

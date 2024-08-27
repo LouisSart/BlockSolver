@@ -71,7 +71,7 @@ void test_corner_permutation_table() {
             std::cout << "Permutation coordinate " << ccl * num_perm + ccp
                       << ": ";
             for (auto move_idx : HTM_Moves) {
-                auto move = elementary_transformations[move_idx];
+                auto move = move_cc[move_idx];
                 cc_copy = cc;
                 assert(&cc_copy != &cc);
                 assert(cc_copy == cc);

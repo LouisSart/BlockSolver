@@ -8,6 +8,7 @@ constexpr unsigned N_Y = 4;
 constexpr unsigned N_Z2 = 2;
 constexpr unsigned N_LR = 2;
 constexpr unsigned N_SYM = 48;
+constexpr unsigned N_ELEM_SYM = 4;
 
 unsigned symmetry_index(const unsigned c_surf, const unsigned c_y,
                         const unsigned c_z2, const unsigned c_lr) {

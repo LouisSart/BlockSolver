@@ -10,7 +10,7 @@ void assert_move_table_is_correct(Block<nc, ne> b) {
 
     for (Move move : HTM_Moves) {
         m_table.apply(move, cbc);
-        cc.apply(elementary_transformations[move]);
+        cc.apply(move_cc[move]);
 
         auto cbc_check = bc.to_coordinate_block_cube(cc);
         assert(cbc == cbc_check);
