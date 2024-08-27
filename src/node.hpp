@@ -3,7 +3,7 @@
 #include <memory>  // shared_ptr
 #include <vector>  // expand() return type
 
-#include "algorithm.hpp"
+#include "algorithm.hpp"  // last moves
 
 template <typename Cube>
 struct Node : public std::enable_shared_from_this<Node<Cube>> {

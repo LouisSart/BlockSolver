@@ -3,7 +3,7 @@
 #include <cassert>
 #include <deque>
 
-#include "algorithm.hpp"
+#include "move.hpp"
 #include "node.hpp"
 
 template <typename NodePtr>

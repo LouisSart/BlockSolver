@@ -4,7 +4,7 @@
 #include <memory>      // std::unique_ptr
 #include <tuple>       // return ccl and ccp at the same time
 
-#include "algorithm.hpp"
+#include "algorithm.hpp"  // apply Algorithm
 #include "block_cube.hpp"
 
 namespace fs = std::filesystem;

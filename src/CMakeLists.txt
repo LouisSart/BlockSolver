@@ -8,6 +8,7 @@ target_sources(block_solver-core INTERFACE
         cubie.hpp
         generator.hpp
         move_table.hpp
+        move.hpp
         node.hpp
         option.hpp
         search.hpp

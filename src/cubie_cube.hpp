@@ -8,6 +8,7 @@
 #include "algorithm.hpp"   // scramble
 #include "coordinate.hpp"  // ipow
 #include "cubie.hpp"
+#include "move.hpp"  // moves
 
 struct CubieCube {
     Cubie cp[NC]{ULF, URF, URB, ULB, DLF, DRF, DRB, DLB};
