@@ -92,7 +92,9 @@ Move LR_mirror_move_conj[N_HTM_MOVES] = {
     [F] = F3, [F2] = F2, [F3] = F, [B] = B3, [B2] = B2, [B3] = B};
 
 Move symmetry_move_conj(const Move m, const unsigned index) {
-    // Return the
+    // Return the Move m' which corresponds to m after conjugation by
+    // symmetry number index (m' = S(i) * m * S(i^-1)
+
     auto [c_surf, c_y, c_z2, c_lr] = symmetry_index_to_num(index);
     Move ret = m;
     for (unsigned k_lr = 0; k_lr < c_lr; ++k_lr) {
