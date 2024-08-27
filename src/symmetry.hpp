@@ -1,6 +1,5 @@
-#include <cassert>
-#include <iostream>
-#include <tuple>
+#include <cassert>  // make sure arguments are correct
+#include <tuple>    // symmetry components
 
 #include "algorithm.hpp"
 
@@ -13,17 +12,24 @@ constexpr unsigned N_SYM = 48;
 unsigned symmetry_index(const unsigned c_surf, const unsigned c_y,
                         const unsigned c_z2, const unsigned c_lr) {
     // Assign a unique index to each combination of symmetries
+
     assert(c_surf < N_SURF);
+
     assert(c_y < N_Y);
     assert(c_z2 < N_Z2);
     assert(c_lr < N_LR);
+
     unsigned coord = c_lr + N_LR * (c_z2 + N_Z2 * (c_y + N_Y * (c_surf)));
+
     assert(coord < N_SYM);
     return coord;
 }
 
 auto symmetry_index_to_num(const unsigned index) {
     // Retrieve the symmetry components from the given index
+
+    assert(index < N_SYM);
+
     unsigned div = index;
     unsigned c_lr = div % N_LR;
     div = div / N_LR;
@@ -32,6 +38,11 @@ auto symmetry_index_to_num(const unsigned index) {
     unsigned c_y = div % N_Y;
     div = div / N_Y;
     unsigned c_surf = div;
+
+    assert(c_surf < N_SURF);
+    assert(c_y < N_Y);
+    assert(c_z2 < N_Z2);
+    assert(c_lr < N_LR);
 
     return std::make_tuple(c_surf, c_y, c_z2, c_lr);
 }
