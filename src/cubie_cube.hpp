@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
-#include <ctime>
+#include <cstdlib>  // srand, rand
+#include <ctime>    // time
 #include <iostream>
 #include <set>
 #include <vector>
@@ -307,7 +308,7 @@ struct CubieCube {
     }
 };
 
-std::array<CubieCube, 29> elementary_transformations{
+std::array<CubieCube, N_HTM_MOVES + N_ROTATIONS> elementary_transformations{
     CubieCube{// U
               {1, 2, 3, 0, 4, 5, 6, 7},
               {0, 0, 0, 0, 0, 0, 0, 0},
@@ -468,20 +469,7 @@ std::array<CubieCube, 29> elementary_transformations{
               {1, 5, 6, 2, 0, 4, 7, 3},
               {2, 1, 2, 1, 1, 2, 1, 2},
               {5, 9, 6, 1, 0, 8, 10, 2, 4, 11, 7, 3},
-              {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
-
-    // S_URF: 120° clockwise rotation around an
-    // axis through the URF and DLB corners
-    CubieCube{{5, 1, 0, 4, 6, 2, 3, 7},
-              {2, 1, 2, 1, 1, 2, 1, 2},
-              {5, 0, 4, 8, 9, 1, 3, 11, 6, 2, 7, 10},
-              {0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1}},
-
-    // S_URF2: inverse of previous
-    CubieCube{{2, 1, 5, 6, 3, 0, 4, 7},
-              {1, 2, 1, 2, 2, 1, 2, 1},
-              {1, 5, 9, 6, 2, 0, 8, 10, 3, 4, 11, 7},
-              {1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1}}};
+              {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}}};
 
 void CubieCube::apply(const Move& m) { apply(elementary_transformations[m]); }
 

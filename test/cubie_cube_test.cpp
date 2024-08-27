@@ -65,7 +65,7 @@ void test_inverse() {
 void test_symmetries() {
     CubieCube random = CubieCube::random_state();
     CubieCube cube;
-    for (unsigned s = x; s <= S_URF2; ++s) {
+    for (unsigned s = x; s <= z3; ++s) {
         auto sym = elementary_transformations[s];
         cube.apply(sym.get_inverse());
         cube.apply(random);

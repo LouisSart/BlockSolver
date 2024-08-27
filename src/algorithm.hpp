@@ -53,15 +53,7 @@ struct Algorithm {
 
     Move back() { return sequence.back(); }
 
-    auto size() const {
-        unsigned my_size = 0;
-        for (Move move : sequence) {
-            if (move < x && move >= 0) {
-                ++my_size;
-            }
-        }
-        return my_size;
-    }
+    auto size() const { return sequence.size(); }
 
     void operator<<(std::ostream& os) const;
 
@@ -109,7 +101,7 @@ Algorithm Algorithm::get_inverse() const {
     auto ret = *this;
     std::reverse(ret.sequence.begin(), ret.sequence.end());
     for (auto& m : ret.sequence) {
-        m = inverse_of_HTM_Moves_and_rotations[m];
+        m = inverse_of_HTM_Moves[m];
     }
     return ret;
 }
