@@ -16,12 +16,14 @@ std::unordered_map<std::string, Move> str_to_move = {
 constexpr unsigned N_HTM_MOVES = 18;
 constexpr unsigned N_ROTATIONS = 9;
 
-std::array<std::string, N_HTM_MOVES> move_str{"U", "U2", "U'", "D", "D2", "D'",
-                                              "R", "R2", "R'", "L", "L2", "L'",
-                                              "F", "F2", "F'", "B", "B2", "B'"};
+std::string move_str[N_HTM_MOVES]{
+    [U] = "U", [U2] = "U2", [U3] = "U'", [D] = "D", [D2] = "D2", [D3] = "D'",
+    [R] = "R", [R2] = "R2", [R3] = "R'", [L] = "L", [L2] = "L2", [L3] = "L'",
+    [F] = "F", [F2] = "F2", [F3] = "F'", [B] = "B", [B2] = "B2", [B3] = "B'"};
 
-std::array<std::string, N_ROTATIONS> rot_str{"x",  "x2", "x'", "y", "y2",
-                                             "y'", "z",  "z2", "z'"};
+std::string rot_str[N_ROTATIONS]{
+    [x] = "x",   [x2] = "x2", [x3] = "x'", [y] = "y",  [y2] = "y2",
+    [y3] = "y'", [z] = "z",   [z2] = "z2", [z3] = "z'"};
 
 std::ostream& operator<<(std::ostream& os, const Move& move) {
     os << move_str[move];
