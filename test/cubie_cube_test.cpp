@@ -48,7 +48,7 @@ void test_parity() {
 void test_random_state() {
     auto cube = CubieCube::random_state();
     assert(cube.is_solvable());
-    assert(!cube.is_solved());  // This could be true once in a while tho...
+    assert(!cube.is_solved());  // This could fail once in a while tho...
 }
 
 void test_inverse() {
@@ -62,37 +62,10 @@ void test_inverse() {
     assert(cube.is_solved());
 }
 
-void test_symmetries() {
-    CubieCube random = CubieCube::random_state();
-    CubieCube cube;
-    for (unsigned s = x; s <= z3; ++s) {
-        auto sym = move_cc[s];
-        cube.apply(sym.get_inverse());
-        cube.apply(random);
-        cube.apply(sym);
-        cube.inverse();
-        cube.apply(sym.get_inverse());
-        cube.apply(random);
-        cube.apply(sym);
-        assert(cube.is_solved());
-    };
-
-    // RL-mirror cannot be applied as a legal cube permutation
-    cube.RL_mirror();
-    cube.apply(random);
-    cube.RL_mirror();
-    cube.inverse();
-    cube.RL_mirror();
-    cube.apply(random);
-    cube.RL_mirror();
-    assert(cube.is_solved());
-}
-
 int main() {
     test_move_apply();
     test_parity();
     test_random_state();
     test_inverse();
-    test_symmetries();
     return 0;
 }

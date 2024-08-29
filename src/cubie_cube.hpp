@@ -101,7 +101,7 @@ struct CubieCube {
 
     void apply(const Algorithm&);
 
-    // void conjugate(const unsigned sym_index);
+    CubieCube get_conjugate(const unsigned& sym_index);
 
     void RL_mirror() {
         // Apply the RL mirroring symmetry. This cannot be
@@ -311,21 +311,61 @@ struct CubieCube {
     }
 };
 
-// CubieCube CubieCube::conjugate(const unsigned& sym_index) {
-//     apply(elementary_transformations[m]);
-// }
+CubieCube rotation_cc[N_ELEM_SYM - 1]{
+    [0] = /* S_URF */
+    CubieCube{{5, 1, 0, 4, 6, 2, 3, 7},
+              {2, 1, 2, 1, 1, 2, 1, 2},
+              {5, 0, 4, 8, 9, 1, 3, 11, 6, 2, 7, 10},
+              {0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1}},
 
-// CubieCube rotation_cc[N_ROTATIONS]{
+    [1] = /* y */
+    CubieCube{{1, 2, 3, 0, 5, 6, 7, 4},
+              {0, 0, 0, 0, 0, 0, 0, 0},
+              {1, 2, 3, 0, 5, 6, 7, 4, 9, 10, 11, 8},
+              {0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0}},
 
-//     [y] = CubieCube{{1, 2, 3, 0, 5, 6, 7, 4},
-//                     {0, 0, 0, 0, 0, 0, 0, 0},
-//                     {1, 2, 3, 0, 5, 6, 7, 4, 9, 10, 11, 8},
-//                     {0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0}},
+    [2] = /* z2 */
+    CubieCube{{5, 4, 7, 6, 1, 0, 3, 2},
+              {0, 0, 0, 0, 0, 0, 0, 0},
+              {8, 11, 10, 9, 5, 4, 7, 6, 0, 3, 2, 1},
+              {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
+};
 
-//     [z2] = CubieCube{{5, 4, 7, 6, 1, 0, 3, 2},
-//                      {0, 0, 0, 0, 0, 0, 0, 0},
-//                      {8, 11, 10, 9, 5, 4, 7, 6, 0, 3, 2, 1},
-//                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}};
+CubieCube CubieCube::get_conjugate(const unsigned& sym_index) {
+    // Return the CubieCube S^-1 * cc * S where cc is *this and
+    // S is the symmetry number sym_index
+
+    // S = S_LR^(c_lr) * S_z2^(c_z2) * S_y^(c_y) * S_URF^(c_surf)
+    auto [c_surf, c_y, c_z2, c_lr] = symmetry_index_to_num(sym_index);
+
+    CubieCube S, S_inv;
+
+    for (unsigned k_z2 = 0; k_z2 < c_z2; ++k_z2) {
+        S.apply(rotation_cc[2]);
+    }
+    for (unsigned k_y = 0; k_y < c_y; ++k_y) {
+        S.apply(rotation_cc[1]);
+    }
+    for (unsigned k_surf = 0; k_surf < c_surf; ++k_surf) {
+        S.apply(rotation_cc[0]);
+    }
+    S_inv = S.get_inverse();
+
+    CubieCube ret;
+
+    ret.apply(S_inv);
+    for (unsigned k_lr = 0; k_lr < c_lr; ++k_lr) {
+        ret.RL_mirror();
+    }
+    ret.apply(*this);
+    for (unsigned k_lr = 0; k_lr < c_lr; ++k_lr) {
+        // LR_mirror cannot be performed like a move application
+        ret.RL_mirror();
+    }
+    ret.apply(S);
+
+    return ret;
+}
 
 CubieCube move_cc[N_HTM_MOVES]{
     [U] = CubieCube{{1, 2, 3, 0, 4, 5, 6, 7},

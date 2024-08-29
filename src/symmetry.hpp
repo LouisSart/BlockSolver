@@ -1,3 +1,4 @@
+#pragma once
 #include <cassert>  // make sure arguments are correct
 #include <tuple>    // symmetry components
 
@@ -15,7 +16,6 @@ unsigned symmetry_index(const unsigned c_surf, const unsigned c_y,
     // Assign a unique index to each combination of symmetries
 
     assert(c_surf < N_SURF);
-
     assert(c_y < N_Y);
     assert(c_z2 < N_Z2);
     assert(c_lr < N_LR);
@@ -65,12 +65,9 @@ auto symmetry_index_to_num(const unsigned index) {
 //                = S^-1 * c * S * S^-1 * S * m * S^-1 * S
 //                = S^-1 * (c * S * m * S^-1) * S
 //                = conj(c * m', S)
-// where m' = S * m * S^-1. Using this we can reuse
-// the same move and pruning tables for conjugations
-// of the original coordinate
-
-// Given a base symmetry S and a move m, these tables
-// store the result of m' = S * m * S^-1
+// where m' = S * m * S^-1.
+// This file is where the translation of moves after conjugation
+// by a symmetry is computed
 
 Move S_URF_move_conj[N_HTM_MOVES] = {
     [U] = F, [U2] = F2, [U3] = F3, [D] = B, [D2] = B2, [D3] = B3,
@@ -92,32 +89,36 @@ Move LR_mirror_move_conj[N_HTM_MOVES] = {
     [R] = L3, [R2] = L2, [R3] = L, [L] = R3, [L2] = R2, [L3] = R,
     [F] = F3, [F2] = F2, [F3] = F, [B] = B3, [B2] = B2, [B3] = B};
 
-Move symmetry_move_conj(const Move m, const unsigned index) {
-    // Return the Move m' which corresponds to m after conjugation by
-    // symmetry number index (m' = S(i) * m * S(i^-1)
+void permute_moves(Move* mp1, const Move* mp2) {
+    // Perform mp1 o mp2
 
-    auto [c_surf, c_y, c_z2, c_lr] = symmetry_index_to_num(index);
-    Move ret = m;
-    for (unsigned k_lr = 0; k_lr < c_lr; ++k_lr) {
-        ret = LR_mirror_move_conj[ret];
+    Move new_mp[N_HTM_MOVES];
+    for (Move m : HTM_Moves) {
+        new_mp[m] = mp1[mp2[m]];
+    };
+
+    for (Move m : HTM_Moves) {
+        mp1[m] = new_mp[m];
     }
-    for (unsigned k_z2 = 0; k_z2 < c_z2; ++k_z2) {
-        ret = z2_move_conj[ret];
-    }
-    for (unsigned k_y = 0; k_y < c_y; ++k_y) {
-        ret = y_move_conj[ret];
-    }
-    for (unsigned k_surf = 0; k_surf < c_surf; ++k_surf) {
-        ret = S_URF_move_conj[ret];
-    }
-    return ret;
 }
 
-Algorithm symmetry_move_conj(const Algorithm alg, const unsigned index) {
-    Algorithm ret = alg;
+Move* get_move_permutation(const unsigned& sym_index) {
+    Move* ret = new Move[N_HTM_MOVES]{U, U2, U3, D, D2, D3, R, R2, R3,
+                                      L, L2, L3, F, F2, F3, B, B2, B3};
+    auto [c_surf, c_y, c_z2, c_lr] = symmetry_index_to_num(sym_index);
 
-    for (unsigned k = 0; k < alg.sequence.size(); ++k) {
-        ret.sequence[k] = symmetry_move_conj(alg.sequence[k], index);
+    for (unsigned k_lr = 0; k_lr < c_lr; ++k_lr) {
+        permute_moves(ret, LR_mirror_move_conj);
     }
+    for (unsigned k_z2 = 0; k_z2 < c_z2; ++k_z2) {
+        permute_moves(ret, z2_move_conj);
+    }
+    for (unsigned k_y = 0; k_y < c_y; ++k_y) {
+        permute_moves(ret, y_move_conj);
+    }
+    for (unsigned k_surf = 0; k_surf < c_surf; ++k_surf) {
+        permute_moves(ret, S_URF_move_conj);
+    }
+
     return ret;
 }
