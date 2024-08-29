@@ -35,8 +35,8 @@ std::ostream& operator<<(std::ostream& os, const Rotation& rot) {
     return os;
 }
 
-std::array<Move, N_HTM_MOVES> HTM_Moves{U, U2, U3, D, D2, D3, R, R2, R3,
-                                        L, L2, L3, F, F2, F3, B, B2, B3};
+constexpr std::array<Move, N_HTM_MOVES> HTM_Moves{
+    U, U2, U3, D, D2, D3, R, R2, R3, L, L2, L3, F, F2, F3, B, B2, B3};
 
 Move inverse_of_HTM_Moves[N_HTM_MOVES]{
     [U] = U3, [U2] = U2, [U3] = U, [D] = D3, [D2] = D2, [D3] = D,

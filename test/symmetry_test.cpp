@@ -23,23 +23,14 @@ void test_symmetries() {
 
     for (unsigned s = 0; s < N_SYM; ++s) {
         for (Move m : HTM_Moves) {
-            // Display
-            // std::cout << m << " "
-            //           << " " << s << " " << get_move_permutation(s)[m]
-            //           << std::endl;
-            // auto [c_surf, c_y, c_z2, c_lr] = symmetry_index_to_num(s);
-            // std::cout << c_surf << " " << c_y << " " << c_z2 << " " << c_lr
-            //           << std::endl;
-            // Display
-
             CubieCube cc1 = random.get_conjugate(s);
             cc1.apply(m);
-            // cc1.show();
+            cc1.show();
 
             CubieCube cc2 = random;
-            cc2.apply(get_move_permutation(s)[m]);
+            cc2.apply(move_conj(m, s));
             cc2 = cc2.get_conjugate(s);
-            // cc2.show();
+            cc2.show();
 
             assert(cc1 == cc2);
         }

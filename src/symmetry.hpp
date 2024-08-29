@@ -1,4 +1,5 @@
 #pragma once
+#include <array>    // move_conj_table
 #include <cassert>  // make sure arguments are correct
 #include <tuple>    // symmetry components
 
@@ -26,7 +27,7 @@ unsigned symmetry_index(const unsigned c_surf, const unsigned c_y,
     return coord;
 }
 
-auto symmetry_index_to_num(const unsigned index) {
+constexpr auto symmetry_index_to_num(const unsigned index) {
     // Retrieve the symmetry components from the given index
 
     assert(index < N_SYM);
@@ -69,27 +70,27 @@ auto symmetry_index_to_num(const unsigned index) {
 // This file is where the translation of moves after conjugation
 // by a symmetry is computed
 
-Move S_URF_move_conj[N_HTM_MOVES] = {
+constexpr Move S_URF_move_conj[N_HTM_MOVES] = {
     [U] = F, [U2] = F2, [U3] = F3, [D] = B, [D2] = B2, [D3] = B3,
     [R] = U, [R2] = U2, [R3] = U3, [L] = D, [L2] = D2, [L3] = D3,
     [F] = R, [F2] = R2, [F3] = R3, [B] = L, [B2] = L2, [B3] = L3};
 
-Move y_move_conj[N_HTM_MOVES] = {
+constexpr Move y_move_conj[N_HTM_MOVES] = {
     [U] = U, [U2] = U2, [U3] = U3, [D] = D, [D2] = D2, [D3] = D3,
     [R] = B, [R2] = B2, [R3] = B3, [L] = F, [L2] = F2, [L3] = F3,
     [F] = R, [F2] = R2, [F3] = R3, [B] = L, [B2] = L2, [B3] = L3};
 
-Move z2_move_conj[N_HTM_MOVES] = {
+constexpr Move z2_move_conj[N_HTM_MOVES] = {
     [U] = D, [U2] = D2, [U3] = D3, [D] = U, [D2] = U2, [D3] = U3,
     [R] = L, [R2] = L2, [R3] = L3, [L] = R, [L2] = R2, [L3] = R3,
     [F] = F, [F2] = F2, [F3] = F3, [B] = B, [B2] = B2, [B3] = B3};
 
-Move LR_mirror_move_conj[N_HTM_MOVES] = {
+constexpr Move LR_mirror_move_conj[N_HTM_MOVES] = {
     [U] = U3, [U2] = U2, [U3] = U, [D] = D3, [D2] = D2, [D3] = D,
     [R] = L3, [R2] = L2, [R3] = L, [L] = R3, [L2] = R2, [L3] = R,
     [F] = F3, [F2] = F2, [F3] = F, [B] = B3, [B2] = B2, [B3] = B};
 
-void permute_moves(Move* mp1, const Move* mp2) {
+constexpr void permute_moves(Move* mp1, const Move* mp2) {
     // Perform mp1 o mp2
 
     Move new_mp[N_HTM_MOVES];
@@ -102,23 +103,38 @@ void permute_moves(Move* mp1, const Move* mp2) {
     }
 }
 
-Move* get_move_permutation(const unsigned& sym_index) {
-    Move* ret = new Move[N_HTM_MOVES]{U, U2, U3, D, D2, D3, R, R2, R3,
-                                      L, L2, L3, F, F2, F3, B, B2, B3};
+constexpr auto get_move_permutation(const unsigned& sym_index) {
+    std::array<Move, N_HTM_MOVES> ret = {U, U2, U3, D, D2, D3, R, R2, R3,
+                                         L, L2, L3, F, F2, F3, B, B2, B3};
     auto [c_surf, c_y, c_z2, c_lr] = symmetry_index_to_num(sym_index);
 
     for (unsigned k_lr = 0; k_lr < c_lr; ++k_lr) {
-        permute_moves(ret, LR_mirror_move_conj);
+        permute_moves(ret.data(), LR_mirror_move_conj);
     }
     for (unsigned k_z2 = 0; k_z2 < c_z2; ++k_z2) {
-        permute_moves(ret, z2_move_conj);
+        permute_moves(ret.data(), z2_move_conj);
     }
     for (unsigned k_y = 0; k_y < c_y; ++k_y) {
-        permute_moves(ret, y_move_conj);
+        permute_moves(ret.data(), y_move_conj);
     }
     for (unsigned k_surf = 0; k_surf < c_surf; ++k_surf) {
-        permute_moves(ret, S_URF_move_conj);
+        permute_moves(ret.data(), S_URF_move_conj);
     }
 
     return ret;
+}
+
+constexpr auto move_conj_table = [] {
+    std::array<Move, N_SYM* N_HTM_MOVES> ret = {};
+    for (unsigned s = 0; s < N_SYM; ++s) {
+        for (Move m : HTM_Moves) {
+            auto move_perm = get_move_permutation(s);
+            ret[s * N_HTM_MOVES + m] = move_perm[m];
+        }
+    }
+    return ret;
+}();
+
+Move move_conj(const Move& m, const unsigned s) {
+    return move_conj_table[s * N_HTM_MOVES + m];
 }
