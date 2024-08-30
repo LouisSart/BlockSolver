@@ -102,6 +102,7 @@ struct CubieCube {
     void apply(const Algorithm&);
 
     CubieCube get_conjugate(const unsigned& sym_index);
+    CubieCube get_anti_conjugate(const unsigned& sym_index);
 
     void RL_mirror() {
         // Apply the RL mirroring symmetry. This cannot be
@@ -364,6 +365,41 @@ CubieCube CubieCube::get_conjugate(const unsigned& sym_index) {
     }
     ret.apply(S);
 
+    return ret;
+}
+
+CubieCube CubieCube::get_anti_conjugate(const unsigned& sym_index) {
+    // Return the CubieCube S * cc * S^-1 where cc is *this and
+    // S is the symmetry number sym_index
+
+    // S = S_LR^(c_lr) * S_z2^(c_z2) * S_y^(c_y) * S_URF^(c_surf)
+    auto [c_surf, c_y, c_z2, c_lr] = symmetry_index_to_num(sym_index);
+
+    CubieCube S, S_inv;
+
+    for (unsigned k_z2 = 0; k_z2 < c_z2; ++k_z2) {
+        S.apply(rotation_cc[2]);
+    }
+    for (unsigned k_y = 0; k_y < c_y; ++k_y) {
+        S.apply(rotation_cc[1]);
+    }
+    for (unsigned k_surf = 0; k_surf < c_surf; ++k_surf) {
+        S.apply(rotation_cc[0]);
+    }
+    S_inv = S.get_inverse();
+
+    CubieCube ret;
+
+    for (unsigned k_lr = 0; k_lr < c_lr; ++k_lr) {
+        ret.RL_mirror();
+    }
+    ret.apply(S);
+    ret.apply(*this);
+    ret.apply(S_inv);
+    for (unsigned k_lr = 0; k_lr < c_lr; ++k_lr) {
+        // LR_mirror cannot be performed like a move application
+        ret.RL_mirror();
+    }
     return ret;
 }
 

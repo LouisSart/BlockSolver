@@ -62,10 +62,19 @@ void test_inverse() {
     assert(cube.is_solved());
 }
 
+void test_conjugation() {
+    auto cube = CubieCube::random_state();
+
+    for (unsigned s = 0; s < N_SYM; ++s) {
+        assert(cube == cube.get_conjugate(s).get_anti_conjugate(s));
+    }
+}
+
 int main() {
     test_move_apply();
     test_parity();
     test_random_state();
     test_inverse();
+    test_conjugation();
     return 0;
 }
