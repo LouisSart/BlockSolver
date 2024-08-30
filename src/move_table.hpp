@@ -88,6 +88,18 @@ struct BlockMoveTable {
         }
     }
 
+    auto sym_apply(const Move& move, const unsigned& sym_index,
+                   CoordinateBlockCube& cube) const {
+        apply(move_conj(move, sym_index), cube);
+    }
+
+    auto sym_apply(const Algorithm& alg, const unsigned& sym_index,
+                   CoordinateBlockCube& cube) const {
+        for (auto move : alg.sequence) {
+            sym_apply(move, sym_index, cube);
+        };
+    }
+
     std::tuple<unsigned, unsigned> get_new_ccl_ccp(unsigned ccl, unsigned ccp,
                                                    unsigned move) const {
         assert(N_HTM_MOVES * (ccl * n_cp + ccp) + move < cp_table_size);
@@ -303,5 +315,17 @@ struct EOMoveTable {
              ++move) {
             apply_inverse(*move, cube);
         }
+    }
+
+    auto sym_apply(const Move& move, const unsigned& sym_index,
+                   CoordinateBlockCube& cube) const {
+        apply(move_conj(move, sym_index), cube);
+    }
+
+    auto sym_apply(const Algorithm& alg, const unsigned& sym_index,
+                   CoordinateBlockCube& cube) const {
+        for (auto move : alg.sequence) {
+            sym_apply(move, sym_index, cube);
+        };
     }
 };

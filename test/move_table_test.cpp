@@ -92,6 +92,25 @@ void test_eo_table() {
     assert(cube.is_solved());
 }
 
+template <typename Block>
+void test_sym_apply(const Block& b) {
+    BlockCube bc(b);
+    BlockMoveTable table(b);
+
+    auto random = CubieCube::random_state();
+
+    for (unsigned s = 0; s < N_SYM; ++s) {
+        auto cc_conj = random.get_conjugate(s);
+        auto cbc = bc.to_coordinate_block_cube(cc_conj);
+
+        for (Move move : HTM_Moves) {
+            table.sym_apply(move, s, cbc);
+            cc_conj.apply(move);
+        }
+        assert(cbc == bc.to_coordinate_block_cube(cc_conj));
+    }
+}
+
 int main() {
     assert_move_table_is_correct(Block<8, 0>(
         "AllCorners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {}));
@@ -106,5 +125,6 @@ int main() {
         Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL}));
     test_load();
     test_eo_table();
+    test_sym_apply(Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL}));
     return 0;
 }
