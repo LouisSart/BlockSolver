@@ -135,6 +135,6 @@ constexpr auto move_conj_table = [] {
     return ret;
 }();
 
-Move move_conj(const Move& m, const unsigned s) {
+Move move_conj(const Move& m, const unsigned& s) {
     return move_conj_table[s * N_HTM_MOVES + m];
 }
