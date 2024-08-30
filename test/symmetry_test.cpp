@@ -25,12 +25,10 @@ void test_symmetries() {
         for (Move m : HTM_Moves) {
             CubieCube cc1 = random.get_conjugate(s);
             cc1.apply(m);
-            cc1.show();
 
             CubieCube cc2 = random;
             cc2.apply(move_conj(m, s));
             cc2 = cc2.get_conjugate(s);
-            cc2.show();
 
             assert(cc1 == cc2);
         }
