@@ -55,41 +55,39 @@ constexpr unsigned binomial(unsigned n, unsigned k) {
     return binomial_table[n * 13 + k];
 }
 
-unsigned perm_coord(unsigned* perm, unsigned size) {
+template <std::size_t n>
+unsigned permutation_index(const std::array<unsigned, n> perm) {
+    // perm: an array of strictly disctinct values
+    // usually a permutation of {0, 1, ..., n-1}
     unsigned c = 0;
-    for (unsigned i = 1; i < size; ++i) {
-        c *= (size - i + 1);
-        for (unsigned j = i + 1; j <= size; ++j) {
+    for (unsigned i = 1; i < n; ++i) {
+        c *= (n - i + 1);
+        for (unsigned j = i + 1; j <= n; ++j) {
             if (perm[i - 1] > perm[j - 1]) c += 1;
         }
     }
     return c;
 }
 
-unsigned layout_coord(unsigned* l, unsigned n) {
-    // l: an array containing the positions of the
-    // pieces, ex {0,1,1,0,0,1,0,0,0} for a 3-corner
-    // layout (3 1s among 8 possible positions)
-    // n: number of possible positions
-    // (usually 12 for edges, 8 for corners)
-    // "Solved position NEEDS to have all pieces on the left (c=0)
-    // for the layout_from_coord function to work. Reorder the
-    // ep/cp array if necessary" => NOT TRUE ?
-    unsigned c{0}, x{0};
-    for (unsigned i = 0; i < n; i++) {
-        if (l[i] == 1) {
-            c += binomial(i, x + 1);
-            x += 1;
+template <std::size_t n>
+unsigned layout_index(const std::array<unsigned, n> layout, unsigned np) {
+    // n = number of positions
+    // np: number of pieces
+    unsigned t = 0;
+    auto r = np;
+    for (unsigned i = n - 1; i > 0; --i) {
+        if (layout[i] == 1) {
+            t += binomial(i, r);
+            r -= 1;
         }
     }
-    return c;
+    return t;
 }
 
-unsigned co_coord(unsigned* co, unsigned n) {
+template <std::size_t n>
+unsigned co_index(const std::array<unsigned, n> co) {
     // co: the orientation array of the corners
     // n: the number of corners to compute  the coordinate from.
-    // For a complete cube, coord is computed from only the first
-    // 7 corners because the orientation of the last is forced by the others
     unsigned coord{0};
     for (size_t i = 0; i < n; i++) {
         coord += co[i] * ipow(3, i);
@@ -97,11 +95,10 @@ unsigned co_coord(unsigned* co, unsigned n) {
     return coord;
 }
 
-unsigned eo_coord(unsigned* eo, unsigned n) {
+template <std::size_t n>
+unsigned eo_index(const std::array<unsigned, n> eo) {
     // eo: the orientation array of the edges
-    // n: the number of edges to compute  the coordinate from.
-    // For a complete cube, coord is computed from only the first
-    // 11 edges because the orientation of the last is forced by the others
+    // n: the number of edges to compute  the coordinate from
     unsigned coord{0};
     for (size_t i = 0; i < n; i++) {
         coord += eo[i] * ipow(2, i);
@@ -109,12 +106,13 @@ unsigned eo_coord(unsigned* eo, unsigned n) {
     return coord;
 }
 
-void perm_from_coord(unsigned c, unsigned size, unsigned* perm) {
-    perm[size - 1] = 0;
-    for (unsigned i = size - 1; i > 0; --i) {
-        perm[i - 1] = (c % (size - i + 1));
-        c = c / (size - i + 1);
-        for (auto j = i + 1; j <= size; ++j) {
+template <std::size_t n>
+void permutation_from_index(unsigned c, std::array<unsigned, n>& perm) {
+    perm[n - 1] = 0;
+    for (unsigned i = n - 1; i > 0; --i) {
+        perm[i - 1] = (c % (n - i + 1));
+        c = c / (n - i + 1);
+        for (auto j = i + 1; j <= n; ++j) {
             if (perm[j - 1] >= perm[i - 1]) {
                 perm[j - 1] = perm[j - 1] + 1;
             }
@@ -122,30 +120,30 @@ void perm_from_coord(unsigned c, unsigned size, unsigned* perm) {
     }
 }
 
-void layout_from_coord(unsigned c, unsigned n, unsigned k, unsigned* l) {
-    // c: the layout coordinate
-    // n: number of possible positions (12 for edges, 8 for corners)
-    // k: number of pieces
-    // Builds the layout state that corresponds to c
-
-    auto r = k;
-    auto t = c;
-    unsigned b;
+template <std::size_t n>
+void layout_from_index(unsigned c, std::array<unsigned, n>& layout,
+                       const unsigned& np) {
+    // n = number of positions
+    // np: number of pieces
+    assert(np <= n);
+    assert(c < binomial(n, np));
+    unsigned r = np;
     for (int i = n - 1; i >= 0; --i) {
-        b = binomial(i, r);
-        if (t >= b) {
-            t = t - b;
-            l[i] = 1;
+        if (c >= binomial(i, r)) {
+            c = c - binomial(i, r);
+            layout[i] = 1;
             r = r - 1;
         } else {
-            l[i] = 0;
+            layout[i] = 0;
         }
     }
 }
 
-void eo_from_coord(unsigned c, unsigned n, unsigned* eo) {
+template <std::size_t n>
+void eo_from_index(unsigned c, std::array<unsigned, n>& eo) {
     // c: coordinate
-    // n: number of edges of the block
+    // n: number of edges
+    // eo: the array with the individual orientations of the n edges
     unsigned cc = c;
     for (unsigned i = 0; i < n; i++) {
         eo[i] = cc % 2;
@@ -153,26 +151,14 @@ void eo_from_coord(unsigned c, unsigned n, unsigned* eo) {
     }
 }
 
-void co_from_coord(unsigned c, unsigned n, unsigned* co) {
+template <std::size_t n>
+void co_from_index(unsigned c, std::array<unsigned, n>& co) {
     // c: coordinate
     // n: number of corners in the block
-
+    // co: the array with the individual orientations of the n corners
     unsigned cc = c;
     for (unsigned i = 0; i < n; i++) {
         co[i] = cc % 3;
         cc = cc / 3;
     }
 }
-
-// Jaap Scherpuis implementation of the layout coordinate
-// unsigned layout_index(unsigned* layout, unsigned size, unsigned pieces) {
-//     unsigned t = 0;
-//     auto r = pieces;
-//     for (unsigned i = size - 1; i > 0; --i) {
-//         if (layout[i] == 1) {
-//             t += binomial(i, r);
-//             r -= 1;
-//         }
-//     }
-//     return t;
-// }

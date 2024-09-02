@@ -4,68 +4,56 @@
 #include <iostream>
 
 #include "cubie.hpp"
+#include "utils.hpp"
 
-void init_array(unsigned* l, unsigned size, unsigned value) {
-    for (unsigned i = 0; i < size; ++i) {
-        l[i] = value;
+void test_layout_index() {
+    std::array<unsigned, NC> clayout;
+    for (unsigned np = 0; np <= NC; ++np) {
+        for (unsigned cl = 0; cl < binomial(NC, np); ++cl) {
+            layout_from_index(cl, clayout, np);
+            assert(layout_index(clayout, np) == cl);
+        }
+    }
+
+    std::array<unsigned, NE> elayout;
+    for (unsigned np = 0; np <= NE; ++np) {
+        for (unsigned cl = 0; cl < binomial(NE, np); ++cl) {
+            layout_from_index(cl, elayout, np);
+            assert(layout_index(elayout, np) == cl);
+        }
     }
 }
 
-void print_array(const unsigned* l, unsigned size) {
-    for (unsigned i = 0; i < size; ++i) {
-        std::cout << l[i] << " ";
-    }
-    std::cout << std::endl;
-}
+void test_permutation_index() {
+    std::array<unsigned, NC> cperm;
 
-void test_layout_coord() {
-    unsigned check, size = NE, pieces = 5;
-    unsigned layout[size];
-    init_array(layout, size, 0);
-
-    for (unsigned c = 0; c < binomial(size, pieces); ++c) {
-        layout_from_coord(c, size, pieces, layout);
-        check = layout_coord(layout, size);
-        assert(check == c);
+    for (unsigned c = 0; c < factorial(NC); ++c) {
+        permutation_from_index(c, cperm);
+        assert(c == permutation_index(cperm));
     }
 }
 
-void test_perm_coord() {
-    constexpr unsigned n = 8;
-    unsigned perm[n];
+void test_eo_index() {
+    std::array<unsigned, NE> eo;
 
-    for (unsigned c = 0; c < factorial(n); ++c) {
-        perm_from_coord(c, n, perm);
-        auto check = perm_coord(perm, n);
-        assert(c == check);
+    for (unsigned c = 0; c < ipow(2, NE); ++c) {
+        eo_from_index(c, eo);
+        assert(c == eo_index(eo));
     }
 }
 
-// void test_eo_coord() {
-//     uint n{10};
-//     uint eo[n] = {0, 1, 1, 0, 0, 1, 0, 1, 0, 1};
-//     uint c = eo_coord(eo, n);
-//     std::cout << c << '\n';
-//     uint* eeo = eo_from_coord(c, n);
-//     for (size_t i = 0; i < n; i++) {
-//         std::cout << eeo[i] << ' ';
-//     }
-//     std::cout << '\n';
-// }
+void test_co_index() {
+    std::array<unsigned, NC> co;
 
-// void test_co_coord() {
-//     uint n{10};
-//     uint co[n] = {0, 1, 2, 0, 2, 1, 0, 2, 0, 1};
-//     uint c = co_coord(co, n);
-//     std::cout << c << '\n';
-//     uint* cco = co_from_coord(c, n);
-//     for (size_t i = 0; i < n; i++) {
-//         std::cout << cco[i] << ' ';
-//     }
-//     std::cout << '\n';
-// }
+    for (unsigned c = 0; c < ipow(3, NC); ++c) {
+        co_from_index(c, co);
+        assert(c == co_index(co));
+    }
+}
 
 int main() {
-    test_layout_coord();
-    test_perm_coord();
+    test_layout_index();
+    test_permutation_index();
+    test_eo_index();
+    test_co_index();
 }
