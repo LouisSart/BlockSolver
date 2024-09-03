@@ -56,7 +56,7 @@ constexpr unsigned binomial(unsigned n, unsigned k) {
 }
 
 template <std::size_t n>
-unsigned permutation_index(const std::array<unsigned, n> perm) {
+unsigned permutation_index(const std::array<unsigned, n>& perm) {
     // perm: an array of strictly disctinct values
     // usually a permutation of {0, 1, ..., n-1}
     unsigned c = 0;
@@ -70,11 +70,10 @@ unsigned permutation_index(const std::array<unsigned, n> perm) {
 }
 
 template <std::size_t n>
-unsigned layout_index(const std::array<unsigned, n> layout, unsigned np) {
-    // n = number of positions
-    // np: number of pieces
+unsigned layout_index(const std::array<unsigned, n>& layout, unsigned r) {
+    // n: number of positions
+    // r: number of pieces
     unsigned t = 0;
-    auto r = np;
     for (unsigned i = n - 1; i > 0; --i) {
         if (layout[i] == 1) {
             t += binomial(i, r);
@@ -85,25 +84,25 @@ unsigned layout_index(const std::array<unsigned, n> layout, unsigned np) {
 }
 
 template <std::size_t n>
-unsigned co_index(const std::array<unsigned, n> co) {
+unsigned co_index(const std::array<unsigned, n>& co) {
     // co: the orientation array of the corners
     // n: the number of corners to compute  the coordinate from.
-    unsigned coord{0};
+    unsigned c = 0;
     for (size_t i = 0; i < n; i++) {
-        coord += co[i] * ipow(3, i);
+        c += co[i] * ipow(3, i);
     }
-    return coord;
+    return c;
 }
 
 template <std::size_t n>
-unsigned eo_index(const std::array<unsigned, n> eo) {
+unsigned eo_index(const std::array<unsigned, n>& eo) {
     // eo: the orientation array of the edges
     // n: the number of edges to compute  the coordinate from
-    unsigned coord{0};
+    unsigned c = 0;
     for (size_t i = 0; i < n; i++) {
-        coord += eo[i] * ipow(2, i);
+        c += eo[i] * ipow(2, i);
     }
-    return coord;
+    return c;
 }
 
 template <std::size_t n>
@@ -122,12 +121,11 @@ void permutation_from_index(unsigned c, std::array<unsigned, n>& perm) {
 
 template <std::size_t n>
 void layout_from_index(unsigned c, std::array<unsigned, n>& layout,
-                       const unsigned& np) {
-    // n = number of positions
-    // np: number of pieces
-    assert(np <= n);
-    assert(c < binomial(n, np));
-    unsigned r = np;
+                       unsigned r) {
+    // n: number of positions
+    // r: number of pieces
+    assert(r <= n);
+    assert(c < binomial(n, r));
     for (int i = n - 1; i >= 0; --i) {
         if (c >= binomial(i, r)) {
             c = c - binomial(i, r);
@@ -144,10 +142,9 @@ void eo_from_index(unsigned c, std::array<unsigned, n>& eo) {
     // c: coordinate
     // n: number of edges
     // eo: the array with the individual orientations of the n edges
-    unsigned cc = c;
     for (unsigned i = 0; i < n; i++) {
-        eo[i] = cc % 2;
-        cc = cc / 2;
+        eo[i] = c % 2;
+        c = c / 2;
     }
 }
 
@@ -156,9 +153,8 @@ void co_from_index(unsigned c, std::array<unsigned, n>& co) {
     // c: coordinate
     // n: number of corners in the block
     // co: the array with the individual orientations of the n corners
-    unsigned cc = c;
     for (unsigned i = 0; i < n; i++) {
-        co[i] = cc % 3;
-        cc = cc / 3;
+        co[i] = c % 3;
+        c = c / 3;
     }
 }
