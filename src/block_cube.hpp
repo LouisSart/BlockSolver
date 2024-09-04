@@ -173,7 +173,7 @@ struct BlockCube {
                     cc.co[i] = co[k];
                     ++k;
                 } else {
-                    cc.cp[i] = NC;
+                    cc.cp[i] = (Corner)NC;
                     cc.co[i] = 3;
                 }
             }
@@ -192,7 +192,7 @@ struct BlockCube {
                     cc.eo[i] = eo[k];
                     k++;
                 } else {
-                    cc.ep[i] = NE;
+                    cc.ep[i] = (Edge)NE;
                     cc.eo[i] = 2;
                 }
             }

@@ -14,61 +14,60 @@
 #include "utils.hpp"     // print_array
 
 struct CubieCube {
-    std::array<Cubie, NC> cp{ULF, URF, URB, ULB, DLF, DRF, DRB, DLB};
+    std::array<Corner, NC> cp{ULF, URF, URB, ULB, DLF, DRF, DRB, DLB};
     std::array<Orientation, NC> co{0, 0, 0, 0, 0, 0, 0, 0};
-    std::array<Cubie, NE> ep{UF, UR, UB, UL, LF, RF, RB, LB, DF, DR, DB, DL};
+    std::array<Edge, NE> ep{UF, UR, UB, UL, LF, RF, RB, LB, DF, DR, DB, DL};
     std::array<Orientation, NE> eo{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     CubieCube(){};
-    CubieCube(std::array<Cubie, NC> cp_in, std::array<Orientation, NC> co_in,
-              std::array<Cubie, NE> ep_in, std::array<Orientation, NE> eo_in)
+    CubieCube(std::array<Corner, NC> cp_in, std::array<Orientation, NC> co_in,
+              std::array<Edge, NE> ep_in, std::array<Orientation, NE> eo_in)
         : cp{cp_in}, co{co_in}, ep{ep_in}, eo{eo_in} {}
     CubieCube(const Algorithm& scramble) { apply(scramble); }
 
     void show() const {
         // Display the 4 arrays defining a cube at the cubie level
+
         std::cout << "CubieCube object:" << '\n';
         std::cout << "  CP: ";
-        print_array<Cubie, NC, Corner>(cp);
+        print_array(cp);
         std::cout << "  CO: ";
         print_array(co);
         std::cout << "  EP: ";
-        print_array<Cubie, NE, Edge>(ep);
+        print_array(ep);
         std::cout << "  EO: ";
         print_array(eo);
     };
 
-    // Apply the corner transformation of the given CubieCube
     void corner_apply(const CubieCube& cc) {
-        Cubie new_cp[NC];
-        Orientation new_co[NC];
+        // Apply the corner transformation of the given CubieCube
+
+        std::array<Corner, NC> new_cp;
+        std::array<Orientation, NC> new_co;
         for (Cubie c = ULF; c < NC; c++) {
             new_cp[c] = cp[cc.cp[c]];
-            new_co[c] = co[cc.cp[c]] + cc.co[c];
+            new_co[c] = (co[cc.cp[c]] + cc.co[c]) % 3;
         };
-        for (Cubie c = 0; c < NC; c++) {
-            cp[c] = new_cp[c];
-            co[c] = new_co[c] % 3;
-        }
+        cp = new_cp;
+        co = new_co;
     };
 
-    // Apply the corner transformation of the given CubieCube
     void edge_apply(const CubieCube& cc) {
-        Cubie new_ep[NE];
-        Orientation new_eo[NE];
+        // Apply the corner transformation of the given CubieCube
+
+        std::array<Edge, NE> new_ep;
+        std::array<Orientation, NE> new_eo;
         for (Cubie e = UF; e < NE; e++) {
             new_ep[e] = ep[cc.ep[e]];
-            new_eo[e] = eo[cc.ep[e]] + cc.eo[e];
+            new_eo[e] = (eo[cc.ep[e]] + cc.eo[e]) % 2;
         };
-
-        for (Cubie e = UF; e < NE; e++) {
-            ep[e] = new_ep[e];
-            eo[e] = new_eo[e] % 2;
-        }
+        ep = new_ep;
+        eo = new_eo;
     };
 
-    // Apply a transformation
     void apply(const CubieCube& cc) {
+        // Apply a transformation
+
         edge_apply(cc);
         corner_apply(cc);
     }
@@ -80,6 +79,7 @@ struct CubieCube {
     void apply(const Algorithm&);
 
     CubieCube get_conjugate(const unsigned& sym_index);
+
     CubieCube get_anti_conjugate(const unsigned& sym_index);
 
     void RL_mirror() {
@@ -104,11 +104,11 @@ struct CubieCube {
         // return the inverse permutation
         CubieCube inverse;
         for (Cubie c = ULF; c < NC; ++c) {
-            inverse.cp[cp[c]] = c;
+            inverse.cp[cp[c]] = (Corner)c;
             inverse.co[cp[c]] = (3 - co[c]) % 3;
         };
         for (Cubie e = UF; e < NE; ++e) {
-            inverse.ep[ep[e]] = e;
+            inverse.ep[ep[e]] = (Edge)e;
             inverse.eo[ep[e]] = (2 - eo[e]) % 2;
         };
         return inverse;
@@ -245,11 +245,13 @@ struct CubieCube {
         }
         return true;
     }
+
     static CubieCube random_state() {
         CubieCube cube;
         std::srand(std::time(nullptr));
 
-        std::vector<Cubie> corners_left{0, 1, 2, 3, 4, 5, 6, 7};
+        std::vector<Corner> corners_left{ULF, URF, URB, ULB,
+                                         DLF, DRF, DRB, DLB};
         for (Cubie c = ULF; c < NC; ++c) {
             auto random = std::rand();
             auto next_idx = random % (NC - c);
@@ -257,7 +259,8 @@ struct CubieCube {
             corners_left.erase(corners_left.begin() + next_idx);
         }
 
-        std::vector<Cubie> edges_left{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+        std::vector<Edge> edges_left{UF, UR, UB, UL, LF, RF,
+                                     RB, LB, DF, DR, DB, DL};
         for (Cubie e = UF; e < NE; ++e) {
             auto random = std::rand();
             auto next_idx = random % (NE - e);
