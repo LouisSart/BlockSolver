@@ -1,7 +1,8 @@
+#include "block.hpp"
+
 #include <cassert>
 
 #include "algorithm.hpp"
-#include "block_cube.hpp"
 #include "coordinate_block_cube.hpp"
 #include "cubie_cube.hpp"
 
@@ -12,14 +13,13 @@ void test_block() {
 
 template <unsigned nc, unsigned ne>
 void test_to_cbc_from_cc_and_back(Block<nc, ne> b) {
-    BlockCube bc(b);
     auto cc = CubieCube::random_state();
-    auto cbc = bc.to_coordinate_block_cube(cc);
-    assert(cbc == bc.to_coordinate_block_cube(bc.to_cubie_cube(cbc)));
+    auto cbc = b.to_coordinate_block_cube(cc);
+    assert(cbc == b.to_coordinate_block_cube(b.to_cubie_cube(cbc)));
 }
 
 void test_corner_permutation_table() {
-    BlockCube<1, 0> bc("UFL corner", {ULF}, {});
+    Block<1, 0> b("UFL corner", {ULF}, {});
     CubieCube cc, cc_copy;
     unsigned num_layout = 8;
     unsigned num_perm = 1;
@@ -28,7 +28,7 @@ void test_corner_permutation_table() {
         for (unsigned ccp = 0; ccp < num_perm; ++ccp) {
             cbc.ccl = ccl;
             cbc.ccp = ccp;
-            cc = bc.to_cubie_cube(cbc);
+            cc = b.to_cubie_cube(cbc);
             std::cout << "Permutation coordinate " << ccl * num_perm + ccp
                       << ": ";
             for (auto move_idx : HTM_Moves) {
@@ -38,7 +38,7 @@ void test_corner_permutation_table() {
                 assert(cc_copy == cc);
                 cc_copy.apply(move);
                 assert(cc_copy != cc);
-                cbc = bc.to_coordinate_block_cube(cc_copy);
+                cbc = b.to_coordinate_block_cube(cc_copy);
                 std::cout << cbc.ccl * num_perm + cbc.ccp << " ";
             }
             std::cout << std::endl;

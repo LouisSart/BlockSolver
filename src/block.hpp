@@ -18,12 +18,17 @@ struct Block {
     std::string name;
     std::string id;
 
+   private:
+    // Buffer arrays for CubieCube <=> CoordinateBlockCube conversion
+    std::array<unsigned, NC> cl;  // Corner layout
+    std::array<unsigned, NE> el;  // Edge layout
+    std::array<unsigned, nc> cp;  // Permutation of the block corners
+    std::array<unsigned, ne> ep;  // Permutation of the block edges
+    std::array<unsigned, nc> co;  // Orientation of the block corners
+    std::array<unsigned, ne> eo;  // Orientation of the block edges
+   public:
     Block() {}
-    // Block(std::string bname, const std::array<Corner, nc> &bc,
-    //       const std::array<Edge, ne> &be)
-    //     : corners{bc}, edges{be}, name{bname} {
 
-    // }
     Block(std::string n, const std::array<Corner, nc> &c,
           const std::array<Edge, ne> &e)
         : name{n}, corners{c}, edges{e} {
@@ -67,43 +72,6 @@ struct Block {
         return (std::find(edges.begin(), edges.end(), e) != std::end(edges));
     }
 
-    void show() const {
-        std::cout << "Block<" << nc << ", " << ne << ">";
-        std::cout << " \"" << name << "\"";
-        std::cout << "\n   Corners: {";
-        for (auto &c : corners) {
-            std::cout << c << ' ';
-        }
-        if (nc > 0) std::cout << "\b}";
-        std::cout << "\n   Edges: {";
-        for (auto &e : edges) {
-            std::cout << e << ' ';
-        }
-        if (ne > 0) std::cout << "\b}";
-        std::cout << std::endl;
-    };
-};
-
-template <unsigned nc, unsigned ne>
-struct BlockCube {
-    // This struct is responsible for all conversions between CubieCube and
-    // CoordinateBlockCube because we want to avoid reciprocal dependency
-    // between CubieCube and CoordinateBlockCube
-
-    std::array<unsigned, NC> cl;  // Corner layout
-    std::array<unsigned, NE> el;  // Edge layout
-    std::array<unsigned, nc> cp;  // Permutation of the block corners
-    std::array<unsigned, ne> ep;  // Permutation of the block edges
-    std::array<unsigned, nc> co;  // Orientation of the block corners
-    std::array<unsigned, ne> eo;  // Orientation of the block edges
-    Block<nc, ne> b;              // Block object
-
-    BlockCube(){};
-    BlockCube(std::string bname, const std::array<Corner, nc> bc,
-              const std::array<Edge, ne> be)
-        : b(bname, bc, be){};
-    BlockCube(const Block<nc, ne> &b) : b(b){};
-
     CoordinateBlockCube to_coordinate_block_cube(const CubieCube &cc) {
         // Returns the coordinate representation
         // of the block state in the input CubieCube
@@ -111,7 +79,7 @@ struct BlockCube {
         CoordinateBlockCube cbc;
         unsigned k = 0;
         for (Cubie c = ULF; c <= DLB; ++c) {
-            if (b.c_contains(cc.cp[c])) {
+            if (c_contains(cc.cp[c])) {
                 assert(k < nc);
                 assert(c < NC);
                 cl[c] = 1;
@@ -125,7 +93,7 @@ struct BlockCube {
 
         k = 0;
         for (Cubie e = UF; e <= DL; ++e) {
-            if (b.e_contains(cc.ep[e])) {
+            if (e_contains(cc.ep[e])) {
                 assert(k < ne);
                 assert(e < NE);
                 el[e] = 1;
@@ -169,7 +137,7 @@ struct BlockCube {
             for (Cubie i = ULF; i <= DLB; ++i) {
                 assert(k < NC);
                 if (cl[i] == 1) {
-                    cc.cp[i] = b.corners[cp[k]];
+                    cc.cp[i] = corners[cp[k]];
                     cc.co[i] = co[k];
                     ++k;
                 } else {
@@ -188,7 +156,7 @@ struct BlockCube {
             for (Cubie i = 0; i < NE; i++) {
                 assert(k < NE);
                 if (el[i] == 1) {
-                    cc.ep[i] = b.edges[ep[k]];
+                    cc.ep[i] = edges[ep[k]];
                     cc.eo[i] = eo[k];
                     k++;
                 } else {
@@ -200,39 +168,19 @@ struct BlockCube {
         return cc;
     }
 
-    void show() {
-        std::cout << "BlockCube object: " << '\n';
-        std::cout << "  ";
-        b.show();
-        std::cout << "  CL: ";
-        for (Cubie i = 0; i < NC; ++i) {
-            std::cout << cl[i] << ' ';
+    void show() const {
+        std::cout << "Block<" << nc << ", " << ne << ">";
+        std::cout << " \"" << name << "\"";
+        std::cout << "\n   Corners: {";
+        for (auto &c : corners) {
+            std::cout << c << ' ';
         }
-        std::cout << '\n';
-        std::cout << "  CP: ";
-        for (Cubie i = 0; i < nc; ++i) {
-            std::cout << cp[i] << ' ';
+        if (nc > 0) std::cout << "\b}";
+        std::cout << "\n   Edges: {";
+        for (auto &e : edges) {
+            std::cout << e << ' ';
         }
-        std::cout << '\n';
-        std::cout << "  CO: ";
-        for (Cubie i = 0; i < nc; ++i) {
-            std::cout << co[i] << ' ';
-        }
-        std::cout << '\n';
-        std::cout << "  EL: ";
-        for (Cubie i = 0; i < NE; ++i) {
-            std::cout << el[i] << ' ';
-        }
-        std::cout << '\n';
-        std::cout << "  EP: ";
-        for (Cubie i = 0; i < ne; ++i) {
-            std::cout << ep[i] << ' ';
-        }
-        std::cout << '\n';
-        std::cout << "  EO: ";
-        for (Cubie i = 0; i < ne; ++i) {
-            std::cout << eo[i] << ' ';
-        }
-        std::cout << '\n';
-    }
+        if (ne > 0) std::cout << "\b}";
+        std::cout << std::endl;
+    };
 };

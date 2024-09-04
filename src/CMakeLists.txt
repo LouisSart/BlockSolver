@@ -2,7 +2,7 @@ add_library(block_solver-core INTERFACE)
 add_library(block_solver::core ALIAS block_solver-core)
 set_target_properties(block_solver-core PROPERTIES EXPORT_NAME core)
 target_sources(block_solver-core INTERFACE
-        block_cube.hpp
+        block.hpp
         coordinate.hpp
         cubie_cube.hpp
         cubie.hpp
