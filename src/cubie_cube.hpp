@@ -20,20 +20,9 @@ struct CubieCube {
     std::array<Orientation, NE> eo{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     CubieCube(){};
-    CubieCube(std::initializer_list<Cubie> cp_in,
-              std::initializer_list<Orientation> co_in,
-              std::initializer_list<Cubie> ep_in,
-              std::initializer_list<Orientation> eo_in) {
-        for (Cubie c = ULF; c <= DLB; ++c) {
-            cp[c] = *(cp_in.begin() + c);
-            co[c] = *(co_in.begin() + c);
-        }
-
-        for (Cubie e = UF; e <= DL; e++) {
-            ep[e] = *(ep_in.begin() + e);
-            eo[e] = *(eo_in.begin() + e);
-        }
-    }
+    CubieCube(std::array<Cubie, NC> cp_in, std::array<Orientation, NC> co_in,
+              std::array<Cubie, NE> ep_in, std::array<Orientation, NE> eo_in)
+        : cp{cp_in}, co{co_in}, ep{ep_in}, eo{eo_in} {}
     CubieCube(const Algorithm& scramble) { apply(scramble); }
 
     void show() const {

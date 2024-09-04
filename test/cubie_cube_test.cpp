@@ -19,6 +19,14 @@ void test_move_apply() {
     cube.apply(Tperm);
 
     assert(cube.is_solved());
+
+    cube = CubieCube(no_effect);
+    assert(cube.is_solved());
+
+    cube = CubieCube(edge_3_cycle);
+    cube.apply(edge_3_cycle);
+    cube.apply(edge_3_cycle);
+    assert(cube.is_solved());
 }
 
 void test_parity() {
