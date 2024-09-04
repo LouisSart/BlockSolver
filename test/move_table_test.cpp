@@ -3,22 +3,21 @@
 template <unsigned nc, unsigned ne>
 void assert_move_table_is_correct(Block<nc, ne> b) {
     b.show();
-    BlockCube bc(b);
     BlockMoveTable m_table(b);
     auto cc = CubieCube::random_state();
-    auto cbc = bc.to_coordinate_block_cube(cc);
+    auto cbc = b.to_coordinate_block_cube(cc);
 
     for (Move move : HTM_Moves) {
         m_table.apply(move, cbc);
         cc.apply(move_cc[move]);
 
-        auto cbc_check = bc.to_coordinate_block_cube(cc);
+        auto cbc_check = b.to_coordinate_block_cube(cc);
         assert(cbc == cbc_check);
     }
 
     Algorithm scramble(
         "R' U' F  D2 R2 F' L2 D2 F' L  U' B U' D' F2 B2 L2 D F2 U2 D R' U' F");
-    auto cbc1 = bc.to_coordinate_block_cube(CubieCube(scramble));
+    auto cbc1 = b.to_coordinate_block_cube(CubieCube(scramble));
 
     CoordinateBlockCube cbc2;
     m_table.apply(scramble, cbc2);
@@ -26,12 +25,11 @@ void assert_move_table_is_correct(Block<nc, ne> b) {
 }
 
 template <typename Block>
-void test_inverse_move_apply(const Block& b) {
-    BlockCube bc(b);
+void test_inverse_move_apply(Block&& b) {
     BlockMoveTable table(b);
     auto cc = CubieCube::random_state();
-    auto cbc_check = bc.to_coordinate_block_cube(cc);
-    auto cbc = bc.to_coordinate_block_cube(cc);
+    auto cbc_check = b.to_coordinate_block_cube(cc);
+    auto cbc = b.to_coordinate_block_cube(cc);
 
     for (Move move : HTM_Moves) {
         table.apply(move, cbc);
@@ -42,8 +40,8 @@ void test_inverse_move_apply(const Block& b) {
 }
 
 void test_222_block_alg_apply() {
-    BlockCube<1, 3> bc("DLB_222", {DLB}, {DL, DB, LB});
-    BlockMoveTable<1, 3> table(bc.b);
+    Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
+    BlockMoveTable<1, 3> table(b);
     CubieCube cc;
     CoordinateBlockCube cbc;
     Algorithm alg({D2, L, R, F3, U});
@@ -53,7 +51,7 @@ void test_222_block_alg_apply() {
     cc.apply(alg);
     table.apply(alg, cbc);
 
-    assert(bc.to_coordinate_block_cube(cc) == cbc);
+    assert(b.to_coordinate_block_cube(cc) == cbc);
 
     cbc.set(0, 0, 0, 0, 0, 0);
     table.apply(Tperm, cbc);
@@ -93,21 +91,20 @@ void test_eo_table() {
 }
 
 template <typename Block>
-void test_sym_apply(const Block& b) {
-    BlockCube bc(b);
+void test_sym_apply(Block&& b) {
     BlockMoveTable table(b);
 
     auto random = CubieCube::random_state();
 
     for (unsigned s = 0; s < N_SYM; ++s) {
         auto cc_conj = random.get_conjugate(s);
-        auto cbc = bc.to_coordinate_block_cube(cc_conj);
+        auto cbc = b.to_coordinate_block_cube(cc_conj);
 
         for (Move move : HTM_Moves) {
             table.sym_apply(move, s, cbc);
             cc_conj.apply(move);
         }
-        assert(cbc == bc.to_coordinate_block_cube(cc_conj));
+        assert(cbc == b.to_coordinate_block_cube(cc_conj));
     }
 }
 

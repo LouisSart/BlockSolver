@@ -5,7 +5,7 @@
 #include <tuple>       // return ccl and ccp at the same time
 
 #include "algorithm.hpp"  // apply Algorithm
-#include "block_cube.hpp"
+#include "block.hpp"
 
 namespace fs = std::filesystem;
 template <typename value_type>
@@ -45,7 +45,7 @@ struct BlockMoveTable {
     std::unique_ptr<unsigned[]> eo_table{new unsigned[eo_table_size]};
 
     BlockMoveTable() {}
-    BlockMoveTable(const Block<nc, ne>& b) {
+    BlockMoveTable(Block<nc, ne>& b) {
         auto table_path = block_table_path(b);
         if (fs::exists(table_path)) {
             this->load(table_path);
@@ -158,8 +158,7 @@ struct BlockMoveTable {
         load_binary<unsigned>(eo_table_path, eo_table.get(), eo_table_size);
     }
 
-    void compute_edge_move_tables(const Block<nc, ne>& b) {
-        BlockCube<nc, ne> bc(b);
+    void compute_edge_move_tables(Block<nc, ne>& b) {
         CubieCube cc, cc_copy;
         CoordinateBlockCube cbc;
 
@@ -169,12 +168,12 @@ struct BlockMoveTable {
             for (unsigned ip = 0; ip < n_ep; ip++) {
                 m_idx = 0;
                 cbc.set(0, il, 0, ip, 0, 0);
-                cc = bc.to_cubie_cube(cbc);
+                cc = b.to_cubie_cube(cbc);
                 for (auto&& move_idx : HTM_Moves) {
                     auto move = move_cc[move_idx];
                     cc_copy = cc;
                     cc_copy.edge_apply(move);
-                    cbc = bc.to_coordinate_block_cube(cc_copy);
+                    cbc = b.to_coordinate_block_cube(cc_copy);
                     assert(N_HTM_MOVES * (cbc.cel * n_ep + cbc.cep) <
                            ep_table_size);
                     assert(p_idx * N_HTM_MOVES + m_idx < ep_table_size);
@@ -189,12 +188,12 @@ struct BlockMoveTable {
             {
                 m_idx = 0;
                 cbc.set(0, il, 0, 0, 0, io);
-                cc = bc.to_cubie_cube(cbc);
+                cc = b.to_cubie_cube(cbc);
                 for (auto&& move_idx : HTM_Moves) {
                     auto move = move_cc[move_idx];
                     cc_copy = cc;
                     cc_copy.edge_apply(move);
-                    cbc = bc.to_coordinate_block_cube(cc_copy);
+                    cbc = b.to_coordinate_block_cube(cc_copy);
                     assert(N_HTM_MOVES * (cbc.cel * n_eo + cbc.ceo) <
                            eo_table_size);
                     assert(o_idx * N_HTM_MOVES + m_idx < eo_table_size);
@@ -206,8 +205,8 @@ struct BlockMoveTable {
         }
     }
 
-    void compute_corner_move_tables(const Block<nc, ne>& b) {
-        BlockCube<nc, ne> bc(b);
+    void compute_corner_move_tables(Block<nc, ne>& b) {
+        Block<nc, ne> bc(b);
         CubieCube cc, cc_copy;
         CoordinateBlockCube cbc;
 
@@ -216,12 +215,12 @@ struct BlockMoveTable {
             for (unsigned ip = 0; ip < n_cp; ip++) {
                 m_idx = 0;
                 cbc.set(il, 0, ip, 0, 0, 0);
-                cc = bc.to_cubie_cube(cbc);
+                cc = b.to_cubie_cube(cbc);
                 for (auto&& move_idx : HTM_Moves) {
                     cc_copy = cc;
                     auto move = move_cc[move_idx];
                     cc_copy.corner_apply(move);
-                    cbc = bc.to_coordinate_block_cube(cc_copy);
+                    cbc = b.to_coordinate_block_cube(cc_copy);
                     assert(N_HTM_MOVES * (cbc.ccl * n_cp + cbc.ccp) <
                            cp_table_size);
                     assert(p_idx * N_HTM_MOVES + m_idx < cp_table_size);
@@ -282,7 +281,7 @@ struct EOMoveTable {
 
         for (unsigned eo_c = 0; eo_c < ipow(2, NE - 1); ++eo_c) {
             cube.eo[NE - 1] = 0;
-            eo_from_coord(eo_c, NE - 1, cube.eo);
+            eo_from_index(eo_c, cube.eo);
             if (!cube.has_consistent_eo()) {
                 cube.eo[NE - 1] = 1;
             }
@@ -291,7 +290,7 @@ struct EOMoveTable {
                 tmp = cube;
                 tmp.apply(move);
                 assert(eo_c * N_HTM_MOVES + move < table_size);
-                table[eo_c * N_HTM_MOVES + move] = eo_coord(tmp.eo, NE - 1);
+                table[eo_c * N_HTM_MOVES + move] = eo_index(tmp.eo);
             }
         }
     }
