@@ -40,11 +40,11 @@ struct CubieCube {
         // Display the 4 arrays defining a cube at the cubie level
         std::cout << "CubieCube object:" << '\n';
         std::cout << "  CP: ";
-        print_array(cp);
+        print_array<Cubie, NC, Corner>(cp);
         std::cout << "  CO: ";
         print_array(co);
         std::cout << "  EP: ";
-        print_array(ep);
+        print_array<Cubie, NE, Edge>(ep);
         std::cout << "  EO: ";
         print_array(eo);
     };
@@ -393,94 +393,94 @@ CubieCube CubieCube::get_anti_conjugate(const unsigned& sym_index) {
 }
 
 CubieCube move_cc[N_HTM_MOVES]{
-    [U] = CubieCube{{1, 2, 3, 0, 4, 5, 6, 7},
+    [U] = CubieCube{{URF, URB, ULB, ULF, DLF, DRF, DRB, DLB},
                     {0, 0, 0, 0, 0, 0, 0, 0},
-                    {1, 2, 3, 0, 4, 5, 6, 7, 8, 9, 10, 11},
+                    {UR, UB, UL, UF, LF, RF, RB, LB, DF, DR, DB, DL},
                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [U2] = CubieCube{{2, 3, 0, 1, 4, 5, 6, 7},
+    [U2] = CubieCube{{URB, ULB, ULF, URF, DLF, DRF, DRB, DLB},
                      {0, 0, 0, 0, 0, 0, 0, 0},
-                     {2, 3, 0, 1, 4, 5, 6, 7, 8, 9, 10, 11},
+                     {UB, UL, UF, UR, LF, RF, RB, LB, DF, DR, DB, DL},
                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [U3] = CubieCube{{3, 0, 1, 2, 4, 5, 6, 7},
+    [U3] = CubieCube{{ULB, ULF, URF, URB, DLF, DRF, DRB, DLB},
                      {0, 0, 0, 0, 0, 0, 0, 0},
-                     {3, 0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11},
+                     {UL, UF, UR, UB, LF, RF, RB, LB, DF, DR, DB, DL},
                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [D] = CubieCube{{0, 1, 2, 3, 7, 4, 5, 6},
+    [D] = CubieCube{{ULF, URF, URB, ULB, DLB, DLF, DRF, DRB},
                     {0, 0, 0, 0, 0, 0, 0, 0},
-                    {0, 1, 2, 3, 4, 5, 6, 7, 11, 8, 9, 10},
+                    {UF, UR, UB, UL, LF, RF, RB, LB, DL, DF, DR, DB},
                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [D2] = CubieCube{{0, 1, 2, 3, 6, 7, 4, 5},
+    [D2] = CubieCube{{ULF, URF, URB, ULB, DRB, DLB, DLF, DRF},
                      {0, 0, 0, 0, 0, 0, 0, 0},
-                     {0, 1, 2, 3, 4, 5, 6, 7, 10, 11, 8, 9},
+                     {UF, UR, UB, UL, LF, RF, RB, LB, DB, DL, DF, DR},
                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [D3] = CubieCube{{0, 1, 2, 3, 5, 6, 7, 4},
+    [D3] = CubieCube{{ULF, URF, URB, ULB, DRF, DRB, DLB, DLF},
                      {0, 0, 0, 0, 0, 0, 0, 0},
-                     {0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 8},
+                     {UF, UR, UB, UL, LF, RF, RB, LB, DR, DB, DL, DF},
                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [R] = CubieCube{{0, 5, 1, 3, 4, 6, 2, 7},
+    [R] = CubieCube{{ULF, DRF, URF, ULB, DLF, DRB, URB, DLB},
                     {0, 2, 1, 0, 0, 1, 2, 0},
-                    {0, 5, 2, 3, 4, 9, 1, 7, 8, 6, 10, 11},
+                    {UF, RF, UB, UL, LF, DR, UR, LB, DF, RB, DB, DL},
                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [R2] = CubieCube{{0, 6, 5, 3, 4, 2, 1, 7},
+    [R2] = CubieCube{{ULF, DRB, DRF, ULB, DLF, URB, URF, DLB},
                      {0, 0, 0, 0, 0, 0, 0, 0},
-                     {0, 9, 2, 3, 4, 6, 5, 7, 8, 1, 10, 11},
+                     {UF, DR, UB, UL, LF, RB, RF, LB, DF, UR, DB, DL},
                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [R3] = CubieCube{{0, 2, 6, 3, 4, 1, 5, 7},
+    [R3] = CubieCube{{ULF, URB, DRB, ULB, DLF, URF, DRF, DLB},
                      {0, 2, 1, 0, 0, 1, 2, 0},
-                     {0, 6, 2, 3, 4, 1, 9, 7, 8, 5, 10, 11},
+                     {UF, RB, UB, UL, LF, UR, DR, LB, DF, RF, DB, DL},
                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [L] = CubieCube{{3, 1, 2, 7, 0, 5, 6, 4},
+    [L] = CubieCube{{ULB, URF, URB, DLB, ULF, DRF, DRB, DLF},
                     {1, 0, 0, 2, 2, 0, 0, 1},
-                    {0, 1, 2, 7, 3, 5, 6, 11, 8, 9, 10, 4},
+                    {UF, UR, UB, LB, UL, RF, RB, DL, DF, DR, DB, LF},
                     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [L2] = CubieCube{{7, 1, 2, 4, 3, 5, 6, 0},
+    [L2] = CubieCube{{DLB, URF, URB, DLF, ULB, DRF, DRB, ULF},
                      {0, 0, 0, 0, 0, 0, 0, 0},
-                     {0, 1, 2, 11, 7, 5, 6, 4, 8, 9, 10, 3},
+                     {UF, UR, UB, DL, LB, RF, RB, LF, DF, DR, DB, UL},
                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [L3] = CubieCube{{4, 1, 2, 0, 7, 5, 6, 3},
+    [L3] = CubieCube{{DLF, URF, URB, ULF, DLB, DRF, DRB, ULB},
                      {1, 0, 0, 2, 2, 0, 0, 1},
-                     {0, 1, 2, 4, 11, 5, 6, 3, 8, 9, 10, 7},
+                     {UF, UR, UB, LF, DL, RF, RB, UL, DF, DR, DB, LB},
                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [F] = CubieCube{{4, 0, 2, 3, 5, 1, 6, 7},
+    [F] = CubieCube{{DLF, ULF, URB, ULB, DRF, URF, DRB, DLB},
                     {2, 1, 0, 0, 1, 2, 0, 0},
-                    {4, 1, 2, 3, 8, 0, 6, 7, 5, 9, 10, 11},
+                    {LF, UR, UB, UL, DF, UF, RB, LB, RF, DR, DB, DL},
                     {1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0}},
 
-    [F2] = CubieCube{{5, 4, 2, 3, 1, 0, 6, 7},
+    [F2] = CubieCube{{DRF, DLF, URB, ULB, URF, ULF, DRB, DLB},
                      {0, 0, 0, 0, 0, 0, 0, 0},
-                     {8, 1, 2, 3, 5, 4, 6, 7, 0, 9, 10, 11},
+                     {DF, UR, UB, UL, RF, LF, RB, LB, UF, DR, DB, DL},
                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [F3] = CubieCube{{1, 5, 2, 3, 0, 4, 6, 7},
+    [F3] = CubieCube{{URF, DRF, URB, ULB, ULF, DLF, DRB, DLB},
                      {2, 1, 0, 0, 1, 2, 0, 0},
-                     {5, 1, 2, 3, 0, 8, 6, 7, 4, 9, 10, 11},
+                     {RF, UR, UB, UL, UF, DF, RB, LB, LF, DR, DB, DL},
                      {1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0}},
 
-    [B] = CubieCube{{0, 1, 6, 2, 4, 5, 7, 3},
+    [B] = CubieCube{{ULF, URF, DRB, URB, DLF, DRF, DLB, ULB},
                     {0, 0, 2, 1, 0, 0, 1, 2},
-                    {0, 1, 6, 3, 4, 5, 10, 2, 8, 9, 7, 11},
+                    {UF, UR, RB, UL, LF, RF, DB, UB, DF, DR, LB, DL},
                     {0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0}},
 
-    [B2] = CubieCube{{0, 1, 7, 6, 4, 5, 3, 2},
+    [B2] = CubieCube{{ULF, URF, DLB, DRB, DLF, DRF, ULB, URB},
                      {0, 0, 0, 0, 0, 0, 0, 0},
-                     {0, 1, 10, 3, 4, 5, 7, 6, 8, 9, 2, 11},
+                     {UF, UR, DB, UL, LF, RF, LB, RB, DF, DR, UB, DL},
                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 
-    [B3] = CubieCube{{0, 1, 3, 7, 4, 5, 2, 6},
+    [B3] = CubieCube{{ULF, URF, ULB, DLB, DLF, DRF, URB, DRB},
                      {0, 0, 2, 1, 0, 0, 1, 2},
-                     {0, 1, 7, 3, 4, 5, 2, 10, 8, 9, 6, 11},
+                     {UF, UR, LB, UL, LF, RF, UB, DB, DF, DR, RB, DL},
                      {0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0}}};
 
 void CubieCube::apply(const Move& m) { apply(move_cc[m]); }
