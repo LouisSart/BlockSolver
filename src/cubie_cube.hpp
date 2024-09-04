@@ -86,9 +86,9 @@ struct CubieCube {
         // Apply the RL mirroring symmetry. This cannot be
         // applied as a legal cube manipulation
 
-        static CubieCube S_LR{{1, 0, 3, 2, 5, 4, 7, 6},
+        static CubieCube S_LR{{URF, ULF, ULB, URB, DRF, DLF, DLB, DRB},
                               {0, 0, 0, 0, 0, 0, 0, 0},
-                              {0, 3, 2, 1, 5, 4, 7, 6, 8, 11, 10, 9},
+                              {UF, UL, UB, UR, RF, LF, LB, RB, DF, DL, DB, DR},
                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
         apply(S_LR);
@@ -292,21 +292,21 @@ struct CubieCube {
 
 CubieCube rotation_cc[N_ELEM_SYM - 1]{
     [0] = /* S_URF */
-    CubieCube{{5, 1, 0, 4, 6, 2, 3, 7},
+    CubieCube{{DRF, URF, ULF, DLF, DRB, URB, ULB, DLB},
               {2, 1, 2, 1, 1, 2, 1, 2},
-              {5, 0, 4, 8, 9, 1, 3, 11, 6, 2, 7, 10},
+              {RF, UF, LF, DF, DR, UR, UL, DL, RB, UB, LB, DB},
               {0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1}},
 
     [1] = /* y */
-    CubieCube{{1, 2, 3, 0, 5, 6, 7, 4},
+    CubieCube{{URF, URB, ULB, ULF, DRF, DRB, DLB, DLF},
               {0, 0, 0, 0, 0, 0, 0, 0},
-              {1, 2, 3, 0, 5, 6, 7, 4, 9, 10, 11, 8},
+              {UR, UB, UL, UF, RF, RB, LB, LF, DR, DB, DL, DF},
               {0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0}},
 
     [2] = /* z2 */
-    CubieCube{{5, 4, 7, 6, 1, 0, 3, 2},
+    CubieCube{{DRF, DLF, DLB, DRB, URF, ULF, ULB, URB},
               {0, 0, 0, 0, 0, 0, 0, 0},
-              {8, 11, 10, 9, 5, 4, 7, 6, 0, 3, 2, 1},
+              {DF, DL, DB, DR, RF, LF, LB, RB, UF, UL, UB, UR},
               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}},
 };
 
