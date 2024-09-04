@@ -8,8 +8,9 @@ void init_array(unsigned* l, unsigned size, unsigned value) {
 
 template <std::size_t n>
 void print_array(const typename std::array<unsigned, n>& a) {
+    std::cout << "{";
     for (unsigned k : a) {
         std::cout << k << " ";
     }
-    std::cout << std::endl;
+    std::cout << "\b}" << std::endl;
 }

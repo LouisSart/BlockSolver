@@ -11,12 +11,13 @@
 #include "cubie.hpp"
 #include "move.hpp"      // moves and rotations
 #include "symmetry.hpp"  // symmetry components
+#include "utils.hpp"     // print_array
 
 struct CubieCube {
-    Cubie cp[NC]{ULF, URF, URB, ULB, DLF, DRF, DRB, DLB};
-    Orientation co[NC]{0, 0, 0, 0, 0, 0, 0, 0};
-    Cubie ep[NE]{UF, UR, UB, UL, LF, RF, RB, LB, DF, DR, DB, DL};
-    Orientation eo[NE]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::array<Cubie, NC> cp{ULF, URF, URB, ULB, DLF, DRF, DRB, DLB};
+    std::array<Orientation, NC> co{0, 0, 0, 0, 0, 0, 0, 0};
+    std::array<Cubie, NE> ep{UF, UR, UB, UL, LF, RF, RB, LB, DF, DR, DB, DL};
+    std::array<Orientation, NE> eo{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     CubieCube(){};
     CubieCube(std::initializer_list<Cubie> cp_in,
@@ -35,29 +36,17 @@ struct CubieCube {
     }
     CubieCube(const Algorithm& scramble) { apply(scramble); }
 
-    template <typename Contents>
-    void print_array(std::string name, int size, const Contents* arr) const {
-        std::cout << name << " {";
-        for (int i = 0; i < size; i++) {
-            std::cout << static_cast<int>(arr[i]);
-            if (i < size - 1) {
-                std::cout << ",";
-            }
-        }
-        std::cout << "}" << std::endl;
-    };
-
     void show() const {
         // Display the 4 arrays defining a cube at the cubie level
         std::cout << "CubieCube object:" << '\n';
-        std::cout << "  ";
-        print_array("CP", NC, cp);
-        std::cout << "  ";
-        print_array("CO", NC, co);
-        std::cout << "  ";
-        print_array("EP", NE, ep);
-        std::cout << "  ";
-        print_array("EO", NE, eo);
+        std::cout << "  CP: ";
+        print_array(cp);
+        std::cout << "  CO: ";
+        print_array(co);
+        std::cout << "  EP: ";
+        print_array(ep);
+        std::cout << "  EO: ";
+        print_array(eo);
     };
 
     // Apply the corner transformation of the given CubieCube
