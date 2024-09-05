@@ -85,15 +85,33 @@ void test_load() {
 }
 
 void test_eo_table() {
-    EOMoveTable table;
+    EOMoveTable computed, loaded;
+    computed.compute_table();
+    computed.write();
+    loaded.load();
 
-    CoordinateBlockCube cube;
-    table.apply({F}, cube);
-    table.apply({L2, U2, R2, D2, B}, cube);
-    assert(cube.is_solved());
-    table.apply({F, D, B, U, F}, cube);
-    table.apply_inverse({F, D, B, U, F}, cube);
-    assert(cube.is_solved());
+    for (unsigned c = 0; c < ipow(2, NE - 1); ++c) {
+        for (Move m : HTM_Moves) {
+            assert(computed.table[c * N_HTM_MOVES + m] ==
+                   loaded.table[c * N_HTM_MOVES + m]);
+        }
+    }
+
+    EOMoveTable m_table;
+    const auto cc_start = CubieCube::random_state();
+    const unsigned eo_c = eo_index<NE, true>(cc_start.eo);
+
+    CubieCube cc;
+    CoordinateBlockCube cbc;
+
+    for (Move move : HTM_Moves) {
+        cc = cc_start;
+        cbc.ceo = eo_c;
+        m_table.apply(move, cbc);
+        cc.apply(move);
+
+        assert((cbc.ceo == eo_index<NE, true>(cc.eo)));
+    }
 }
 
 template <typename Block>

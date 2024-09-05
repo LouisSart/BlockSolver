@@ -1,4 +1,5 @@
 #pragma once
+#include <cassert>     // assert
 #include <filesystem>  // locate move table files
 #include <fstream>     // write tabes into files
 #include <memory>      // std::unique_ptr
@@ -271,10 +272,14 @@ struct EOMoveTable {
     }
     std::filesystem::path table_path() const { return table_dir_path() / "eo"; }
     void load() const {
-        load_binary<unsigned>(table_path(), table.get(), table_size);
+        assert(fs::exists(table_path()));
+        load_binary<unsigned>(table_path() / "table.dat", table.get(),
+                              table_size);
     }
     void write() const {
-        write_binary<unsigned>(table_path(), table.get(), table_size);
+        fs::create_directories(table_path());
+        write_binary<unsigned>(table_path() / "table.dat", table.get(),
+                               table_size);
     }
     void compute_table() {
         CubieCube cube, tmp;
@@ -290,7 +295,8 @@ struct EOMoveTable {
                 tmp = cube;
                 tmp.apply(move);
                 assert(eo_c * N_HTM_MOVES + move < table_size);
-                table[eo_c * N_HTM_MOVES + move] = eo_index(tmp.eo);
+                assert((eo_index<NE, true>(tmp.eo) < ipow(2, NE - 1)));
+                table[eo_c * N_HTM_MOVES + move] = eo_index<NE, true>(tmp.eo);
             }
         }
     }
