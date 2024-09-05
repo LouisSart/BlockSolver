@@ -27,6 +27,17 @@ void test_move_apply() {
     cube.apply(edge_3_cycle);
     cube.apply(edge_3_cycle);
     assert(cube.is_solved());
+
+    CubieCube cube_check;
+    cube.apply(Algorithm{U, R, F, L, B, D});
+    cube_check.apply(U);
+    cube_check.apply(R);
+    cube_check.apply(F);
+    cube_check.apply(L);
+    cube_check.apply(B);
+    cube_check.apply(D);
+
+    assert(cube == cube_check);
 }
 
 void test_copy_constructor() {
