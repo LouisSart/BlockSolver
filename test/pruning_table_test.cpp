@@ -1,7 +1,7 @@
 #include "pruning_table.hpp"
 
 template <typename Block>
-void test_optimal_api(Block& b) {
+void test_api(Block& b) {
     auto cc = CubieCube::random_state();
     auto cbc = b.to_coordinate_block_cube(cc);
     auto strat = Strategy::Optimal(b);
@@ -12,24 +12,8 @@ void test_optimal_api(Block& b) {
     assert(strat.from_index(strat.index(cbc)) == cbc);
 }
 
-template <typename Block>
-void test_permutation_api(Block& b) {
-    auto cc = CubieCube::random_state();
-    auto cbc = b.to_coordinate_block_cube(cc);
-
-    auto strat = Strategy::Permutation(b);
-    auto table = strat.gen_table();
-    auto pruning_value = table.get_estimate(cbc);
-
-    auto from_table = strat.from_index(strat.index(cbc));
-    assert(from_table.ccl == cbc.ccl);
-    assert(from_table.ccp == cbc.ccp);
-    assert(from_table.cel == cbc.cel);
-    assert(from_table.cep == cbc.cep);
-}
-
 template <unsigned nc, unsigned ne>
-void test_optimal_reload(Block<nc, ne>& b) {
+void test_reload(Block<nc, ne>& b) {
     auto table = Strategy::Optimal(b).gen_table();
     table.write();
     auto reloaded = Strategy::Optimal(b).load_table();
@@ -39,29 +23,9 @@ void test_optimal_reload(Block<nc, ne>& b) {
     }
 }
 
-template <unsigned nc, unsigned ne>
-void test_permutation_reload(Block<nc, ne>& b) {
-    auto table = Strategy::Permutation(b).gen_table();
-    table.write();
-
-    auto reloaded = Strategy::Permutation(b).load_table();
-
-    for (int k = 0; k < table.size(); ++k) {
-        assert(table.table[k] == reloaded.table[k]);
-    }
-}
-
 template <typename Block>
-void test_optimal_is_correct(Block& b) {
+void test_table_is_correct(Block& b) {
     auto table = Strategy::Optimal(b).gen_table();
-    for (int i = 0; i < table.size(); ++i) {
-        assert(table.table[i] != 255);
-    }
-}
-
-template <typename Block>
-void test_permutation_is_correct(Block& b) {
-    auto table = Strategy::Permutation(b).gen_table();
     for (int i = 0; i < table.size(); ++i) {
         assert(table.table[i] != 255);
     }
@@ -111,16 +75,13 @@ int main() {
     auto DL_223 = Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL});
 
     std::cout << "API tests" << std::endl;
-    test_optimal_api(LF_column);
-    test_permutation_api(LF_column);
+    test_api(LF_column);
 
     std::cout << "\nReload tests" << std::endl;
-    test_optimal_reload(DLB_222);
-    test_permutation_reload(Roux_FB);
+    test_reload(DLB_222);
 
     std::cout << "\nCorrectness tests" << std::endl;
-    test_optimal_is_correct(DLB_222);
-    test_permutation_is_correct(Roux_FB);
+    test_table_is_correct(DLB_222);
 
     std::cout << "\nDirect and backwards equivalence test" << std::endl;
     test_direct_and_backward_are_equivalent(LF_column);
