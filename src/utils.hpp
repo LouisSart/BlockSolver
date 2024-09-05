@@ -12,5 +12,6 @@ void print_array(const typename std::array<T, n>& a) {
     for (unsigned k : a) {
         std::cout << static_cast<cast_t>(k) << " ";
     }
-    std::cout << "\b}" << std::endl;
+    if (n > 0) std::cout << "\b";
+    std::cout << "}" << std::endl;
 }
