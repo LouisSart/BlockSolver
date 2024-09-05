@@ -5,7 +5,7 @@ void test_api(Block& b) {
     auto cc = CubieCube::random_state();
     auto cbc = b.to_coordinate_block_cube(cc);
     auto strat = Strategy::Optimal(b);
-    auto table = strat.gen_table();
+    auto table = generate_pruning_table(b);
     auto pruning_value = table.get_estimate(cbc);
 
     assert(pruning_value != 0);
@@ -14,9 +14,9 @@ void test_api(Block& b) {
 
 template <unsigned nc, unsigned ne>
 void test_reload(Block<nc, ne>& b) {
-    auto table = Strategy::Optimal(b).gen_table();
+    auto table = generate_pruning_table(b);
     table.write();
-    auto reloaded = Strategy::Optimal(b).load_table();
+    auto reloaded = load_pruning_table(b);
 
     for (int k = 0; k < table.size(); ++k) {
         assert(table.table[k] == reloaded.table[k]);
@@ -25,7 +25,7 @@ void test_reload(Block<nc, ne>& b) {
 
 template <typename Block>
 void test_table_is_correct(Block& b) {
-    auto table = Strategy::Optimal(b).gen_table();
+    auto table = generate_pruning_table(b);
     for (int i = 0; i < table.size(); ++i) {
         assert(table.table[i] != 255);
     }
@@ -33,35 +33,34 @@ void test_table_is_correct(Block& b) {
 
 template <typename Block>
 void test_direct_and_backward_are_equivalent(Block& b) {
-    Strategy::Optimal strat(b);
     BlockMoveTable m_table(b);
-    auto direct = load_table_ptr(strat);
-    auto backwards = load_table_ptr(strat);
+    auto direct = load_pruning_table(b);
+    auto backwards = load_pruning_table(b);
 
     std::cout << "Direct generator:" << std::endl;
-    auto adv = Advancement(direct->size());
-    compute_pruning_table<false>(*direct, strat, m_table, adv);
+    Strategy::Optimal strat(b);
+    auto adv = Advancement(direct.size());
+    compute_pruning_table<false>(direct, strat, m_table, adv);
     adv.update(adv.depth + 1);
 
     std::cout << "Backwards generator:" << std::endl;
-    adv = Advancement(backwards->size());
+    adv = Advancement(backwards.size());
     adv.add_encountered();
     adv.update();
-    backwards->reset();
-    backwards->table[0] = 0;
-    compute_pruning_table_backwards(*backwards, strat, m_table, adv);
+    backwards.reset();
+    backwards.table[0] = 0;
+    compute_pruning_table_backwards(backwards, strat, m_table, adv);
 
-    for (unsigned k = 0; k < direct->size(); ++k) {
-        assert(backwards->table[k] == direct->table[k]);
+    for (unsigned k = 0; k < direct.size(); ++k) {
+        assert(backwards.table[k] == direct.table[k]);
     }
-    direct->write();
+    direct.write();
 }
 
 void test_eo_table() {
-    Strategy::OptimalEO strat;
     EOMoveTable m_table;
-    auto table = strat.gen_table();
-    auto table_check = strat.load_table();
+    auto table = generate_eo_table();
+    auto table_check = load_eo_table();
 
     for (unsigned k = 0; k < table.size(); ++k) {
         assert(table[k] == table_check[k]);

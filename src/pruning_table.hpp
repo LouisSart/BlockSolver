@@ -73,19 +73,6 @@ struct PruningTable {
     unsigned size() const { return Strategy::table_size; }
 };
 
-struct NullPruningTable {
-    template <typename Cube>
-    unsigned get_estimate(const Cube& cube) const {
-        if (cube.is_solved()) {
-            return 0;
-        } else {
-            return 1;
-        }
-    }
-
-    NullPruningTable* get_ptr() { return this; }
-};
-
 namespace Strategy {
 template <unsigned nc, unsigned ne>
 struct Optimal {
@@ -104,19 +91,6 @@ struct Optimal {
 
     Optimal() {}
     Optimal(const Block<nc, ne>& b) : block{b} {}
-
-    template <bool verbose = false>
-    PruningTable<Optimal<nc, ne>> gen_table() {
-        PruningTable<Optimal<nc, ne>> table(block.id);
-        generate<verbose>(table, *this, BlockMoveTable(block));
-        return table;
-    }
-
-    PruningTable<Optimal<nc, ne>> load_table() const {
-        PruningTable<Optimal<nc, ne>> table(block.id);
-        table.load();
-        return table;
-    }
 
     std::string info() const {
         std::string ret = "Optimal strategy for block " + block.name;
@@ -172,7 +146,6 @@ struct Optimal {
 };
 
 struct OptimalEO {
-    using table_t = PruningTable<OptimalEO>;
     static constexpr unsigned table_size = ipow(2, NE - 1);
     static constexpr std::string_view name = "eo";
 
@@ -192,44 +165,35 @@ struct OptimalEO {
         return ret;
     }
     std::string id() const { return ""; }
-
-    template <bool verbose = false>
-    table_t gen_table() const {
-        table_t table;
-        generate<verbose>(table, *this, EOMoveTable());
-        return table;
-    }
-
-    table_t load_table() const {
-        table_t table;
-        table.load();
-        return table;
-    }
 };
 }  // namespace Strategy
 
-template <bool verbose = false, typename Strategy>
-typename Strategy::table_t* gen_table_ptr(const Strategy& strat) {
-    auto table = new typename Strategy::table_t(strat.id());
-    *table = strat.template gen_table<verbose>();
+template <unsigned nc, unsigned ne, bool verbose = false>
+PruningTable<Strategy::Optimal<nc, ne>> generate_pruning_table(
+    Block<nc, ne>& b) {
+    Strategy::Optimal<nc, ne> strat(b);
+    PruningTable<Strategy::Optimal<nc, ne>> table(b.id);
+    generate<verbose>(table, strat, BlockMoveTable(b));
     return table;
 }
 
-template <typename Strategy>
-typename Strategy::table_t* load_table_ptr(Strategy& strat) {
-    auto table = new typename Strategy::table_t(strat.id());
-    try {
-        *table = strat.template load_table();
-    } catch (LoadError error) {
-        std::cout << "Do you want to generate pruning table ? (y/n) "
-                  << std::endl;
-        std::string answer;
-        std::cin >> answer;
-        if (answer == "y") {
-            *table = strat.template gen_table();
-        } else {
-            abort();
-        };
-    }
+template <unsigned nc, unsigned ne>
+PruningTable<Strategy::Optimal<nc, ne>> load_pruning_table(Block<nc, ne>& b) {
+    PruningTable<Strategy::Optimal<nc, ne>> table(b.id);
+    table.load();
+    return table;
+}
+
+template <bool verbose = false>
+PruningTable<Strategy::OptimalEO> generate_eo_table() {
+    Strategy::OptimalEO strat;
+    PruningTable<Strategy::OptimalEO> table;
+    generate<verbose>(table, strat, EOMoveTable());
+    return table;
+}
+
+PruningTable<Strategy::OptimalEO> load_eo_table() {
+    PruningTable<Strategy::OptimalEO> table;
+    table.load();
     return table;
 }
