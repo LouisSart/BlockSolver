@@ -171,16 +171,9 @@ struct Block {
     void show() const {
         std::cout << "Block<" << nc << ", " << ne << ">";
         std::cout << " \"" << name << "\"";
-        std::cout << "\n   Corners: {";
-        for (auto &c : corners) {
-            std::cout << c << ' ';
-        }
-        if (nc > 0) std::cout << "\b}";
-        std::cout << "\n   Edges: {";
-        for (auto &e : edges) {
-            std::cout << e << ' ';
-        }
-        if (ne > 0) std::cout << "\b}";
-        std::cout << std::endl;
+        std::cout << "\n   Corners: ";
+        print_array(corners);
+        std::cout << "   Edges: ";
+        print_array(edges);
     };
 };
