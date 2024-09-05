@@ -135,13 +135,13 @@ struct Block {
             co_from_index(cbc.cco, co);
             k = 0;
             for (Cubie i = ULF; i <= DLB; ++i) {
-                assert(k < NC);
-                if (cl[i] == 1) {
+                assert(k <= nc);
+                if ((cl[i] == 1) && (k < nc)) {
                     cc.cp[i] = corners[cp[k]];
                     cc.co[i] = co[k];
                     ++k;
                 } else {
-                    cc.cp[i] = (Corner)NC;
+                    cc.cp[i] = NONE_C;
                     cc.co[i] = 3;
                 }
             }
@@ -154,13 +154,13 @@ struct Block {
 
             k = 0;
             for (Cubie i = 0; i < NE; i++) {
-                assert(k < NE);
-                if (el[i] == 1) {
+                assert(k <= ne);
+                if ((el[i] == 1) && (k < ne)) {
                     cc.ep[i] = edges[ep[k]];
                     cc.eo[i] = eo[k];
                     k++;
                 } else {
-                    cc.ep[i] = (Edge)NE;
+                    cc.ep[i] = NONE_E;
                     cc.eo[i] = 2;
                 }
             }
