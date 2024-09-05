@@ -29,6 +29,21 @@ void test_move_apply() {
     assert(cube.is_solved());
 }
 
+void test_copy_constructor() {
+    CubieCube cc = CubieCube::random_state();
+    CubieCube cc_copy;
+
+    cc_copy = cc;
+    assert(&cc != &cc_copy);
+    assert(cc == cc_copy);
+
+    cc_copy.apply(random_moves);
+    assert(cc != cc_copy);
+
+    cc.apply(random_moves);
+    assert(cc == cc_copy);
+}
+
 void test_parity() {
     auto cube = CubieCube();
 
@@ -80,6 +95,7 @@ void test_conjugation() {
 
 int main() {
     test_move_apply();
+    test_copy_constructor();
     test_parity();
     test_random_state();
     test_inverse();

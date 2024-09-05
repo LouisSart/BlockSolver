@@ -293,6 +293,18 @@ struct CubieCube {
     }
 };
 
+bool operator==(const CubieCube& cc1, const CubieCube& cc2) {
+    for (Cubie c = ULF; c <= DLB; ++c) {
+        if (cc1.cp[c] != cc2.cp[c]) return false;
+        if (cc1.co[c] != cc2.co[c]) return false;
+    }
+    for (Cubie e = UF; e <= DL; ++e) {
+        if (cc1.ep[e] != cc2.ep[e]) return false;
+        if (cc1.eo[e] != cc2.eo[e]) return false;
+    }
+    return true;
+}
+
 CubieCube rotation_cc[N_ELEM_SYM - 1]{
     [0] = /* S_URF */
     CubieCube{{DRF, URF, ULF, DLF, DRB, URB, ULB, DLB},
