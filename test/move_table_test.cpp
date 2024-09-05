@@ -1,27 +1,22 @@
 #include "move_table.hpp"
 
 template <unsigned nc, unsigned ne>
-void assert_move_table_is_correct(Block<nc, ne> b) {
-    b.show();
+void test_move_table_apply(Block<nc, ne>&& b) {
     BlockMoveTable m_table(b);
-    auto cc = CubieCube::random_state();
-    auto cbc = b.to_coordinate_block_cube(cc);
+    const auto cc_start = CubieCube::random_state();
+    const auto cbc_start = b.to_coordinate_block_cube(cc_start);
+
+    CubieCube cc;
+    CoordinateBlockCube cbc;
 
     for (Move move : HTM_Moves) {
+        cc = cc_start;
+        cbc = cbc_start;
         m_table.apply(move, cbc);
-        cc.apply(move_cc[move]);
+        cc.apply(move);
 
-        auto cbc_check = b.to_coordinate_block_cube(cc);
-        assert(cbc == cbc_check);
+        assert(cbc == b.to_coordinate_block_cube(cc));
     }
-
-    Algorithm scramble(
-        "R' U' F  D2 R2 F' L2 D2 F' L  U' B U' D' F2 B2 L2 D F2 U2 D R' U' F");
-    auto cbc1 = b.to_coordinate_block_cube(CubieCube(scramble));
-
-    CoordinateBlockCube cbc2;
-    m_table.apply(scramble, cbc2);
-    assert(cbc1 == cbc2);
 }
 
 template <typename Block>
@@ -43,15 +38,18 @@ void test_222_block_alg_apply() {
     Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
     BlockMoveTable<1, 3> table(b);
     CubieCube cc;
-    CoordinateBlockCube cbc;
-    Algorithm alg({D2, L, R, F3, U});
+    CoordinateBlockCube cbc = b.to_coordinate_block_cube(cc);
+
+    Algorithm alg({D, L, R, F3, U});
     Algorithm no_effect("R U R' F' U2 L' U' L F U2");
     Algorithm Tperm("R U R' U' R' F R2 U' R' U' R U R' F'");
 
-    cc.apply(alg);
-    table.apply(alg, cbc);
+    for (auto a : {alg, Tperm, no_effect}) {
+        table.apply(a, cbc);
+        cc.apply(a);
 
-    assert(b.to_coordinate_block_cube(cc) == cbc);
+        assert(cbc == b.to_coordinate_block_cube(cc));
+    }
 
     cbc.set(0, 0, 0, 0, 0, 0);
     table.apply(Tperm, cbc);
@@ -66,7 +64,6 @@ void test_222_block_alg_apply() {
 void test_load() {
     BlockMoveTable<4, 4> table;
     Block<4, 4> b("TopLayer", {ULF, URF, URB, ULB}, {UF, UR, UB, UL});
-    b.show();
     table.compute_corner_move_tables(b);
     table.compute_edge_move_tables(b);
     table.write(table.block_table_path(b));
@@ -75,6 +72,15 @@ void test_load() {
 
     for (int i = 0; i < table.cp_table_size; ++i) {
         assert(table.cp_table[i] == table_loaded.cp_table[i]);
+    }
+    for (int i = 0; i < table.co_table_size; ++i) {
+        assert(table.co_table[i] == table_loaded.co_table[i]);
+    }
+    for (int i = 0; i < table.ep_table_size; ++i) {
+        assert(table.ep_table[i] == table_loaded.ep_table[i]);
+    }
+    for (int i = 0; i < table.eo_table_size; ++i) {
+        assert(table.eo_table[i] == table_loaded.eo_table[i]);
     }
 }
 
@@ -108,14 +114,34 @@ void test_sym_apply(Block&& b) {
     }
 }
 
+void test_to_cubie_cube() {
+    Block<2, 5> b("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL});
+    BlockMoveTable m_table(b);
+
+    auto cc = CubieCube::random_state();
+    CoordinateBlockCube cbc = b.to_coordinate_block_cube(cc);
+    CubieCube cc_copy;
+    CoordinateBlockCube cbc_copy;
+
+    for (Move m : HTM_Moves) {
+        cc_copy = cc;
+        cbc_copy = cbc;
+
+        cc_copy.apply(m);
+        m_table.apply(m, cbc_copy);
+
+        b.to_cubie_cube(cbc_copy).show();
+        cc_copy.show();
+        assert(cbc_copy == b.to_coordinate_block_cube(cc_copy));
+    }
+}
+
 int main() {
-    assert_move_table_is_correct(Block<8, 0>(
+    test_move_table_apply(Block<8, 0>(
         "AllCorners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {}));
-    assert_move_table_is_correct(
-        Block<0, 4>("BottomCross", {}, {DF, DR, DB, DL}));
-    assert_move_table_is_correct(
-        Block<1, 1>("OneCornerAndOneEdge", {ULF}, {UF}));
-    assert_move_table_is_correct(
+    test_move_table_apply(Block<0, 4>("BottomCross", {}, {DF, DR, DB, DL}));
+    test_move_table_apply(Block<1, 1>("OneCornerAndOneEdge", {ULF}, {UF}));
+    test_move_table_apply(
         Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL}));
     test_222_block_alg_apply();
     test_inverse_move_apply(
