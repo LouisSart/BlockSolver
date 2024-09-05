@@ -106,7 +106,7 @@ struct Optimal {
     Optimal(const Block<nc, ne>& b) : block{b} {}
 
     template <bool verbose = false>
-    PruningTable<Optimal<nc, ne>> gen_table() const {
+    PruningTable<Optimal<nc, ne>> gen_table() {
         PruningTable<Optimal<nc, ne>> table(block.id);
         generate<verbose>(table, *this, BlockMoveTable(block));
         return table;
@@ -182,13 +182,13 @@ struct Permutation {
         (factorial(NE) / factorial(NE - ne));
     static constexpr unsigned table_size = n_corner_states * n_edge_states;
     static constexpr std::string_view name = "permutation";
-    const Block<nc, ne> block;
+    Block<nc, ne> block;
 
     Permutation() {}
     Permutation(const Block<nc, ne>& b) : block{b} {}
 
     template <bool verbose = false>
-    PruningTable<Permutation<nc, ne>> gen_table() const {
+    PruningTable<Permutation<nc, ne>> gen_table() {
         PruningTable<Permutation<nc, ne>> table(block.id);
         generate<verbose>(table, *this, BlockMoveTable(block));
         return table;
@@ -296,7 +296,7 @@ typename Strategy::table_t* gen_table_ptr(const Strategy& strat) {
 }
 
 template <typename Strategy>
-typename Strategy::table_t* load_table_ptr(const Strategy& strat) {
+typename Strategy::table_t* load_table_ptr(Strategy& strat) {
     auto table = new typename Strategy::table_t(strat.id());
     try {
         *table = strat.template load_table();

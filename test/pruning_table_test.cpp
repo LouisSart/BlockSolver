@@ -1,11 +1,9 @@
 #include "pruning_table.hpp"
 
 template <typename Block>
-void test_optimal_api(const Block& b) {
-    std::cout << b.name << std::endl;
-    BlockCube bc(b);
+void test_optimal_api(Block& b) {
     auto cc = CubieCube::random_state();
-    auto cbc = bc.to_coordinate_block_cube(cc);
+    auto cbc = b.to_coordinate_block_cube(cc);
     auto strat = Strategy::Optimal(b);
     auto table = strat.gen_table();
     auto pruning_value = table.get_estimate(cbc);
@@ -15,11 +13,9 @@ void test_optimal_api(const Block& b) {
 }
 
 template <typename Block>
-void test_permutation_api(const Block& b) {
-    std::cout << b.name << std::endl;
-    BlockCube bc(b);
+void test_permutation_api(Block& b) {
     auto cc = CubieCube::random_state();
-    auto cbc = bc.to_coordinate_block_cube(cc);
+    auto cbc = b.to_coordinate_block_cube(cc);
 
     auto strat = Strategy::Permutation(b);
     auto table = strat.gen_table();
@@ -33,8 +29,7 @@ void test_permutation_api(const Block& b) {
 }
 
 template <unsigned nc, unsigned ne>
-void test_optimal_reload(const Block<nc, ne>& b) {
-    std::cout << b.name << std::endl;
+void test_optimal_reload(Block<nc, ne>& b) {
     auto table = Strategy::Optimal(b).gen_table();
     table.write();
     auto reloaded = Strategy::Optimal(b).load_table();
@@ -45,8 +40,7 @@ void test_optimal_reload(const Block<nc, ne>& b) {
 }
 
 template <unsigned nc, unsigned ne>
-void test_permutation_reload(const Block<nc, ne>& b) {
-    std::cout << b.name << std::endl;
+void test_permutation_reload(Block<nc, ne>& b) {
     auto table = Strategy::Permutation(b).gen_table();
     table.write();
 
@@ -58,8 +52,7 @@ void test_permutation_reload(const Block<nc, ne>& b) {
 }
 
 template <typename Block>
-void test_optimal_is_correct(const Block& b) {
-    std::cout << b.name << std::endl;
+void test_optimal_is_correct(Block& b) {
     auto table = Strategy::Optimal(b).gen_table();
     for (int i = 0; i < table.size(); ++i) {
         assert(table.table[i] != 255);
@@ -67,8 +60,7 @@ void test_optimal_is_correct(const Block& b) {
 }
 
 template <typename Block>
-void test_permutation_is_correct(const Block& b) {
-    std::cout << b.name << std::endl;
+void test_permutation_is_correct(Block& b) {
     auto table = Strategy::Permutation(b).gen_table();
     for (int i = 0; i < table.size(); ++i) {
         assert(table.table[i] != 255);
@@ -76,8 +68,7 @@ void test_permutation_is_correct(const Block& b) {
 }
 
 template <typename Block>
-void test_direct_and_backward_are_equivalent(const Block& b) {
-    b.show();
+void test_direct_and_backward_are_equivalent(Block& b) {
     Strategy::Optimal strat(b);
     BlockMoveTable m_table(b);
     auto direct = load_table_ptr(strat);
