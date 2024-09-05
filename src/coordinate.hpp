@@ -83,23 +83,27 @@ unsigned layout_index(const std::array<unsigned, n>& layout, unsigned r) {
     return t;
 }
 
-template <std::size_t n>
+template <std::size_t n, bool drop_last = false>
 unsigned co_index(const std::array<unsigned, n>& co) {
     // co: the orientation array of the corners
-    // n: the number of corners to compute  the coordinate from.
+    // n: the number of corners to compute  the coordinate from
+    // drop_last: if true, ignore last piece in coordinate computation
+    constexpr unsigned drop = drop_last ? 1 : 0;
     unsigned c = 0;
-    for (size_t i = 0; i < n; i++) {
+    for (size_t i = 0; i < n - drop; i++) {
         c += co[i] * ipow(3, i);
     }
     return c;
 }
 
-template <std::size_t n>
+template <std::size_t n, bool drop_last = false>
 unsigned eo_index(const std::array<unsigned, n>& eo) {
     // eo: the orientation array of the edges
     // n: the number of edges to compute  the coordinate from
+    // drop_last: if true, ignore last piece in coordinate computation
+    constexpr unsigned drop = drop_last ? 1 : 0;
     unsigned c = 0;
-    for (size_t i = 0; i < n; i++) {
+    for (size_t i = 0; i < n - drop; i++) {
         c += eo[i] * ipow(2, i);
     }
     return c;
@@ -137,23 +141,27 @@ void layout_from_index(unsigned c, std::array<unsigned, n>& layout,
     }
 }
 
-template <std::size_t n>
+template <std::size_t n, bool drop_last = false>
 void eo_from_index(unsigned c, std::array<unsigned, n>& eo) {
     // c: coordinate
     // n: number of edges
     // eo: the array with the individual orientations of the n edges
-    for (unsigned i = 0; i < n; i++) {
+    // drop_last: if true, ignore last piece in coordinate computation
+    constexpr unsigned drop = drop_last ? 1 : 0;
+    for (unsigned i = 0; i < n - drop; i++) {
         eo[i] = c % 2;
         c = c / 2;
     }
 }
 
-template <std::size_t n>
+template <std::size_t n, bool drop_last = false>
 void co_from_index(unsigned c, std::array<unsigned, n>& co) {
     // c: coordinate
     // n: number of corners in the block
     // co: the array with the individual orientations of the n corners
-    for (unsigned i = 0; i < n; i++) {
+    // drop_last: if true, ignore last piece in coordinate computation
+    constexpr unsigned drop = drop_last ? 1 : 0;
+    for (unsigned i = 0; i < n - drop; i++) {
         co[i] = c % 3;
         c = c / 3;
     }
