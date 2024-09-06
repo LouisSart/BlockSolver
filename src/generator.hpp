@@ -18,8 +18,8 @@ struct Advancement {
     Advancement(const unsigned table_size, const float percent_switch,
                 const float encounter_ratio_switch)
         : table_size(table_size),
-          percent_limit(percent_switch),
-          encounter_ratio_limit(encounter_ratio_switch){};
+          encounter_ratio_limit(encounter_ratio_switch),
+          percent_limit(percent_switch){};
 
     void add_generated() { ++generated; }
     void add_encountered() {
