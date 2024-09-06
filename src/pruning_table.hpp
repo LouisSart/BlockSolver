@@ -44,16 +44,14 @@ struct PruningTable {
     }
 
     void load() const {
-        if (fs::exists(table_path / filename)) {
-            std::ifstream istrm(table_path / filename, std::ios::binary);
-            istrm.read(reinterpret_cast<char*>(table.get()),
-                       sizeof(entry_type) * size());
-            istrm.close();
-        } else {
-            std::cout << "Pruning table could not be loaded" << std::endl;
-            throw LoadError{table_path / filename};
-        }
+        assert(file_exists());
+        std::ifstream istrm(table_path / filename, std::ios::binary);
+        istrm.read(reinterpret_cast<char*>(table.get()),
+                   sizeof(entry_type) * size());
+        istrm.close();
     }
+
+    bool file_exists() const { return (fs::exists(table_path / filename)); }
 
     void reset() const {
         std::fill(table.get(), table.get() + size(), unassigned);
@@ -67,8 +65,6 @@ struct PruningTable {
     unsigned get_estimate(const CoordinateBlockCube& cbc) const {
         return table[Strategy::index(cbc)];
     }
-
-    PruningTable<Strategy>* get_ptr() { return this; }
 
     unsigned size() const { return Strategy::table_size; }
 };
@@ -180,7 +176,13 @@ PruningTable<Strategy::Optimal<nc, ne>> generate_pruning_table(
 template <unsigned nc, unsigned ne>
 PruningTable<Strategy::Optimal<nc, ne>> load_pruning_table(Block<nc, ne>& b) {
     PruningTable<Strategy::Optimal<nc, ne>> table(b.id);
-    table.load();
+    if (table.file_exists()) {
+        table.load();
+    } else {
+        std::cout << "Pruning table not found, generating" << std::endl;
+        table = generate_pruning_table(b);
+        table.write();
+    }
     return table;
 }
 
@@ -194,6 +196,12 @@ PruningTable<Strategy::OptimalEO> generate_eo_table() {
 
 PruningTable<Strategy::OptimalEO> load_eo_table() {
     PruningTable<Strategy::OptimalEO> table;
-    table.load();
+    if (table.file_exists()) {
+        table.load();
+    } else {
+        std::cout << "Pruning table not found, generating" << std::endl;
+        table = generate_eo_table();
+        table.write();
+    }
     return table;
 }
