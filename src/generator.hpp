@@ -135,10 +135,10 @@ void compute_pruning_table(PruningTable& p_table, Strategy& strat,
         return GenNode{Strategy::from_index(archived.state), archived.depth};
     };
     p_table.reset();
-    CompressedNode root{0, 0};
+    CompressedNode root{strat.get_index_of_solved(), 0};
     auto queue = std::deque{root};
     advancement.add_encountered();
-    unsigned table_entry{0};
+    unsigned table_entry{root.state};
     assert(table_entry == root.state);
     p_table[table_entry] = 0;
 
@@ -163,7 +163,7 @@ void compute_pruning_table(PruningTable& p_table, Strategy& strat,
 
 template <bool verbose = false, typename PruningTable, typename Strategy,
           typename MoveTable>
-void generate(PruningTable& p_table, const Strategy& strat,
+void generate(PruningTable& p_table, Strategy& strat,
               const MoveTable& m_table) {
     p_table.reset();
     p_table[0] = 0;

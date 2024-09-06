@@ -48,7 +48,7 @@ void test_direct_and_backward_are_equivalent(Block& b) {
     adv.add_encountered();
     adv.update();
     backwards.reset();
-    backwards.table[0] = 0;
+    backwards.table[strat.get_index_of_solved()] = 0;
     compute_pruning_table_backwards(backwards, strat, m_table, adv);
 
     for (unsigned k = 0; k < direct.size(); ++k) {

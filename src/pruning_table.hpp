@@ -132,6 +132,10 @@ struct Optimal {
             ((index / n_corner_states) % (n_ep * n_eo)) % n_eo   // ceo
         );
     }
+
+    unsigned get_index_of_solved() {
+        return index(block.to_coordinate_block_cube(CubieCube()));
+    }
 };
 
 struct OptimalEO {
@@ -152,7 +156,9 @@ struct OptimalEO {
         ret += "Table size: " + std::to_string(table_size);
         return ret;
     }
-    std::string id() const { return ""; }
+    std::string id() const { return "eo"; }
+
+    unsigned get_index_of_solved() { return 0; }
 };
 }  // namespace Strategy
 
