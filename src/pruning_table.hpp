@@ -24,7 +24,7 @@ struct PruningTable {
                                  // value of uint8_t is 255
     static constexpr unsigned unassigned =
         std::numeric_limits<entry_type>::max();
-    fs::path table_dir = fs::current_path() / "pruning_tables" / Strategy::name;
+    fs::path table_dir = fs::current_path() / "pruning_tables";
     fs::path table_path;
     std::string filename = "table.dat";
 
@@ -82,7 +82,6 @@ struct Optimal {
     static constexpr unsigned n_edge_states =
         (factorial(12) / factorial(12 - ne)) * ipow(2, ne);
     static constexpr unsigned table_size = n_corner_states * n_edge_states;
-    static constexpr std::string_view name = "optimal";
     Block<nc, ne> block;
 
     Optimal() {}
@@ -133,17 +132,10 @@ struct Optimal {
             ((index / n_corner_states) % (n_ep * n_eo)) % n_eo   // ceo
         );
     }
-
-    void show() const {
-        std::cout << "Strategy Object:" << std::endl;
-        std::cout << "   Type: " << name << std::endl;
-        block.show();
-    }
 };
 
 struct OptimalEO {
     static constexpr unsigned table_size = ipow(2, NE - 1);
-    static constexpr std::string_view name = "eo";
 
     static unsigned index(const CoordinateBlockCube& cbc) {
         auto index = cbc.ceo;
@@ -189,13 +181,13 @@ PruningTable<Strategy::Optimal<nc, ne>> load_pruning_table(Block<nc, ne>& b) {
 template <bool verbose = false>
 PruningTable<Strategy::OptimalEO> generate_eo_table() {
     Strategy::OptimalEO strat;
-    PruningTable<Strategy::OptimalEO> table;
+    PruningTable<Strategy::OptimalEO> table("eo");
     generate<verbose>(table, strat, EOMoveTable());
     return table;
 }
 
 PruningTable<Strategy::OptimalEO> load_eo_table() {
-    PruningTable<Strategy::OptimalEO> table;
+    PruningTable<Strategy::OptimalEO> table("eo");
     if (table.file_exists()) {
         table.load();
     } else {
