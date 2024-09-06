@@ -63,12 +63,12 @@ struct Mover {
 };
 
 template <typename... BlockTypes>
-auto make_mover(const BlockTypes&... blocks) {
+auto make_mover(BlockTypes&... blocks) {
     return Mover(new BlockMoveTable(blocks)...);
 }
 
 template <typename... BlockTypes>
-auto make_eo_mover(const BlockTypes&... blocks) {
+auto make_eo_mover(BlockTypes&... blocks) {
     return Mover(new EOMoveTable(), new BlockMoveTable(blocks)...);
 }
 
@@ -77,15 +77,15 @@ struct Pruner {
     static constexpr unsigned _NTABLES = sizeof...(PTs);
     using Cube = MultiBlockCube<_NTABLES>;
 
-    std::tuple<PTs*...> _pts;
+    std::tuple<PTs...> _pts;
 
-    Pruner(PTs*... pts) { _pts = std::tuple(pts...); }
+    Pruner(PTs... pts) { _pts = std::tuple(pts...); }
 
     template <unsigned block>
     unsigned get_estimate(const Cube& state) const {
         // Return the pruning value for block number `block`
         static_assert(block < _NTABLES);
-        return std::get<block>(_pts)->get_estimate(state[block]);
+        return std::get<block>(_pts).get_estimate(state[block]);
     };
 
     template <unsigned current, unsigned next, unsigned... more>
@@ -109,14 +109,14 @@ struct Pruner {
 };
 
 template <typename... BlockTypes>
-auto make_pruner(const BlockTypes&... blocks) {
-    return Pruner(load_table_ptr(Strategy::Optimal(blocks))...);
+auto make_pruner(BlockTypes&... blocks) {
+    return Pruner(load_pruning_table(blocks)...);
 }
 
 template <typename... BlockTypes>
 auto make_eo_pruner(const BlockTypes&... blocks) {
-    return Pruner(load_table_ptr(Strategy::OptimalEO()),
-                  load_table_ptr(Strategy::Optimal(blocks))...);
+    return Pruner(load_eo_table(),
+                  load_pruning_table(Strategy::Optimal(blocks))...);
 }
 
 template <unsigned... steps, typename Cube>
