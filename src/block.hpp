@@ -31,7 +31,7 @@ struct Block {
 
     Block(std::string n, const std::array<Corner, nc> &c,
           const std::array<Edge, ne> &e)
-        : name{n}, corners{c}, edges{e} {
+        : corners{c}, edges{e}, name{n} {
         assert(c.size() == nc);
         assert(e.size() == ne);
 
