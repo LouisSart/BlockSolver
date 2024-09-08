@@ -101,6 +101,18 @@ struct BlockMoveTable {
         };
     }
 
+    auto get_apply() const {
+        return [this](const Move& move, CoordinateBlockCube& cbc) {
+            this->apply(move, cbc);
+        };
+    }
+
+    auto get_sym_apply(const unsigned& sym_index) {
+        return [this, &sym_index](const Move& move, CoordinateBlockCube& cube) {
+            this->sym_apply(move, sym_index, cube);
+        };
+    }
+
     std::tuple<unsigned, unsigned> get_new_ccl_ccp(unsigned ccl, unsigned ccp,
                                                    unsigned move) const {
         assert(N_HTM_MOVES * (ccl * n_cp + ccp) + move < cp_table_size);
