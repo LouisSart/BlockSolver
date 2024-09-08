@@ -172,6 +172,10 @@ struct Block {
 
     bool is_solved(const CoordinateBlockCube &cbc) { return cbc == solved; }
 
+    auto get_is_solved() {
+        return [this](const CoordinateBlockCube &cbc) { return cbc == solved; };
+    }
+
     CoordinateBlockCube get_solved_cbc() const { return solved; }
 
     void show() const {
