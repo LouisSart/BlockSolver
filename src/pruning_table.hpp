@@ -66,6 +66,12 @@ struct PruningTable {
         return table[Strategy::index(cbc)];
     }
 
+    auto get_estimator() const {
+        return [this](const CoordinateBlockCube& cube) {
+            return this->get_estimate(cube);
+        };
+    }
+
     unsigned size() const { return Strategy::table_size; }
 };
 
