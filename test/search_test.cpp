@@ -69,7 +69,7 @@ void test_depth_first_search() {
     CoordinateBlockCube cbc = b.get_scrambled_cbc(scramble);
     BlockMoveTable m_table(b);
 
-    auto root = Solutions<Node<CoordinateBlockCube>::sptr>({make_root(cbc)});
+    auto root = make_root(cbc);
     auto solutions = depth_first_search(
         root, m_table.get_apply(),
         [](const CoordinateBlockCube& cube) { return (unsigned)1; },
@@ -86,7 +86,7 @@ void test_depth_first_search_with_heuristic() {
     BlockMoveTable m_table(b);
     PruningTable p_table = load_pruning_table(b);
 
-    auto root = Solutions<Node<CoordinateBlockCube>::sptr>({make_root(cbc)});
+    auto root = make_root(cbc);
     auto solutions =
         depth_first_search(root, m_table.get_apply(), p_table.get_estimator(),
                            b.get_is_solved(), 3);
@@ -105,7 +105,7 @@ void test_solve_222_on_wr_scramble() {
     CoordinateBlockCube cbc = b.get_scrambled_cbc(scramble);
     scramble.show();
 
-    auto root = Solutions<Node<CoordinateBlockCube>::sptr>({make_root(cbc)});
+    auto root = make_root(cbc);
     auto solutions =
         depth_first_search(root, m_table.get_apply(), p_table.get_estimator(),
                            b.get_is_solved(), 4);
@@ -126,7 +126,7 @@ void test_symmetry_solve() {
     CoordinateBlockCube cbc = b.to_coordinate_block_cube(
         CubieCube(scramble).get_conjugate(sym_index));
 
-    auto root = Solutions<Node<CoordinateBlockCube>::sptr>({make_root(cbc)});
+    auto root = make_root(cbc);
     auto solutions =
         depth_first_search(root, m_table.get_sym_apply(sym_index),
                            p_table.get_estimator(), b.get_is_solved(), 5);
