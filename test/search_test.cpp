@@ -9,13 +9,15 @@
 
 template <typename Block, typename NodePtr>
 void check_solutions(const Solutions<NodePtr>& solutions,
-                     const Algorithm& scramble, Block& b) {
+                     const CubieCube& scrambled, Block& b,
+                     unsigned sym_index = 0) {
     assert(solutions.size() > 0);
-    CubieCube scrambled(scramble), check;
+    CubieCube check;
     for (auto&& s : solutions) {
         check = scrambled;
         check.apply(s->get_path());
-        assert(b.is_solved(b.to_coordinate_block_cube(check)));
+        assert(b.is_solved(
+            b.to_coordinate_block_cube(check.get_conjugate(sym_index))));
     }
 }
 
@@ -76,7 +78,7 @@ void test_depth_first_search() {
         b.get_is_solved(), 3);
     solutions.show();
     assert(solutions.size() == 2);
-    check_solutions(solutions, scramble, b);
+    check_solutions(solutions, CubieCube(scramble), b);
 }
 
 void test_depth_first_search_with_heuristic() {
@@ -92,7 +94,7 @@ void test_depth_first_search_with_heuristic() {
                            b.get_is_solved(), 3);
     solutions.show();
 
-    check_solutions(solutions, scramble, b);
+    check_solutions(solutions, CubieCube(scramble), b);
 }
 
 void test_solve_222_on_wr_scramble() {
@@ -111,27 +113,33 @@ void test_solve_222_on_wr_scramble() {
                            b.get_is_solved(), 4);
     solutions.show();
     assert(solutions.size() == 1);
-    check_solutions(solutions, scramble, b);
+    check_solutions(solutions, CubieCube(scramble), b);
 }
 
 void test_symmetry_solve() {
     Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
     BlockMoveTable m_table(b);
     PruningTable p_table = load_pruning_table(b);
+    auto scrambled = CubieCube::random_state();
 
-    Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
-                        U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
-    scramble.show();
-    unsigned sym_index = symmetry_index(0, 2, 1, 0);
-    CoordinateBlockCube cbc = b.to_coordinate_block_cube(
-        CubieCube(scramble).get_conjugate(sym_index));
+    for (unsigned k_surf : {0, 1, 2}) {
+        for (unsigned k_y : {0, 1, 2, 3}) {
+            for (unsigned k_z2 : {0, 1}) {
+                for (unsigned k_lr : {0, 1}) {
+                    unsigned sym_index =
+                        symmetry_index(k_surf, k_y, k_z2, k_lr);
+                    auto cbc = b.to_coordinate_block_cube(
+                        scrambled.get_conjugate(sym_index));
+                    auto solutions = IDAstar<false>(
+                        make_root(cbc), m_table.get_sym_apply(sym_index),
+                        p_table.get_estimator(), b.get_is_solved());
+                    check_solutions(solutions, scrambled, b, sym_index);
+                }
+            }
+        }
+    }
 
-    auto root = make_root(cbc);
-    auto solutions =
-        depth_first_search(root, m_table.get_sym_apply(sym_index),
-                           p_table.get_estimator(), b.get_is_solved(), 5);
-    solutions.show();
-    assert(solutions.size() == 2);
+    // solutions.show();
 }
 
 int main() {
