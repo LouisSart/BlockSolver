@@ -176,6 +176,10 @@ struct Block {
         return [this](const CoordinateBlockCube &cbc) { return cbc == solved; };
     }
 
+    CoordinateBlockCube get_scrambled_cbc(const Algorithm &scramble) {
+        return to_coordinate_block_cube(CubieCube(scramble));
+    }
+
     CoordinateBlockCube get_solved_cbc() const { return solved; }
 
     void show() const {
