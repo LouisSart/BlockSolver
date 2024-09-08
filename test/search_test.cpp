@@ -97,13 +97,13 @@ void test_depth_first_search_with_heuristic() {
 
 void test_solve_222_on_wr_scramble() {
     Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
-    CoordinateBlockCube cbc = b.get_solved_cbc();
     BlockMoveTable m_table(b);
     PruningTable p_table = load_pruning_table(b);
+
     Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
                         U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
+    CoordinateBlockCube cbc = b.get_scrambled_cbc(scramble);
     scramble.show();
-    m_table.apply(scramble, cbc);
 
     auto root = Solutions<Node<CoordinateBlockCube>::sptr>({make_root(cbc)});
     auto solutions =
@@ -114,9 +114,27 @@ void test_solve_222_on_wr_scramble() {
     check_solutions(solutions, scramble, b);
 }
 
-int main() {
-    // Block<2, 3> RouxFirstBlock("RouxFirstBlock", {DLF, DLB}, {LF, LB, DL});
+void test_symmetry_solve() {
+    Block<1, 3> b("DLB_222", {DLB}, {LB, DB, DL});
+    BlockMoveTable m_table(b);
+    PruningTable p_table = load_pruning_table(b);
 
+    Algorithm scramble({R3, U3, F,  D2, R2, F3, L2, D2, F3, L,  U3, B,
+                        U3, D3, F2, B2, L2, D,  F2, U2, D,  R3, U3, F});
+    scramble.show();
+    unsigned sym_index = symmetry_index(0, 2, 1, 0);
+    CoordinateBlockCube cbc = b.to_coordinate_block_cube(
+        CubieCube(scramble).get_conjugate(sym_index));
+
+    auto root = Solutions<Node<CoordinateBlockCube>::sptr>({make_root(cbc)});
+    auto solutions =
+        depth_first_search(root, m_table.get_sym_apply(sym_index),
+                           p_table.get_estimator(), b.get_is_solved(), 5);
+    solutions.show();
+    assert(solutions.size() == 2);
+}
+
+int main() {
     std::cout << " --- Test expansion ---" << std::endl;
     test_expand_cbc();
     std::cout << " --- Test successive expansions ---" << std::endl;
@@ -128,5 +146,7 @@ int main() {
     std::cout << "--- Test depth first 2x2 solve on Wen's WR scramble #1 ---"
               << std::endl;
     test_solve_222_on_wr_scramble();
+    std::cout << "--- Test solve with symmetry conjugation ---" << std::endl;
+    test_symmetry_solve();
     return 0;
 }
