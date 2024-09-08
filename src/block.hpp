@@ -18,6 +18,7 @@ struct Block {
     std::string name;
     std::string id;
 
+    CoordinateBlockCube solved;  // The solved state cbc
    private:
     // Buffer arrays for CubieCube <=> CoordinateBlockCube conversion
     std::array<unsigned, NC> cl;  // Corner layout
@@ -41,6 +42,7 @@ struct Block {
         std::sort(edges.begin(), edges.end(),
                   [](const Cubie &e1, const Cubie &e2) { return (e1 < e2); });
         id = compute_id();
+        solved = to_coordinate_block_cube(CubieCube());
     };
 
     std::string compute_id() const {
@@ -167,6 +169,10 @@ struct Block {
         };
         return cc;
     }
+
+    bool is_solved(const CoordinateBlockCube &cbc) { return cbc == solved; }
+
+    CoordinateBlockCube get_solved_cbc() const { return solved; }
 
     void show() const {
         std::cout << "Block<" << nc << ", " << ne << ">";
