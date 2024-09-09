@@ -1,6 +1,7 @@
 #include "move_table.hpp"
 #include "pruning_table.hpp"
 #include "search.hpp"
+#include "step.hpp"
 #include "symmetry.hpp"
 
 constexpr unsigned NB = 8;  // There are 8 different 2x2x2 to solve
@@ -8,7 +9,7 @@ using Cube = MultiBlockCube<NB>;
 
 auto block = Block<1, 3>("DLB_222", {DLB}, {LB, DB, DL});
 
-std::vector<unsigned> rotations = {
+std::array<unsigned, NB> rotations = {
     symmetry_index(0, 0, 0, 0), symmetry_index(0, 1, 0, 0),
     symmetry_index(0, 2, 0, 0), symmetry_index(0, 3, 0, 0),
     symmetry_index(0, 0, 1, 0), symmetry_index(0, 1, 1, 0),
@@ -16,49 +17,15 @@ std::vector<unsigned> rotations = {
 
 auto m_table = BlockMoveTable(block);
 auto p_table = load_pruning_table(block);
-
-auto init_root(const Algorithm &scramble) {
-    CubieCube scramble_cc(scramble);
-    Cube ret;
-
-    for (unsigned k = 0; k < NB; ++k) {
-        ret[k] = block.to_coordinate_block_cube(
-            scramble_cc.get_conjugate(rotations[k]));
-    }
-    return make_root(ret);
-}
-
-auto apply = [](const Move &move, Cube &cube) {
-    for (unsigned k = 0; k < NB; ++k) {
-        m_table.sym_apply(move, rotations[k], cube[k]);
-    }
-};
-
-auto estimate = [](const Cube &cube) {
-    // Return the minimum estimate over all the possible 2x2x2s
-    unsigned ret = p_table.get_estimate(cube[0]);
-    for (unsigned k = 0; k < NB; ++k) {
-        auto e = p_table.get_estimate(cube[k]);
-        ret = (e < ret) ? e : ret;
-    }
-    return ret;
-};
-
-auto is_solved = [](const Cube &cube) {
-    // Returns true if at least one of the cbc is solved
-    static auto solved = block.to_coordinate_block_cube(CubieCube());
-
-    for (auto cbc : cube) {
-        if (block.is_solved(cbc)) return true;
-    }
-    return false;
-};
+auto apply = get_sym_apply<NB>(m_table, rotations);
+auto estimate = get_estimator<NB>(p_table);
+auto is_solved = get_is_solved<NB>(block);
 
 int main(int argc, const char *argv[]) {
     auto scramble = Algorithm(argv[argc - 1]);
     scramble.show();
 
-    auto root = init_root(scramble);
+    auto root = init_root(scramble, block, rotations);
 
     auto solutions = IDAstar(root, apply, estimate, is_solved);
 
