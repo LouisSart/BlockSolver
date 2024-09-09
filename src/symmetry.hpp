@@ -71,14 +71,14 @@ constexpr auto symmetry_index_to_num(const unsigned index) {
 // by a symmetry is computed
 
 constexpr Move S_URF_move_conj[N_HTM_MOVES] = {
-    [U] = F, [U2] = F2, [U3] = F3, [D] = B, [D2] = B2, [D3] = B3,
-    [R] = U, [R2] = U2, [R3] = U3, [L] = D, [L2] = D2, [L3] = D3,
-    [F] = R, [F2] = R2, [F3] = R3, [B] = L, [B2] = L2, [B3] = L3};
+    [U] = R, [U2] = R2, [U3] = R3, [D] = L, [D2] = L2, [D3] = L3,
+    [R] = F, [R2] = F2, [R3] = F3, [L] = B, [L2] = B2, [L3] = B3,
+    [F] = U, [F2] = U2, [F3] = U3, [B] = D, [B2] = D2, [B3] = D3};
 
 constexpr Move y_move_conj[N_HTM_MOVES] = {
     [U] = U, [U2] = U2, [U3] = U3, [D] = D, [D2] = D2, [D3] = D3,
-    [R] = B, [R2] = B2, [R3] = B3, [L] = F, [L2] = F2, [L3] = F3,
-    [F] = R, [F2] = R2, [F3] = R3, [B] = L, [B2] = L2, [B3] = L3};
+    [R] = F, [R2] = F2, [R3] = F3, [L] = B, [L2] = B2, [L3] = B3,
+    [F] = L, [F2] = L2, [F3] = L3, [B] = R, [B2] = R2, [B3] = R3};
 
 constexpr Move z2_move_conj[N_HTM_MOVES] = {
     [U] = D, [U2] = D2, [U3] = D3, [D] = U, [D2] = U2, [D3] = U3,
@@ -91,11 +91,11 @@ constexpr Move LR_mirror_move_conj[N_HTM_MOVES] = {
     [F] = F3, [F2] = F2, [F3] = F, [B] = B3, [B2] = B2, [B3] = B};
 
 constexpr void permute_moves(Move* mp1, const Move* mp2) {
-    // Perform mp1 o mp2
+    // Perform mp2 o mp1
 
     Move new_mp[N_HTM_MOVES];
     for (Move m : HTM_Moves) {
-        new_mp[m] = mp1[mp2[m]];
+        new_mp[m] = mp2[mp1[m]];
     };
 
     for (Move m : HTM_Moves) {
