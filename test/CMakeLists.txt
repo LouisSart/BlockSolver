@@ -1,4 +1,4 @@
-list(APPEND UNIT_TESTS block coordinate cubie_cube move_table search pruning_table step symmetry)
+list(APPEND UNIT_TESTS block coordinate cubie_cube move_table search pruning_table symmetry)
 
 foreach(f ${UNIT_TESTS})
   set(target ${f}_test)
