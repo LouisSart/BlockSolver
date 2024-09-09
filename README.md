@@ -11,27 +11,34 @@ cmake --build build
 
 ### Run script ###
 
-There are three main scripts that you may want to run: three_step_solve, 223_solve and F2L-1_solve. Usage:
+There are three main scripts that are currently working somewhat properly:
+  - 222
+  - 123
+  - 223
 
-./SCRIPT_PATH [OPTIONS] SCRAMBLE
+These will solve the optimal 2x2x2, 1x2x3 and 2x2x3 of a given scramble. For example running :
 
-223_solve and F2L-1_solve respectively solve the optimal 2x2x3 block and F2L-1 block of the given scramble. All possible rotations of the cube are generated before starting the search. For example:
+./build/script/222 "R L U D F B"
 
-./build/script/223_solve "R L U D F B"
+should output something like
 
-should return a bunch of 5 move solutions. Same for F2L-1_solve:
-
-./build/script/F2L-1_solve "R L U D F B"
+R L U D F B (6)
+Searching at depth 4
+Nodes generated: 163
+B' U' D' L' (4)
+B' U' D' R' (4)
+F' B' D' L' (4)
+F' B' D' R' (4)
+F' B' U' L' (4)
+F' B' U' R' (4)
+F' U' D' L' (4)
+F' U' D' R' (4)
 
 Note: On startup you will be prompted to generate a few tables. This can take a few minutes and is necessary for the program to run.
-
-three_step_solve finds a corner skeleton in three steps: first solve the DLB 2x2x2, then extend it to an F2L-1 and finally solve the top cross edges to leave 5 corners. The search depth at each step is required, you can pass it using the -s`i` options, where i is the step index starting at 0. 
 
 
 ./build/script/three_step_solve -s0 6 -s1 13 -s2 18 "R L U D R2 L D F2 U' R' D2 L F' R2 F B R D F R' U2 L' F R2 F"
 
-
-This example will find 5 corner skeletons starting with a 2x2x2 in 6 moves or fewer, followed by an F2L-1 in 13 or fewer, and a leave corner skeleton in 18 or better. The given threshold at each step is the total length for all steps cumulated, e.g. -s1 13 here means 2x2x2 + F2L-1 in 13 or fewer moves.
 
 # Goal #
 
@@ -43,7 +50,7 @@ The program is still under development, and I think there are quite a few things
 
 ### NISS ###
 
-For now the program doesn't understand or use NISS, which make pretty poor at finding good block solutions. Definitely one of the things I have to wrap my head around.
+For now the program doesn't understand or use NISS, which makes it pretty poor at finding good block solutions. Definitely one of the things I have to get working.
 
 ### EO and DR ###
 
@@ -53,12 +60,12 @@ Even if this program doesn't have the goal of becoming a Thistleswaithe or Kocie
 
 I have a lot of ideas for the program, which are mostly impossible because I haven't the skill to do it, but I'll put them here in case somebody feels like they could do it. First is parallelism. I'm pretty sure the computations that are run here could be made way faster with some multithreading magic. I don't want to make a super powerful solver, but some speed up would improve the user experience.
 
-Also maybe this code shouldn't do the impementation AND the application. I think turning buttons on and off, or adding more and more command line options isn't the way to go. I've thought of making it a Python library, but maybe just having input scripts to define your method and parameters is better.
 
+### Some documentation ###
 # CubieCube #
 A struct defining 4 arrays for cp, co, ep and eo
 
-# BlockCube #
+# Block #
 The block representation of a CubieCube
 
 cl: bit array of where the corners are
@@ -80,6 +87,7 @@ Each of these states can be translated to a single integer called a coordinate.
 Each coordinate ranges from 0 to the number of possible states and can be used as an index in a lookup table
 
 # CoordinateBlockCube #
+
 The coordinate representation of a subgroup of the cube pieces
 (for example the three edges and one corner of a 2x2x2 block)
 There are six coordinates that represent the state of the cubies:
@@ -112,13 +120,6 @@ This is the optimal pruning value. It is exactly equal to the optimal solution l
 
 Pros: Finds the optimal path directly
 Cons: Big table size, cannot be used for big blocks
-
-### Permutation Pruning Value ###
-
-This corresponds to the optimal number of moves needed to restore the block pieces to their home locations, without consideration for their respective orientations. This reduces the table size significantly, making it usable for about 10-11 pieces in the block.
-
-Pros: Small table, usable for bigger blocks
-Cons: The set of all estimate zero states is not the solved state alone, but a much bigger space. This means having a low PPV doesn't necessarily mean the state is close to solved. PPV is not good for low value states.
 
 # Search Algorithms #
 
