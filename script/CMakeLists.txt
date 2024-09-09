@@ -1,5 +1,5 @@
 # list(APPEND UNIT_TESTS F2L-1_solve 223_solve three_step_solve zz_skeleton)
-list(APPEND UNIT_TESTS)
+list(APPEND UNIT_TESTS 222)
 
 foreach(f ${UNIT_TESTS})
   set(target ${f})
