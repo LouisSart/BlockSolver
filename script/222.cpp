@@ -21,7 +21,7 @@ int main(int argc, const char *argv[]) {
 
     auto root = init_root(scramble, block, rotations);
 
-    solutions.sort_by_depth();
+    auto solutions = solve_222(root);
     solutions.show();
     return 0;
 }
