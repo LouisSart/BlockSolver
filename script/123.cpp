@@ -4,12 +4,9 @@
 #include "step.hpp"
 #include "symmetry.hpp"
 
-constexpr unsigned NS = 24;  // There are 24 different 1x2x3 symmetries
-using Cube = MultiBlockCube<NS>;
-
 auto block = Block<2, 3>("DB_123", {DLB, DRB}, {DB, RB, LB});
 
-std::array<unsigned, NS> rotations = {
+std::array<unsigned, 24> rotations = {  // 24 different 1x2x3 symmetries
     symmetry_index(0, 0, 0, 0), symmetry_index(0, 1, 0, 0),
     symmetry_index(0, 2, 0, 0), symmetry_index(0, 3, 0, 0),
     symmetry_index(0, 0, 1, 0), symmetry_index(0, 1, 1, 0),
@@ -23,11 +20,7 @@ std::array<unsigned, NS> rotations = {
     symmetry_index(2, 0, 1, 0), symmetry_index(2, 1, 1, 0),
     symmetry_index(2, 2, 1, 0), symmetry_index(2, 3, 1, 0)};
 
-auto m_table = BlockMoveTable(block);
-auto p_table = load_pruning_table(block);
-auto apply = get_sym_apply<NS>(m_table, rotations);
-auto estimate = get_estimator<NS>(p_table);
-auto is_solved = get_is_solved<NS>(block);
+auto solve_123 = make_optimal_block_solver(block, rotations);
 
 int main(int argc, const char *argv[]) {
     auto scramble = Algorithm(argv[argc - 1]);
@@ -35,7 +28,7 @@ int main(int argc, const char *argv[]) {
 
     auto root = init_root(scramble, block, rotations);
 
-    auto solutions = IDAstar(root, apply, estimate, is_solved);
+    auto solutions = solve_123(root);
 
     solutions.sort_by_depth();
     solutions.show();
