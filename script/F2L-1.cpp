@@ -5,7 +5,6 @@
 
 constexpr unsigned NB = 2;   // the F2L-1 is splitted into 2 blocks
 constexpr unsigned NS = 24;  // number of F2L-1 symmetries
-using Cube = std::array<MultiBlockCube<NB>, NS>;
 auto block1 = Block<3, 3>("222_w_extra_corners", {DLF, DLB, DRB}, {DL, LB, DB});
 auto block2 = Block<2, 4>("2_squares", {DLF, DRB}, {LF, DF, RB, DR});
 
@@ -29,67 +28,40 @@ std::array<unsigned, NS> rotations{
     symmetry_index(2, 2, 1, 0), symmetry_index(2, 3, 1, 0),
 };
 
-void local_apply(const Move& move, const unsigned& sym,
-                 MultiBlockCube<NB>& subcube) {
-    m_table1.sym_apply(move, sym, subcube[0]);
-    m_table2.sym_apply(move, sym, subcube[1]);
-};
+// void local_apply(const Move& move, const unsigned& sym,
+//                  MultiBlockCube<NB>& subcube) {
+//     m_table1.sym_apply(move, sym, subcube[0]);
+//     m_table2.sym_apply(move, sym, subcube[1]);
+// };
 
-void apply(const Move& move, Cube& cube) {
-    for (unsigned k = 0; k < NS; ++k) {
-        local_apply(move, rotations[k], cube[k]);
-    }
-};
+// void apply(const Move& move, Cube& cube) {
+//     for (unsigned k = 0; k < NS; ++k) {
+//         m_table1.sym_apply(move, sym, cube[k][0]);
+//         m_table2.sym_apply(move, sym, cube[k][1]);
+//     }
+// };
 
-unsigned max_estimate(const MultiBlockCube<NB>& cube) {
-    return p_table1.get_estimate(cube[0]) > p_table2.get_estimate(cube[1])
-               ? p_table1.get_estimate(cube[0])
-               : p_table2.get_estimate(cube[1]);
-}
+// bool local_is_solved(const MultiBlockCube<NB>& subcube) {
+//     return (block1.is_solved(subcube[0]) && block2.is_solved(subcube[1]));
+// }
 
-auto estimate = [](const Cube& cube) {
-    unsigned ret = max_estimate(cube[0]);
-    for (unsigned k = 0; k < NS; ++k) {
-        unsigned e = max_estimate(cube[k]);
-        ret = ret < e ? ret : e;
-    }
-    return ret;
-};
+// auto is_solved = [](const Cube& cube) {
+//     for (unsigned k = 0; k < NS; ++k) {
+//         if (local_is_solved(cube[k])) return true;
+//     }
+//     return false;
+// };
 
-bool local_is_solved(const MultiBlockCube<NB>& subcube) {
-    return (block1.is_solved(subcube[0]) && block2.is_solved(subcube[1]));
-}
-
-auto is_solved = [](const Cube& cube) {
-    for (unsigned k = 0; k < NS; ++k) {
-        if (local_is_solved(cube[k])) return true;
-    }
-    return false;
-};
-
-auto my_init_root(const Algorithm& scramble) {
-    Cube ret;
-    CubieCube scramble_cc(scramble);
-
-    for (unsigned k = 0; k < NS; ++k) {
-        ret[k][0] = block1.to_coordinate_block_cube(
-            scramble_cc.get_conjugate(rotations[k]));
-        ret[k][1] = block2.to_coordinate_block_cube(
-            scramble_cc.get_conjugate(rotations[k]));
-    }
-
-    return make_root(ret);
-}
+auto solve_F2Lm1 = make_optimal_split_block_solver(block1, block2, rotations);
 
 int main(int argc, const char* argv[]) {
     auto scramble = Algorithm(argv[argc - 1]);
     scramble.show();
 
-    auto root = my_init_root(scramble);
+    auto root = make_split_block_root(scramble, block1, block2, rotations);
 
-    auto solutions = IDAstar(root, apply, estimate, is_solved);
+    auto solutions = solve_F2Lm1(root);
 
     solutions.sort_by_depth();
-    solutions.show();
     return 0;
 }
