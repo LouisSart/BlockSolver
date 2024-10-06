@@ -165,10 +165,16 @@ template <bool verbose = false, typename PruningTable, typename Strategy,
           typename MoveTable>
 void generate(PruningTable& p_table, Strategy& strat,
               const MoveTable& m_table) {
-    p_table.reset();
-    p_table[0] = 0;
-    const float percent_switch = 70.0;
-    const float encounter_ratio_switch = 0.3;
+    const float percent_switch = 80;
+    // 100%  => 48.8s (no backwards)
+    //  90%  => 22.3s
+    //  80% =>  22.1s
+    //  70%  => 42s
+    //  50%  => 40s
+    //   0%  => 134.431 (full backwards)
+    const float encounter_ratio_switch = 0.15;
+    // encounter_ratio = 0.1: 27.7803s
+    // encounter_ratio = 0.3: 43.7205s
     Advancement<verbose> adv(p_table.size(), percent_switch,
                              encounter_ratio_switch);
     compute_pruning_table(p_table, strat, m_table, adv);
