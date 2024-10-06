@@ -2,20 +2,18 @@
 #include <array>
 #include <iostream>
 
-using uint = unsigned int;
-
 struct CoordinateBlockCube {
-    uint ccl, cel, ccp, cep, cco,
-        ceo;  // Coordinates for cp, co, ep, eo, corner layout and edge layout
+    // Coordinates for cp, co, ep, eo, corner layout and edge layout
+    unsigned ccl, cel, ccp, cep, cco, ceo;
 
     CoordinateBlockCube() : ccl{0}, cel{0}, ccp{0}, cep{0}, cco{0}, ceo{0} {};
 
-    CoordinateBlockCube(uint ccl, uint cel, uint ccp, uint cep, uint cco,
-                        uint ceo)
+    CoordinateBlockCube(unsigned ccl, unsigned cel, unsigned ccp, unsigned cep,
+                        unsigned cco, unsigned ceo)
         : ccl{ccl}, cel{cel}, ccp{ccp}, cep{cep}, cco{cco}, ceo{ceo} {};
 
-    void set(uint ccl_in, uint cel_in, uint ccp_in, uint cep_in, uint cco_in,
-             uint ceo_in) {
+    void set(unsigned ccl_in, unsigned cel_in, unsigned ccp_in, unsigned cep_in,
+             unsigned cco_in, unsigned ceo_in) {
         ccl = ccl_in;
         cel = cel_in;
         ccp = ccp_in;
@@ -24,14 +22,9 @@ struct CoordinateBlockCube {
         ceo = ceo_in;
     };
 
-    bool operator==(const CoordinateBlockCube &other) {
+    bool operator==(const CoordinateBlockCube& other) {
         return (ccl == other.ccl && cel == other.cel && ccp == other.ccp &&
                 cep == other.cep && cco == other.cco && ceo == other.ceo);
-    }
-
-    bool is_solved() const {
-        return (ccl == 0 && cel == 0 && ccp == 0 && cep == 0 && cco == 0 &&
-                ceo == 0);
     }
 
     void show() const {
@@ -47,12 +40,6 @@ struct CoordinateBlockCube {
 
 template <unsigned nb>
 struct MultiBlockCube : std::array<CoordinateBlockCube, nb> {
-    void set_solved() {
-        for (CoordinateBlockCube &cbc : *this) {
-            cbc.set(0, 0, 0, 0, 0, 0);
-        }
-    }
-
     void show() const {
         std::cout << "MultiBlockCube<" << nb << ">" << std::endl;
         for (unsigned k = 0; k < nb; ++k) {
@@ -63,14 +50,5 @@ struct MultiBlockCube : std::array<CoordinateBlockCube, nb> {
                 std ::cout << "not solved" << std::endl;
             }
         }
-    }
-
-    bool is_solved() const {
-        for (auto cbc : *this) {
-            if (!cbc.is_solved()) {
-                return false;
-            }
-        }
-        return true;
     }
 };
