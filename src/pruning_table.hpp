@@ -72,7 +72,7 @@ struct PruningTable {
         };
     }
 
-    unsigned size() const { return Strategy::table_size; }
+    long unsigned size() const { return Strategy::table_size; }
 };
 
 namespace Strategy {
@@ -83,11 +83,14 @@ struct Optimal {
     static constexpr unsigned n_co = ipow(3, nc);
     static constexpr unsigned n_ep = factorial(ne);
     static constexpr unsigned n_eo = ipow(2, ne);
-    static constexpr unsigned n_corner_states =
-        (factorial(8) / factorial(8 - nc)) * ipow(3, nc);
-    static constexpr unsigned n_edge_states =
-        (factorial(12) / factorial(12 - ne)) * ipow(2, ne);
-    static constexpr unsigned table_size = n_corner_states * n_edge_states;
+    static constexpr long unsigned n_corner_states =
+        (factorial(8) / factorial(8 - nc)) *
+        ipow(3, nc);  // long unsigned needed for big tables
+    static constexpr long unsigned n_edge_states =
+        (factorial(12) / factorial(12 - ne)) *
+        ipow(2, ne);  // long unsigned needed for big tables
+    static constexpr long unsigned table_size =
+        n_corner_states * n_edge_states;  // long unsigned needed for big tables
     Block<nc, ne> block;
 
     Optimal() {}
