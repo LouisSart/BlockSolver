@@ -32,5 +32,6 @@ int main(int argc, const char *argv[]) {
 
     solutions.sort_by_depth();
     solutions.show();
+
     return 0.;
 }

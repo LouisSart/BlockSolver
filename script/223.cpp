@@ -93,6 +93,9 @@ int main(int argc, const char* argv[]) {
     auto solutions = IDAstar(root, apply, estimate, is_solved);
 
     assert(is_solved(solutions[0]->state));
+
+    solutions.sort_by_depth();
     solutions.show();
+
     return 0.;
 }

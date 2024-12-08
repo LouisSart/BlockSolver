@@ -63,5 +63,7 @@ int main(int argc, const char* argv[]) {
     auto solutions = solve_F2Lm1(root);
 
     solutions.sort_by_depth();
+    solutions.show();
+
     return 0;
 }
