@@ -4,10 +4,9 @@
 #include <iostream>
 #include <vector>
 
-constexpr int ipow(int k, unsigned n) {
-    // integer power
+constexpr unsigned ipow(unsigned k, unsigned n) {
+    // unsigned integer power
     // computes ret = k^n
-    // k can be negative hence using int
     unsigned ret{1};
     for (unsigned i = 0; i < n; i++) {
         ret *= k;
