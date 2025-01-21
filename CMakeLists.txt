@@ -16,6 +16,7 @@ if(NOT CMAKE_BUILD_TYPE)
         FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+add_subdirectory(extern/EpiCube)
 add_subdirectory(src)
 
 add_subdirectory(test)
