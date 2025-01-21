@@ -54,11 +54,11 @@ void test_222_block_alg_apply() {
     cbc.set(0, 0, 0, 0, 0, 0);
     table.apply(Tperm, cbc);
     table.apply(Tperm, cbc);
-    assert(cbc.is_solved());
+    assert(b.is_solved(cbc));
 
     cbc.set(0, 0, 0, 0, 0, 0);
     table.apply(no_effect, cbc);
-    assert(cbc.is_solved());
+    assert(b.is_solved(cbc));
 }
 
 void test_load() {
