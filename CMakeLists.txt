@@ -16,7 +16,6 @@ if(NOT CMAKE_BUILD_TYPE)
         FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-add_subdirectory(extern/EpiCube)
 add_subdirectory(src)
 
 add_subdirectory(test)
@@ -25,5 +24,8 @@ export(
   TARGETS block_solver-core
   NAMESPACE gmlib::
   FILE block_solverConfig.cmake)
-set(CMAKE_EXPORT_PACKAGE_REGISTRY ON)
-export(PACKAGE block_solver)
+  set(CMAKE_EXPORT_PACKAGE_REGISTRY ON)
+  export(PACKAGE block_solver)
+  
+add_subdirectory(extern/EpiCube)
+target_link_libraries(block_solver-core INTERFACE epicube-core)  # Link to epicube-core
