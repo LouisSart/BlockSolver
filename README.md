@@ -1,27 +1,31 @@
 # BlockSolver
-A Rubik's Cube block solver
+This program can solve any of 4 different blocks (1x2x3, 2x2x2, 2x2x3 or F2L-1) on the input scramble.
+It will find all optimal solutions over all possible symmetries of the block.
 
 ### Configuration ###
 
+```console
 cmake -B build
+```
 
 ### Compilation ###
 
+```console
 cmake --build build
+```
 
 ### Run script ###
+Run using :
 
-There are three main scripts that are currently working somewhat properly:
-  - 222
-  - 123
-  - 223
+```console
+epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver <block> <scramble>
+```
+where ```block``` can be any of ```123```, ```222```, ```223```, ```F2L-1```
 
-These will solve the optimal 2x2x2, 1x2x3 and 2x2x3 of a given scramble. For example running :
+Examples :
 
-./build/script/222 "R L U D F B"
-
-should output something like
-
+```console
+epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver 222 "R L U D F B"
 R L U D F B (6)
 Searching at depth 4
 Nodes generated: 163
@@ -33,78 +37,81 @@ F' B' U' L' (4)
 F' B' U' R' (4)
 F' U' D' L' (4)
 F' U' D' R' (4)
+```
 
-Note: On startup you will be prompted to generate a few tables. This can take a few minutes and is necessary for the program to run.
-
-
-./build/script/three_step_solve -s0 6 -s1 13 -s2 18 "R L U D R2 L D F2 U' R' D2 L F' R2 F B R D F R' U2 L' F R2 F"
-
+```console
+epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver F2L-1 "R' U' F L D F2 R2 D L2 U' L2 F2 U' F L2 D' F
+2 R' D' B2 U2 L' F2 R' U' F"
+R' U' F L D F2 R2 D L2 U' L2 F2 U' F L2 D' F2 R' D' B2 U2 L' F2 R' U' F (26)
+Searching at depth 7
+Nodes generated: 43
+Searching at depth 8
+Nodes generated: 106
+Searching at depth 9
+Nodes generated: 1675
+Searching at depth 10
+Nodes generated: 23560
+D2 B' U2 R2 B2 L F' L' F U (10)
+```
 
 # Goal #
 
-The (not so clear) goal that I have is to make an FMC helper tool to find human-findable skeletons of all kinds. At first I was just hoping to get a computer implementation of a 'leave 3C solver' but it could become a 'custom solver' allowing the user to define their own methods. I am hoping that this program could give us amazing solutions that are humanly understandable. Imagine an optimal Roux, or blockino solver...
-
-# Limitations #
-
-The program is still under development, and I think there are quite a few things that can be done to make it really amazing for FMC solvers and cube enjoyers.
+The (not so clear) goal that I have is to make an FMC helper tool to find human findable block skeletons. For now I am working on a multi-step F2L-1 solver that can NISS before each step. Then I think looking for leave-3C-skeletons would be the natural next step.
 
 ### NISS ###
 
-For now the program doesn't understand or use NISS, which makes it pretty poor at finding good block solutions. Definitely one of the things I have to get working.
+NISS management is under development. It is still currently possible to input a scramble between brackets, but not a skeleton with subparts being on inverse. I don't plan on implementing a two sided search algorithm because it prevents the use of pruning tables, which slows down the algorithm by a lot.
 
 ### EO and DR ###
 
-Even if this program doesn't have the goal of becoming a Thistleswaithe or Kociemba solver, I'd like to combine solving blocks and solving domino (blockino solving fashion). As for EO it is a must have even for block FMC solvers. Solving EO or DR could be done at any stage of the method, so I'll have to think of a dynamic order of the steps.
-
-### More ###
-
-I have a lot of ideas for the program, which are mostly impossible because I haven't the skill to do it, but I'll put them here in case somebody feels like they could do it. First is parallelism. I'm pretty sure the computations that are run here could be made way faster with some multithreading magic. I don't want to make a super powerful solver, but some speed up would improve the user experience.
+EO is implemented but is not yet usable. I don't think it is very interesting to have another EO>DR solver since there are already very good ones. See [nissy](https://nissy.tronto.net/), [cubelib](https://github.com/Jobarion/cubelib) and [Mallard](https://joba.me/mallard/) for Human Thistlewaite solutions.
+One application that I can see for those steps is blockino solving, but this is not the priority implementation.
 
 
-### Some documentation ###
-# CubieCube #
+# Some documentation #
+### CubieCube ###
 A struct defining 4 arrays for cp, co, ep and eo
 
-# Block #
+### Block ###
 The block representation of a CubieCube
 
-cl: bit array of where the corners are
-cp: array of the corner permutation
-co: array of the corner orientations
-el: bit array of where the edges are
-ep: array of the edge permutation
-eo: array of the edge orientations
+ + cl: bit array of where the corners are
+ + cp: array of the corner permutation
+ + co: array of the corner orientations
+ + el: bit array of where the edges are
+ + ep: array of the edge permutation
+ + eo: array of the edge orientations
 
 Example for a 1-corner and 3-edge block:
-cl: [0, 0, 0, 1, 0, 0, 0, 0]
-cp: [0]
-co: [1]
-el: [1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0]
-ep: [0, 2, 1]
-eo: [1, 1, 0]
+ + cl: [0, 0, 0, 1, 0, 0, 0, 0]
+ + cp: [0]
+ + co: [1]
+ + el: [1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0]
+ + ep: [0, 2, 1]
+ + eo: [1, 1, 0]
 
 Each of these states can be translated to a single integer called a coordinate.
-Each coordinate ranges from 0 to the number of possible states and can be used as an index in a lookup table
+Each coordinate ranges from 0 to the number of possible states minus one and can be used as an index in a lookup table. The edge permutation coordinate for the above CubieCube will range from 0 to 3! - 1
 
-# CoordinateBlockCube #
+### CoordinateBlockCube ###
 
 The coordinate representation of a subgroup of the cube pieces
 (for example the three edges and one corner of a 2x2x2 block)
 There are six coordinates that represent the state of the cubies:
 
-ccl: the positions of the corners regardless of their order
-ccp: the permutation of the corners
-cco: the orientation of the corners
-cel: the positions of the edges regardless of their order
-cep: the permutation of the edges
-ceo: the orientation of the edges
+ + ccl: the positions of the corners regardless of their order
+ + ccp: the permutation of the corners
+ + cco: the orientation of the corners
+ + cel: the positions of the edges regardless of their order
+ + cep: the permutation of the edges
+ + ceo: the orientation of the edges
 
 
-# Move Tables #
+### Move Tables ###
 
-TODO
+Move tables are transition tables that store the result of applying each possible move to a given coordinate. This allows to perform moves faster that permuting digits in an array on the CubieCube level (the only cost is the lookup in the table). The move tables are precomputed at runtime and then written on the disk for later use.
 
-# Pruning Tables #
+### Pruning Tables ###
 
 Pruning tables are used to accelerate the search for solutions. Basically the table stores the results of a function h (called a heuristic) such that for any CoordinateBlockCube cbc, h(cbc) is a lower-bound estimate of the optimal solution length for state cbc. This estimate can be used to prune the search tree as it is not necessary to search in a sub-tree whose root has a high estimate.
 
@@ -114,12 +121,15 @@ Usually the better pruning values require a lot of memory because they take into
 
 Pruning tables are generated using a breadth-first algorithm from the solved state. It iteratively generates all nodes at depth 1, then 2 ... Each newly encountered position is converted to a coordinate integer, and the depth at which it was found is written into an array. This array is then used as a lookup table by the search algorithms. As we get into deeper parts of the tree, it gets more and more rare to find a position that hasn't been visited yet and the generator slows down. To accelerate the generation algorithm, a backwards generator is used. The backwards generator starts from a not-yet-encoutered state S and generates its children. If one of them is a known position C, then depth(S) = depth(C) + 1. The table can thus be filled from the outer parts of the tree. The backwards generator cannot be used alone because at the beginning only the solved position is known at depth 0, and most of the unknown positions aren't connected with it. In this program the backwards search is triggered when most of the table is already set and only the outer layers of the tree are left to visit.
 
+Similarly to move tables, pruning tables are generated when first needed, and then written on the disk for later use.
+
 ### Optimal Pruning Value ###
 
-This is the optimal pruning value. It is exactly equal to the optimal solution length and allows the search algorithm to prune every sub-optimal path, leaving only those which are optimal. This makes the search optimally fast, as it allows to only generate the paths to the shortest solutions.
+For small blocks like the 2x2x2 or 1x2x3, the length of the optimals can be stored with a limited memory cost (God's algorithm). It allows the search algorithm to prune every sub-optimal path, leaving only those which are optimal. This makes the search optimally fast, as it allows to only generate the paths to the shortest solutions.
 
-Pros: Finds the optimal path directly
-Cons: Big table size, cannot be used for big blocks
+### Split Pruning Value ###
+
+For bigger blocks like the 2x2x3 or F2L-1, the table generation for God's algorithm can be impractical because of the table size. The solution that is implememented in this program is to split the block into smaller blocks for each of which the optimal pruning table is generated (it doesn't matter if these smaller blocks share some of the same pieces). The split pruning value to a given state is then the maximum value between the optimal pruning values for each block.
 
 # Search Algorithms #
 
@@ -133,9 +143,9 @@ Pruning values can be used in BFS, but it is not implemented here.
 
 ### Depth-first search ###
 
-Depth-first search uses a different strategy than BFS to avoid its memory limitations. Given a depth threshold max_depth, DFS iteratively applies one move to the scrambled state, then to the state that was just obtained, and continues with the children states until it reaches max_depth. This is why it is called depth-first. If no solution was found then DFS steps back to depth max_depth - 1 and applies the depth-first strategy up to max_depth again until there is no more nodes to generate. It then starts again from depth max-depth - 2 and so on until all nodes are visited or solutions have beed found.
+Depth-first search uses a different strategy than BFS to avoid its memory limitations. Given a depth threshold max_depth, DFS iteratively applies one move to the scrambled state, then to the state that was just obtained, and continues with the children states until it reaches max_depth. This is why it is called depth-first. If no solution was found then DFS steps back to depth max_depth - 1 and applies the depth-first strategy up to max_depth again until there is no more nodes to generate. It then starts again from depth max_depth - 2 and so on until all nodes are visited or solutions have been found.
 
-DFS does not require as much memory because it only stores the path to one node at depth d (which is of size O(d)) when looking for solution at depth d+1. Its main downfall is that you need to have an estimate of the optimals length to set the max_depth parameter. If your estimate is too low then no solution will be found, and you will need to relaunch the search with a higher max_depth, and if it is too high then the algorithm will run for longer than necessary and find (possibly many) suboptimal solutions.
+DFS does not require as much memory because it only stores the path to one node at depth d (which is of size O(d)) when looking for solution at depth d+1. Its main downfall is that you need to have an estimate of the optimals length to set the max_depth parameter. If your estimate is too low then no solution will be found, and you will need to run the search again with a higher max_depth, and if it is too high then the algorithm will run for longer than necessary and find (possibly many) suboptimal solutions in addition to the optimal ones.
 
 DFS can use a pruning value to reduce the search space size. To do so it applies the depth first strategy until it runs into a node at depth d such that d+h > max_depth, where h is the estimated distance of this node to the goal state. If h is an admissible heuristic (e.g. it never overestimates the distance to solved) then DFS will find every solution of length < max_depth. The closer the heuristic is to the optimal length, the faster DFS will find a solution.
 
