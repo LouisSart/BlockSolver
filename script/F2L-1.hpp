@@ -3,6 +3,7 @@
 #include "option.hpp"
 #include "step.hpp"
 
+namespace block_solver_F2Lm1 {
 constexpr unsigned NB = 2;   // the F2L-1 is splitted into 2 blocks
 constexpr unsigned NS = 24;  // number of F2L-1 symmetries
 auto block1 = Block<3, 3>("222_w_extra_corners", {DLF, DLB, DRB}, {DL, LB, DB});
@@ -53,17 +54,18 @@ std::array<unsigned, NS> rotations{
 // };
 
 auto solve_F2Lm1 = make_optimal_split_block_solver(block1, block2, rotations);
+}  // namespace block_solver_F2Lm1
 
-int main(int argc, const char* argv[]) {
-    auto scramble = Algorithm(argv[argc - 1]);
-    scramble.show();
+// int main(int argc, const char* argv[]) {
+//     auto scramble = Algorithm(argv[argc - 1]);
+//     scramble.show();
 
-    auto root = make_split_block_root(scramble, block1, block2, rotations);
+//     auto root = make_split_block_root(scramble, block1, block2, rotations);
 
-    auto solutions = solve_F2Lm1(root);
+//     auto solutions = solve_F2Lm1(root);
 
-    solutions.sort_by_depth();
-    solutions.show();
+//     solutions.sort_by_depth();
+//     solutions.show();
 
-    return 0;
-}
+//     return 0;
+// }

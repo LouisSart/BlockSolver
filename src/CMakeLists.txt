@@ -1,8 +1,10 @@
-add_library(block_solver-core INTERFACE)
-add_library(block_solver::core ALIAS block_solver-core)
-set_target_properties(block_solver-core PROPERTIES EXPORT_NAME core)
-target_sources(block_solver-core INTERFACE
+add_executable(block_solver main.cpp)
+target_sources(block_solver PRIVATE
         block.hpp
         generator.hpp
-        move_table.hpp)
-target_include_directories(block_solver-core INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+        move_table.hpp
+        pruning_table.hpp)
+
+target_include_directories(block_solver PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(block_solver PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../script)
+target_include_directories(block_solver PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../extern/EpiCube/src)

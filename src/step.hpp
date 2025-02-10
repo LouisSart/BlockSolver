@@ -1,3 +1,4 @@
+#pragma once
 #include <tuple>  // tables stored as tuples in Mover and Pruner
 
 #include "coordinate_block_cube.hpp"  // MultiBlockCube

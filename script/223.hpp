@@ -4,7 +4,7 @@
 #include "step.hpp"
 #include "symmetry.hpp"
 
-// The optimal pruning table for the 2x2x3 is
+namespace block_solver_223 {  // The optimal pruning table for the 2x2x3 is
 // too big, so we use 1x2x3s instead. Solving the DB 2x2x3
 // is just the same as solving the 2 1x2x3 that share the DB edge
 
@@ -83,19 +83,20 @@ auto my_init_root(const Algorithm& scramble) {
 
     return make_root(ret);
 }
+}  // namespace block_solver_223
 
-int main(int argc, const char* argv[]) {
-    auto scramble = Algorithm(argv[argc - 1]);
-    scramble.show();
+// int main(int argc, const char* argv[]) {
+//     auto scramble = Algorithm(argv[argc - 1]);
+//     scramble.show();
 
-    auto root = my_init_root(scramble);
+//     auto root = my_init_root(scramble);
 
-    auto solutions = IDAstar(root, apply, estimate, is_solved);
+//     auto solutions = IDAstar(root, apply, estimate, is_solved);
 
-    assert(is_solved(solutions[0]->state));
+//     assert(is_solved(solutions[0]->state));
 
-    solutions.sort_by_depth();
-    solutions.show();
+//     solutions.sort_by_depth();
+//     solutions.show();
 
-    return 0.;
-}
+//     return 0.;
+// }

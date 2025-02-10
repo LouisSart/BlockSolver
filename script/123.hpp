@@ -4,6 +4,7 @@
 #include "step.hpp"
 #include "symmetry.hpp"
 
+namespace block_solver_123 {
 auto block = Block<2, 3>("DB_123", {DLB, DRB}, {DB, RB, LB});
 
 std::array<unsigned, 24> rotations = {  // 24 different 1x2x3 symmetries
@@ -21,17 +22,18 @@ std::array<unsigned, 24> rotations = {  // 24 different 1x2x3 symmetries
     symmetry_index(2, 2, 1, 0), symmetry_index(2, 3, 1, 0)};
 
 auto solve_123 = make_optimal_block_solver(block, rotations);
+}  // namespace block_solver_123
 
-int main(int argc, const char *argv[]) {
-    auto scramble = Algorithm(argv[argc - 1]);
-    scramble.show();
+// int main(int argc, const char *argv[]) {
+//     auto scramble = Algorithm(argv[argc - 1]);
+//     scramble.show();
 
-    auto root = init_root(scramble, block, rotations);
+//     auto root = init_root(scramble, block, rotations);
 
-    auto solutions = solve_123(root);
+//     auto solutions = solve_123(root);
 
-    solutions.sort_by_depth();
-    solutions.show();
+//     solutions.sort_by_depth();
+//     solutions.show();
 
-    return 0.;
-}
+//     return 0.;
+// }
