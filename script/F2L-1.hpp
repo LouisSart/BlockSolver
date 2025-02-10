@@ -24,5 +24,8 @@ std::array<unsigned, NS> rotations{
     symmetry_index(2, 2, 1, 0), symmetry_index(2, 3, 1, 0),
 };
 
-auto solve_F2Lm1 = make_optimal_split_block_solver(block1, block2, rotations);
+auto initialize(const Algorithm &scramble) {
+    return make_split_block_root(scramble, block1, block2, rotations);
+}
+auto solve = make_optimal_split_block_solver(block1, block2, rotations);
 }  // namespace block_solver_F2Lm1

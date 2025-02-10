@@ -42,7 +42,7 @@ auto get_estimator(const PruningTable& p_table) {
 
 template <typename Block, long unsigned NS>
 auto init_root(const Algorithm& scramble, Block& block,
-               const std::array<unsigned, NS> rotations) {
+               const std::array<unsigned, NS>& rotations) {
     CubieCube scramble_cc(scramble);
     MultiBlockCube<NS> ret;
 
@@ -51,6 +51,14 @@ auto init_root(const Algorithm& scramble, Block& block,
             scramble_cc.get_conjugate(rotations[k]));
     }
     return make_root(ret);
+}
+
+template <typename Block, long unsigned NS>
+auto make_root_initializer(Block& block,
+                           const std::array<unsigned, NS>& rotations) {
+    return [&block, &rotations](const Algorithm& scramble) {
+        return init_root(scramble, block, rotations);
+    };
 }
 
 template <unsigned nc, unsigned ne, long unsigned NS>

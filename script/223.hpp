@@ -71,7 +71,7 @@ auto is_solved = [](const Cube& cube) {
     return false;
 };
 
-auto my_init_root(const Algorithm& scramble) {
+auto initialize(const Algorithm& scramble) {
     Cube ret;
     CubieCube scramble_cc(scramble);
 
@@ -84,4 +84,9 @@ auto my_init_root(const Algorithm& scramble) {
 
     return make_root(ret);
 }
+
+auto solve(const auto root) {
+    return IDAstar(root, apply, estimate, is_solved);
+}
+
 }  // namespace block_solver_223
