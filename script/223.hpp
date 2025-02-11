@@ -89,7 +89,9 @@ auto initialize(const Algorithm& scramble) {
     return cc_initialize(scramble_cc);
 }
 
-auto solve(const auto root, const unsigned move_budget = 20) {
+using NodePtr = Node<Cube>::sptr;
+
+auto solve(const NodePtr root, const unsigned move_budget = 20) {
     return IDAstar<false>(root, apply, estimate, is_solved, move_budget);
 }
 
