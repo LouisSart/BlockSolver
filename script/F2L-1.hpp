@@ -24,8 +24,14 @@ std::array<unsigned, NS> rotations{
     symmetry_index(2, 2, 1, 0), symmetry_index(2, 3, 1, 0),
 };
 
-auto initialize(const Algorithm &scramble) {
-    return make_split_block_root(scramble, block1, block2, rotations);
+auto cc_initialize(const CubieCube &cc) {
+    return make_split_block_root(cc, block1, block2, rotations);
 }
+
+auto initialize(const Algorithm &scramble) {
+    CubieCube cc(scramble);
+    return cc_initialize(cc);
+}
+
 auto solve = make_optimal_split_block_solver(block1, block2, rotations);
 }  // namespace block_solver_F2Lm1

@@ -83,12 +83,11 @@ auto make_optimal_block_solver(Block<nc, ne>& block,
 }
 
 template <typename Block1, typename Block2, long unsigned NS>
-auto make_split_block_root(const Algorithm& scramble, Block1& block1,
+auto make_split_block_root(const CubieCube& scramble_cc, Block1& block1,
                            Block2& block2,
                            const std::array<unsigned, NS>& rotations) {
     using Cube = std::array<MultiBlockCube<2>, NS>;
     Cube ret;
-    CubieCube scramble_cc(scramble);
 
     for (unsigned k = 0; k < NS; ++k) {
         ret[k][0] = block1.to_coordinate_block_cube(
@@ -140,7 +139,7 @@ auto make_optimal_split_block_solver(
         return false;
     };
 
-    return [](const auto root) {
-        return IDAstar(root, apply, estimate, is_solved);
+    return [](const auto root, const unsigned max_depth = 20) {
+        return IDAstar<false>(root, apply, estimate, is_solved, max_depth);
     };
 }
