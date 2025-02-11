@@ -12,4 +12,5 @@ std::array<unsigned, 8> rotations = {  // 8 different 2x2x2 symmetries
 
 auto solve = make_optimal_block_solver(block, rotations);
 auto initialize = make_root_initializer(block, rotations);
+auto cc_initialize = make_root_cc_initializer(block, rotations);
 }  // namespace block_solver_222

@@ -41,9 +41,8 @@ auto get_estimator(const PruningTable& p_table) {
 }
 
 template <typename Block, long unsigned NS>
-auto init_root(const Algorithm& scramble, Block& block,
+auto init_root(const CubieCube& scramble_cc, Block& block,
                const std::array<unsigned, NS>& rotations) {
-    CubieCube scramble_cc(scramble);
     MultiBlockCube<NS> ret;
 
     for (unsigned k = 0; k < NS; ++k) {
@@ -57,7 +56,15 @@ template <typename Block, long unsigned NS>
 auto make_root_initializer(Block& block,
                            const std::array<unsigned, NS>& rotations) {
     return [&block, &rotations](const Algorithm& scramble) {
-        return init_root(scramble, block, rotations);
+        CubieCube scramble_cc(scramble);
+        return init_root(scramble_cc, block, rotations);
+    };
+}
+template <typename Block, long unsigned NS>
+auto make_root_cc_initializer(Block& block,
+                              const std::array<unsigned, NS>& rotations) {
+    return [&block, &rotations](const CubieCube& scramble_cc) {
+        return init_root(scramble_cc, block, rotations);
     };
 }
 
@@ -70,8 +77,8 @@ auto make_optimal_block_solver(Block<nc, ne>& block,
     static auto estimate = get_estimator<NS>(p_table);
     static auto is_solved = get_is_solved<NS>(block);
 
-    return [](const auto root) {
-        return IDAstar(root, apply, estimate, is_solved);
+    return [](const auto root, const unsigned max_depth = 20) {
+        return IDAstar<false>(root, apply, estimate, is_solved, max_depth);
     };
 }
 
