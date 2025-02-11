@@ -1,9 +1,11 @@
-#include <memory>
+#include <algorithm>  // std::reverse
+#include <memory>     // std::shared_ptr
 #include <vector>
 
 #include "222.hpp"
 #include "223.hpp"
 #include "F2L-1.hpp"
+#include "algorithm.hpp"
 
 struct StepNode {
     using sptr = std::shared_ptr<StepNode>;
@@ -11,6 +13,27 @@ struct StepNode {
     Algorithm seq;
     sptr parent;
     unsigned depth;
+
+    Skeleton get_skeleton(const std::vector<std::string>& comments) const {
+        Skeleton ret;
+
+        auto node = *this;
+        while (node.parent) {
+            ret.push_back(StepAlgorithm(node.seq));
+            node = *node.parent;
+        }
+        assert(ret.size() ==
+               comments.size());  // Ensure that the number of comments is the
+        // same as the number of steps
+        std::reverse(ret.begin(), ret.end());
+        for (size_t i = 0; i < comments.size(); ++i) {
+            ret[i].comment = comments[i];
+        }
+        return ret;
+    }
+    Skeleton get_skeleton(std::vector<std::string>&& comments) const {
+        return get_skeleton(comments);
+    }
 };
 
 std::vector<StepNode::sptr> expand_step_three(const StepNode::sptr step_node,
@@ -109,13 +132,14 @@ auto make_step_one(const StepNode::sptr step_root, unsigned move_budget,
 
 int main() {
     auto scramble = Algorithm(
-        "R' U' F R' U' R F2 L U2 B R' B D' U2 B2 R2 B' U2 R2 F U2 B R' U' F");
+        "R' U' F U B2 L2 F2 R2 D2 B D2 F' R D2 U2 F2 D U' L U' R2 D' R' U' F");
+    scramble.show();
     CubieCube scramble_cc(scramble);
     auto root = std::make_shared<StepNode>(scramble_cc, Algorithm(), nullptr);
-    auto solutions = make_step_one(root, 16, 100);
+    auto solutions = make_step_one(root, 14, 100);
     for (auto node : solutions) {
-        std::cout << node->parent->parent->seq << node->parent->seq << node->seq
-                  << std::endl;
+        std::cout << "------------------" << std::endl;
+        node->get_skeleton({"2x2x2", "2x2x3", "F2L-1"}).show();
     }
     return 0;
 }
