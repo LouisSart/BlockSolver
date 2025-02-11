@@ -71,9 +71,8 @@ auto is_solved = [](const Cube& cube) {
     return false;
 };
 
-auto initialize(const Algorithm& scramble) {
+auto cc_initialize(const CubieCube& scramble_cc) {
     Cube ret;
-    CubieCube scramble_cc(scramble);
 
     for (unsigned k = 0; k < NS; ++k) {
         ret[k][0] = block.to_coordinate_block_cube(
@@ -85,8 +84,13 @@ auto initialize(const Algorithm& scramble) {
     return make_root(ret);
 }
 
-auto solve(const auto root) {
-    return IDAstar(root, apply, estimate, is_solved);
+auto initialize(const Algorithm& scramble) {
+    CubieCube scramble_cc(scramble);
+    return cc_initialize(scramble_cc);
+}
+
+auto solve(const auto root, const unsigned move_budget = 20) {
+    return IDAstar<false>(root, apply, estimate, is_solved, move_budget);
 }
 
 }  // namespace block_solver_223
