@@ -8,12 +8,16 @@
 #include "F2L-1.hpp"
 #include "algorithm.hpp"
 
-struct StepNode {
+struct StepNode : std::enable_shared_from_this<StepNode> {
     using sptr = std::shared_ptr<StepNode>;
     CubieCube state;
     Algorithm seq;
     sptr parent;
     unsigned depth;
+
+    StepNode(const CubieCube& state, const Algorithm& seq = "",
+             sptr parent = nullptr, unsigned depth = 0)
+        : state(state), seq(seq), parent(parent), depth(depth) {}
 
     Skeleton get_skeleton(const std::vector<std::string>& comments) const {
         Skeleton ret;
@@ -33,31 +37,49 @@ struct StepNode {
     Skeleton get_skeleton(std::vector<std::string>&& comments) const {
         return get_skeleton(comments);
     }
-};
 
-template <typename Initializer, typename Solver>
-auto make_expander(const Initializer& initializer, const Solver& solver) {
-    return [&initializer, &solver](const StepNode::sptr step_node,
-                                   const unsigned max_depth) {
-        auto step_cc = std::vector<StepNode::sptr>{};
+    template <typename Initializer, typename Solver>
+    auto expand(const Initializer& initialize, const Solver& solve,
+                const unsigned max_depth) {
+        auto children = std::vector<StepNode::sptr>{};
 
-        auto root = initializer(step_node->state);
-        auto step_mbc = solver(root, max_depth);
+        auto root = initialize(state);
+        auto step_mbc = solve(root, max_depth);
 
         for (auto&& mbc_node : step_mbc) {
             Algorithm seq = mbc_node->get_path();
-            CubieCube cc(step_node->state);
-            cc.apply(seq);
-            auto depth = step_node->depth + mbc_node->depth;
-            step_cc.emplace_back(new StepNode{cc, seq, step_node, depth});
-        }
-        return step_cc;
-    };
-}
+            seq.inv_flag = this->seq.inv_flag;
 
-template <typename Expander, typename NextStepper>
-auto make_stepper(const Expander& expander, const NextStepper& next_stepper) {
-    return [&expander, &next_stepper](
+            CubieCube copy = state;
+            copy.apply(seq);
+            unsigned d = depth + mbc_node->depth;
+            children.emplace_back(
+                new StepNode(copy, seq, this->shared_from_this(), d));
+        }
+
+        // Solve the inverse
+        CubieCube inv_cc = state.get_inverse();
+        auto root_inv = initialize(inv_cc);
+        auto step_mbc_inv = solve(root_inv, max_depth);
+
+        for (auto&& mbc_node : step_mbc_inv) {
+            Algorithm seq = mbc_node->get_path();
+
+            CubieCube copy = inv_cc;
+            copy.apply(seq);
+            seq.inv_flag = !this->seq.inv_flag;
+            unsigned d = depth + mbc_node->depth;
+            children.emplace_back(
+                new StepNode{copy, seq, this->shared_from_this(), d});
+        }
+        return children;
+    }
+};
+
+template <typename Initializer, typename Solver, typename NextStepper>
+auto make_stepper(const Initializer& initialize, const Solver& solve,
+                  const NextStepper& next_stepper) {
+    return [&initialize, &solve, &next_stepper](
                const std::vector<StepNode::sptr>& prev_step_cc,
                const unsigned move_budget,
                const unsigned breadth) -> std::vector<StepNode::sptr> {
@@ -66,13 +88,20 @@ auto make_stepper(const Expander& expander, const NextStepper& next_stepper) {
 
         for (auto&& step_node : prev_step_cc) {
             unsigned depth = step_node->depth;
-            auto children = expander(step_node, move_budget - step_node->depth);
+            auto children = step_node->expand(initialize, solve,
+                                              move_budget - step_node->depth);
 
             if (step_cc.size() + children.size() > breadth) {
-                break;  // Do not expand more nodes if breadth is reached
+                break;  // Do not expand more nodes if breadth is
+                        // reached
             }
             step_cc.insert(step_cc.end(), children.begin(), children.end());
         }
+
+        std::sort(step_cc.begin(), step_cc.end(),
+                  [](const StepNode::sptr& a, const StepNode::sptr& b) {
+                      return a->depth < b->depth;
+                  });
 
         if constexpr (std::is_invocable_v<NextStepper,
                                           const std::vector<StepNode::sptr>&,
@@ -82,31 +111,37 @@ auto make_stepper(const Expander& expander, const NextStepper& next_stepper) {
             return step_cc;
         }
     };
-}
+};
 
 struct STEPFINAL {};
 
-auto expand_step_three =
-    make_expander(block_solver_F2Lm1::cc_initialize, block_solver_F2Lm1::solve);
-auto expand_step_two =
-    make_expander(block_solver_223::cc_initialize, block_solver_223::solve);
-auto expand_step_one =
-    make_expander(block_solver_222::cc_initialize, block_solver_222::solve);
-auto make_step_three = make_stepper(expand_step_three, STEPFINAL{});
-auto make_step_two = make_stepper(expand_step_two, make_step_three);
-auto make_step_one = make_stepper(expand_step_one, make_step_two);
+// auto expand_step_three =
+//     make_expander(block_solver_F2Lm1::cc_initialize,
+//     block_solver_F2Lm1::solve);
+// auto expand_step_two =
+//     make_expander(block_solver_223::cc_initialize, block_solver_223::solve);
+// auto expand_step_one =
+//     make_expander(block_solver_222::cc_initialize, block_solver_222::solve);
+auto make_step_three = make_stepper(block_solver_F2Lm1::cc_initialize,
+                                    block_solver_F2Lm1::solve, STEPFINAL{});
+auto make_step_two = make_stepper(block_solver_223::cc_initialize,
+                                  block_solver_223::solve, make_step_three);
+auto make_step_one = make_stepper(block_solver_222::cc_initialize,
+                                  block_solver_222::solve, make_step_two);
 
 int main() {
     auto scramble = Algorithm(
-        "R' U' F L2 D L' B R D' B' U' D2 L' U2 L B2 R2 B2 U2 F' L B2 R' U' F");
+        "R' U' F L2 D L' B R D' B' U' D2 L' U2 L B2 R2 B2 U2 F' L B2 "
+        "R' U' "
+        "F");
     scramble.show();
 
     CubieCube scramble_cc(scramble);
-    auto root = std::make_shared<StepNode>(scramble_cc, Algorithm(), nullptr);
-    auto solutions = make_step_one({root}, 14, 100);
+    auto root = std::make_shared<StepNode>(scramble_cc);
+    auto solutions = make_step_one({root}, 15, 500);
 
-    for (auto node : solutions) {
-        std::cout << "------------------" << std::endl;
+    for (auto&& node : solutions) {
+        std::cout << "----------------" << std::endl;
         node->get_skeleton({"2x2x2", "2x2x3", "F2L-1"}).show();
     }
     return 0;
