@@ -41,11 +41,9 @@ int main(int argc, const char* argv[]) {
         solutions.sort_by_depth();
         solutions.show();
     } else if (strcmp(argv[1], "multistep") == 0) {
+        unsigned breadth = get_option("-b", argc, argv, 500);
         unsigned max_depth = get_option("-M", argc, argv, 15);
-
-        CubieCube scramble_cc(scramble);
-        auto root = std::make_shared<StepNode>(scramble_cc);
-        auto solutions = make_step_one({root}, max_depth, 500);
+        auto solutions = multistep(scramble, max_depth, breadth);
 
         for (auto&& node : solutions) {
             std::cout << "----------------" << std::endl;
