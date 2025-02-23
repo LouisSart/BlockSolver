@@ -1,6 +1,8 @@
 # BlockSolver
 This program can solve any of 4 different blocks (1x2x3, 2x2x2, 2x2x3 or F2L-1) on the input scramble.
-It will find all optimal solutions over all possible symmetries of the block.
+It will find all optimal solutions over all possible symmetries of the cube.
+
+It can also solve the F2L-1 suboptimally in three steps : 2x2x2, 2x2x3 and F2L-1 by switching before each step.
 
 ### Configuration ###
 
@@ -18,17 +20,15 @@ cmake --build build
 Run using :
 
 ```console
-epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver <block> <scramble>
+epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver <step> <scramble>
 ```
-where ```block``` can be any of ```123```, ```222```, ```223```, ```F2L-1```
+where ```step``` can be any of ```123```, ```222```, ```223```, ```F2L-1```, ```multistep```
 
 Examples :
 
 ```console
 epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver 222 "R L U D F B"
 R L U D F B (6)
-Searching at depth 4
-Nodes generated: 163
 B' U' D' L' (4)
 B' U' D' R' (4)
 F' B' D' L' (4)
@@ -40,20 +40,23 @@ F' U' D' R' (4)
 ```
 
 ```console
-epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver F2L-1 "R' U' F L D F2 R2 D L2 U' L2 F2 U' F L2 D' F
-2 R' D' B2 U2 L' F2 R' U' F"
+epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver F2L-1 "R' U' F L D F2 R2 D L2 U' L2 F2 U' F L2 D' F2 R' D' B2 U2 L' F2 R' U' F"
 R' U' F L D F2 R2 D L2 U' L2 F2 U' F L2 D' F2 R' D' B2 U2 L' F2 R' U' F (26)
-Searching at depth 7
-Nodes generated: 43
-Searching at depth 8
-Nodes generated: 106
-Searching at depth 9
-Nodes generated: 1675
-Searching at depth 10
-Nodes generated: 23560
 D2 B' U2 R2 B2 L F' L' F U (10)
 ```
 
+```console
+epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver multistep -M 13 "R' U' F  D' B' U' D2 L' U2 L B2 R2 B2 U2 F' L B2 R' U' F"
+R' U' F D' B' U' D2 L' U2 L B2 R2 B2 U2 F' L B2 R' U' F (20)
+----------------
+D' L' B2 U2 L2 // 2x2x2 (5/5)
+(F2 R2 F U F2) // 2x2x3 (5/10)
+(U2 R2 U') // F2L-1 (3/13)
+----------------
+D' L' B2 U2 L2 // 2x2x2 (5/5)
+(F2 R2 F U F2) // 2x2x3 (5/10)
+B U' B' // F2L-1 (3/13)
+```
 # Goal #
 
 The (not so clear) goal that I have is to make an FMC helper tool to find human findable block skeletons. For now I am working on a multi-step F2L-1 solver that can NISS before each step. Then I think looking for leave-3C-skeletons would be the natural next step.
