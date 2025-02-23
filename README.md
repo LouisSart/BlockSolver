@@ -20,14 +20,19 @@ cmake --build build
 Run using :
 
 ```console
-epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver <step> <scramble>
+./build/src/block_solver <step> <scramble>
 ```
 where ```step``` can be any of ```123```, ```222```, ```223```, ```F2L-1```, ```multistep```
+
+### Options ###
+
+`-M`: maximum solution length. If optimal is shorter than `M` moves, then only optimals will be computed  
+`-b`: maximum number of solutions kept at each step (only for multistep solver). Use this to reduce search time and memory usage or increase search breadth. Default b = 500
 
 Examples :
 
 ```console
-epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver 222 "R L U D F B"
+epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver 222 -M 6 "R L U D F B"
 R L U D F B (6)
 B' U' D' L' (4)
 B' U' D' R' (4)
@@ -46,7 +51,7 @@ D2 B' U2 R2 B2 L F' L' F U (10)
 ```
 
 ```console
-epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver multistep -M 13 "R' U' F  D' B' U' D2 L' U2 L B2 R2 B2 U2 F' L B2 R' U' F"
+epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver multistep -M 13 -b 1000 "R' U' F  D' B' U' D2 L' U2 L B2 R2 B2 U2 F' L B2 R' U' F"
 R' U' F D' B' U' D2 L' U2 L B2 R2 B2 U2 F' L B2 R' U' F (20)
 ----------------
 D' L' B2 U2 L2 // 2x2x2 (5/5)
@@ -59,15 +64,17 @@ B U' B' // F2L-1 (3/13)
 ```
 # Goal #
 
-The (not so clear) goal that I have is to make an FMC helper tool to find human findable block skeletons. For now I am working on a multi-step F2L-1 solver that can NISS before each step. Then I think looking for leave-3C-skeletons would be the natural next step.
+The purpose of this tool is to find human findable block skeletons. Optimal solutions to a 1x2x3, 2x2x2, 2x2x3 or F2L-1 can be found, as well as multi-step F2L-1 solutions using NISS before each step. Leave-3C-skeletons would be the natural next step.
 
 ### NISS ###
 
-NISS management is under development. It is still currently possible to input a scramble between brackets, but not a skeleton with subparts being on inverse. I don't plan on implementing a two sided search algorithm because it prevents the use of pruning tables, which slows down the algorithm by a lot.
+The multistep solver looks for linear solutions for each step on both inverse and normal.  
+It is currently possible to input a scramble between brackets, but not a skeleton with subparts being on inverse.  
+I don't plan on implementing a two sided search algorithm because it prevents the use of pruning tables, which slows down the algorithm by a lot.
 
 ### EO and DR ###
 
-EO is implemented but is not yet usable. I don't think it is very interesting to have another EO>DR solver since there are already very good ones. See [nissy](https://nissy.tronto.net/), [cubelib](https://github.com/Jobarion/cubelib) and [Mallard](https://joba.me/mallard/) for Human Thistlewaite solutions.
+EO is implemented but is not yet usable. I don't think it is very interesting to have another EO>DR solver since there are already very good ones. See [nissy](https://nissy.tronto.net/), [cubelib](https://github.com/Jobarion/cubelib) and [Mallard](https://joba.me/mallard/) for human Thistlewaite solutions.
 One application that I can see for those steps is blockino solving, but this is not the priority implementation.
 
 
