@@ -1,4 +1,4 @@
-list(APPEND UNIT_TESTS block move_table pruning_table)
+list(APPEND UNIT_TESTS block move_table multistep pruning_table)
 
 foreach(f ${UNIT_TESTS})
   set(target ${f}_test)

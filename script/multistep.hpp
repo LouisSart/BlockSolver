@@ -128,21 +128,3 @@ auto make_step_two = make_stepper(block_solver_223::cc_initialize,
                                   block_solver_223::solve, make_step_three);
 auto make_step_one = make_stepper(block_solver_222::cc_initialize,
                                   block_solver_222::solve, make_step_two);
-
-int main() {
-    auto scramble = Algorithm(
-        "R' U' F L2 D L' B R D' B' U' D2 L' U2 L B2 R2 B2 U2 F' L B2 "
-        "R' U' "
-        "F");
-    scramble.show();
-
-    CubieCube scramble_cc(scramble);
-    auto root = std::make_shared<StepNode>(scramble_cc);
-    auto solutions = make_step_one({root}, 15, 500);
-
-    for (auto&& node : solutions) {
-        std::cout << "----------------" << std::endl;
-        node->get_skeleton({"2x2x2", "2x2x3", "F2L-1"}).show();
-    }
-    return 0;
-}

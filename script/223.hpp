@@ -1,3 +1,4 @@
+#pragma once
 #include "move_table.hpp"
 #include "pruning_table.hpp"
 #include "search.hpp"
