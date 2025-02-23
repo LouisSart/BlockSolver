@@ -77,6 +77,10 @@ I don't plan on implementing a two sided search algorithm because it prevents th
 EO is implemented but is not yet usable. I don't think it is very interesting to have another EO>DR solver since there are already very good ones. See [nissy](https://nissy.tronto.net/), [cubelib](https://github.com/Jobarion/cubelib) and [Mallard](https://joba.me/mallard/) for human Thistlewaite solutions.
 One application that I can see for those steps is blockino solving, but this is not the priority implementation.
 
+### To-do list ###
+
+- Optimal solvers : look for solutions on inverse
+- Allow to look for suboptimal intermediate solutions in multistep solver
 
 # Some documentation #
 ### CubieCube ###

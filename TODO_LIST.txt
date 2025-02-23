@@ -1,4 +1,0 @@
-- README link to nissy and other FMC programs
-- Skeleton and algorithm show() method (Rotations, comments)
-- Use StepNode in a real search algorithm (multi phase)
-- NISS at any step
