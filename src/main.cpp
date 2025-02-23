@@ -6,6 +6,7 @@
 #include "223.hpp"
 #include "F2L-1.hpp"
 #include "multistep.hpp"
+#include "option.hpp"
 
 int main(int argc, const char* argv[]) {
     auto scramble = Algorithm(argv[argc - 1]);
@@ -40,9 +41,11 @@ int main(int argc, const char* argv[]) {
         solutions.sort_by_depth();
         solutions.show();
     } else if (strcmp(argv[1], "multistep") == 0) {
+        unsigned max_depth = get_option("-M", argc, argv, 15);
+
         CubieCube scramble_cc(scramble);
         auto root = std::make_shared<StepNode>(scramble_cc);
-        auto solutions = make_step_one({root}, 15, 500);
+        auto solutions = make_step_one({root}, max_depth, 500);
 
         for (auto&& node : solutions) {
             std::cout << "----------------" << std::endl;
