@@ -42,7 +42,7 @@ int main(int argc, const char* argv[]) {
         solutions.sort_by_depth();
         solutions.show();
     } else if (strcmp(argv[1], "multistep") == 0) {
-        unsigned breadth = get_option("-b", argc, argv, 500);
+        unsigned breadth = get_option("-b", argc, argv, 5000);
         unsigned slackness = get_option("-s", argc, argv, 0);
         auto solutions = multistep(scramble, max_depth, breadth, slackness);
 
