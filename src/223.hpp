@@ -92,8 +92,10 @@ auto initialize(const Algorithm& scramble) {
 
 using NodePtr = Node<Cube>::sptr;
 
-auto solve(const NodePtr root, const unsigned move_budget = 20) {
-    return IDAstar<false>(root, apply, estimate, is_solved, move_budget);
+auto solve(const NodePtr root, const unsigned move_budget = 20,
+           const unsigned slackness = 0) {
+    return IDAstar<false>(root, apply, estimate, is_solved, move_budget,
+                          slackness);
 }
 
 }  // namespace block_solver_223

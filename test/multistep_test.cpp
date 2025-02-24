@@ -15,21 +15,21 @@ int main() {
     CubieCube scramble_cc(scramble);
     auto root = std::make_shared<StepNode>(scramble_cc);
     auto solutions = root->expand(block_solver_222::cc_initialize,
-                                  block_solver_222::solve, 5);
+                                  block_solver_222::solve, 5, 0);
     auto node = solutions.back();
     assert(node->parent == root);
     assert(node->seq.size() > 0);
     assert(node->depth == node->seq.size());
 
     auto children = node->expand(block_solver_223::cc_initialize,
-                                 block_solver_223::solve, 5);
+                                 block_solver_223::solve, 5, 0);
     auto child = children.back();
     assert(child->parent == node);
     assert(child->seq.size() > 0);
     assert(child->depth == child->seq.size() + node->seq.size());
 
     auto grandchildren = child->expand(block_solver_F2Lm1::cc_initialize,
-                                       block_solver_F2Lm1::solve, 6);
+                                       block_solver_F2Lm1::solve, 6, 0);
     auto grandchild = grandchildren.back();
     grandchild->get_skeleton({"2x2x2", "2x2x3", "F2L-1"}).show();
     assert(grandchild->parent == child);

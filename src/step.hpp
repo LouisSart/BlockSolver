@@ -77,8 +77,10 @@ auto make_optimal_block_solver(Block<nc, ne>& block,
     static auto estimate = get_estimator<NS>(p_table);
     static auto is_solved = get_is_solved<NS>(block);
 
-    return [](const auto root, const unsigned max_depth = 20) {
-        return IDAstar<false>(root, apply, estimate, is_solved, max_depth);
+    return [](const auto root, const unsigned max_depth = 20,
+              const unsigned slackness = 0) {
+        return IDAstar<false>(root, apply, estimate, is_solved, max_depth,
+                              slackness);
     };
 }
 
@@ -139,7 +141,9 @@ auto make_optimal_split_block_solver(
         return false;
     };
 
-    return [](const auto root, const unsigned max_depth = 20) {
-        return IDAstar<false>(root, apply, estimate, is_solved, max_depth);
+    return [](const auto root, const unsigned max_depth = 20,
+              const unsigned slackness = 0) {
+        return IDAstar<false>(root, apply, estimate, is_solved, max_depth,
+                              slackness);
     };
 }

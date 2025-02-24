@@ -40,11 +40,11 @@ struct StepNode : std::enable_shared_from_this<StepNode> {
 
     template <typename Initializer, typename Solver>
     auto expand(const Initializer& initialize, const Solver& solve,
-                const unsigned max_depth) {
+                const unsigned max_depth, const unsigned slackness) {
         auto children = std::vector<StepNode::sptr>{};
 
         auto root = initialize(state);
-        auto step_mbc = solve(root, max_depth);
+        auto step_mbc = solve(root, max_depth, slackness);
 
         for (auto&& mbc_node : step_mbc) {
             Algorithm seq = mbc_node->get_path();
@@ -60,7 +60,7 @@ struct StepNode : std::enable_shared_from_this<StepNode> {
         // Solve the inverse
         CubieCube inv_cc = state.get_inverse();
         auto root_inv = initialize(inv_cc);
-        auto step_mbc_inv = solve(root_inv, max_depth);
+        auto step_mbc_inv = solve(root_inv, max_depth, slackness);
 
         for (auto&& mbc_node : step_mbc_inv) {
             Algorithm seq = mbc_node->get_path();
@@ -81,15 +81,15 @@ auto make_stepper(const Initializer& initialize, const Solver& solve,
                   const NextStepper& next_stepper) {
     return [&initialize, &solve, &next_stepper](
                const std::vector<StepNode::sptr>& prev_step_cc,
-               const unsigned move_budget,
-               const unsigned breadth) -> std::vector<StepNode::sptr> {
+               const unsigned move_budget, const unsigned breadth,
+               const unsigned slackness) -> std::vector<StepNode::sptr> {
         auto step_cc = std::vector<StepNode::sptr>{};
         step_cc.reserve(breadth);
 
         for (auto&& step_node : prev_step_cc) {
             unsigned depth = step_node->depth;
-            auto children = step_node->expand(initialize, solve,
-                                              move_budget - step_node->depth);
+            auto children = step_node->expand(
+                initialize, solve, move_budget - step_node->depth, slackness);
 
             if (step_cc.size() + children.size() > breadth) {
                 break;  // Do not expand more nodes if breadth is
@@ -103,10 +103,10 @@ auto make_stepper(const Initializer& initialize, const Solver& solve,
                       return a->depth < b->depth;
                   });
 
-        if constexpr (std::is_invocable_v<NextStepper,
-                                          const std::vector<StepNode::sptr>&,
-                                          unsigned, unsigned>) {
-            return next_stepper(step_cc, move_budget, breadth);
+        if constexpr (std::is_invocable_v<
+                          NextStepper, const std::vector<StepNode::sptr>&,
+                          const unsigned, const unsigned, const unsigned>) {
+            return next_stepper(step_cc, move_budget, breadth, slackness);
         } else {
             return step_cc;
         }
@@ -123,13 +123,13 @@ auto make_step_one = make_stepper(block_solver_222::cc_initialize,
                                   block_solver_222::solve, make_step_two);
 
 auto multistep(const CubieCube& scramble, const unsigned max_depth,
-               const unsigned breadth) {
+               const unsigned breadth, const unsigned slackness) {
     auto root = std::make_shared<StepNode>(scramble);
     auto move_budget = 0;
     std::vector<StepNode::sptr> solutions;
 
     while (solutions.size() == 0 && move_budget <= max_depth) {
-        solutions = make_step_one({root}, move_budget, breadth);
+        solutions = make_step_one({root}, move_budget, breadth, slackness);
         move_budget++;
     }
     return solutions;
