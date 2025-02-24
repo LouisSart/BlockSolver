@@ -51,12 +51,12 @@ void test_222_block_alg_apply() {
         assert(cbc == b.to_coordinate_block_cube(cc));
     }
 
-    cbc.set(0, 0, 0, 0, 0, 0);
+    cbc = b.solved;
     table.apply(Tperm, cbc);
     table.apply(Tperm, cbc);
     assert(b.is_solved(cbc));
 
-    cbc.set(0, 0, 0, 0, 0, 0);
+    cbc = b.solved;
     table.apply(no_effect, cbc);
     assert(b.is_solved(cbc));
 }
