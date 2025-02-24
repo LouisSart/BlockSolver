@@ -26,8 +26,9 @@ where ```step``` can be any of ```123```, ```222```, ```223```, ```F2L-1```, ```
 
 ### Options ###
 
-`-M`: maximum solution length. If optimal is shorter than `M` moves, then only optimals will be computed  
-`-b`: maximum number of solutions kept at each step (only for multistep solver). Use this to reduce search time and memory usage or increase search breadth. Default b = 500
+`-M`: maximum solution length. If optimal is shorter than `M` moves, then only optimals will be computed. Default `M = 15`  
+`-b`: maximum number of solutions kept at each step (only for multistep solver). Use this parameter to reduce search time and memory usage or increase search breadth. Default `b = 500`  
+`-s`: slackness of the optimal solver. When this parameter is set, the solver is allowed to use `s` more moves than optimal to produce solutions. Default `s=0` (optimal only)
 
 Examples :
 
