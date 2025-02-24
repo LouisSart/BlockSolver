@@ -18,8 +18,4 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 add_subdirectory(src)
 add_subdirectory(test)
-add_subdirectory(script)
-add_subdirectory(extern/EpiCube)
-
-# Link the block_solver executable to the epicube-core library
-# target_link_libraries(block_solver PRIVATE epicube-core)
+add_subdirectory(extern/EpiCube/src)
