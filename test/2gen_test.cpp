@@ -8,10 +8,10 @@ int main() {
         assert(value == key);
     }
 
-    cube.apply("R U R' U2 R' U R2 U R U' R2");
-    print_array(get_pairing_permutation(cube));
-
-    // cube.apply("F R F'");
-    // print_array(get_pairing_permutation(cube));
+    cube = CubieCube();
+    for (unsigned k = 0; k < 105; ++k) {
+        cube.apply("R U");
+    }
+    assert(two_gen_index(cube) == 0);
     return 0;
 }
