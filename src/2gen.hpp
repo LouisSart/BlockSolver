@@ -60,12 +60,12 @@ unsigned pairing_to_index(const std::set<Pair>& pairing) {
     return 0;
 }
 
-std::array<unsigned, 5> get_pairing_permutation(const CubieCube& cc) {
+unsigned pairing_index(const CubieCube& cc) {
     std::array<unsigned, 5> perm;
     for (unsigned i = 0; i < 5; ++i) {
         perm[i] = pairing_to_index(get_pairing(cc, pairings[i]));
     }
-    return perm;
+    return permutation_index(perm);
 }
 
 unsigned two_gen_corner_index(const CubieCube& cc) {
@@ -80,7 +80,7 @@ unsigned two_gen_corner_index(const CubieCube& cc) {
     }
 
     unsigned cco = co_index<6, true>(co);
-    unsigned ccp = permutation_index((get_pairing_permutation(cc)));
+    unsigned ccp = pairing_index(cc);
 
     return cco * 120 + ccp;
 }
@@ -106,6 +106,37 @@ unsigned two_gen_edge_index(const CubieCube& cc) {
 unsigned two_gen_index(const CubieCube& cc) {
     return two_gen_corner_index(cc) * 5040 + two_gen_edge_index(cc);
 }
+
+std::array<unsigned, 120> two_gen_corner_index_table;
+
+void make_corner_index_table() {
+    std::deque<CubieCube> queue;
+    queue.push_back(CubieCube());
+    two_gen_corner_index_table.fill(40321);
+    while (!queue.empty()) {
+        CubieCube cc = queue.back();
+        queue.pop_back();
+        unsigned index = pairing_index(cc);
+        if (two_gen_corner_index_table[index] == 40321) {
+            std::array<unsigned, 8> cp{cc.cp[0], cc.cp[1], cc.cp[2], cc.cp[3],
+                                       cc.cp[4], cc.cp[5], cc.cp[6], cc.cp[7]};
+            two_gen_corner_index_table[index] = permutation_index(cp);
+
+            for (const Move m : {R, U}) {
+                CubieCube next = cc;
+                next.apply(m);
+                queue.push_back(next);
+            }
+        }
+    }
+};
+
+// std::array<unsigned, 5040 * 6> two_gen_edge_mtable;
+// std::array<unsigned, 120 * 243 * 6> two_gen_corner_mtable;
+// struct TwoGenCube {
+//     unsigned corner_index;
+//     unsigned edge_index;
+// };
 
 std::array<unsigned, 5040 * 29160 / 2> two_gen_table;
 void make_two_gen_pruning_table() {

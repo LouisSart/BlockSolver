@@ -1,6 +1,8 @@
 #include "2gen.hpp"
 
 int main() {
+    assert(pairing_index(CubieCube()) == 0);
+
     CubieCube cube;
     cube.apply("R' U R' U' R' U' R' U R U R2");
     for (const Pairing& key : pairings) {
@@ -15,6 +17,12 @@ int main() {
 
     assert(two_gen_index(cube) == 0);
 
-    make_two_gen_pruning_table();
+    make_corner_index_table();
+    for (unsigned k : two_gen_corner_index_table) {
+        assert(k < 40321);
+    }
+    std::set<unsigned> check_duplicates{two_gen_corner_index_table.begin(),
+                                        two_gen_corner_index_table.end()};
+    assert(check_duplicates.size() == 120);
     return 0;
 }
