@@ -14,5 +14,7 @@ int main() {
     }
 
     assert(two_gen_index(cube) == 0);
+
+    make_two_gen_pruning_table();
     return 0;
 }

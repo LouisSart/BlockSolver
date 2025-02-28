@@ -1,4 +1,6 @@
 #pragma once
+#include <queue>
+
 #include "coordinate.hpp"
 #include "cubie_cube.hpp"
 
@@ -103,4 +105,34 @@ unsigned two_gen_edge_index(const CubieCube& cc) {
 
 unsigned two_gen_index(const CubieCube& cc) {
     return two_gen_corner_index(cc) * 5040 + two_gen_edge_index(cc);
+}
+
+std::array<unsigned, 5040 * 29160 / 2> two_gen_table;
+void make_two_gen_pruning_table() {
+    std::fill(two_gen_table.begin(), two_gen_table.end(), 255);
+
+    std::queue<CubieCube> queue;
+    queue.push(CubieCube());
+
+    two_gen_table[two_gen_index(CubieCube())] = 0;
+
+    while (!queue.empty()) {
+        CubieCube cc = queue.front();
+        queue.pop();
+
+        unsigned index = two_gen_index(cc);
+        unsigned depth = two_gen_table[index];
+
+        std::array<Move, 6> two_gen_moves{U, U2, U, R, R2, R};
+        for (unsigned k = 0; k < 6; ++k) {
+            CubieCube cc2 = cc;
+            cc2.apply(two_gen_moves[k]);
+
+            unsigned index2 = two_gen_index(cc2);
+            if (two_gen_table[index2] == 255) {
+                two_gen_table[index2] = depth + 1;
+                queue.push(cc2);
+            }
+        }
+    }
 }
