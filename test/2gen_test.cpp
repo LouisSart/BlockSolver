@@ -12,6 +12,7 @@ int main() {
     for (unsigned k = 0; k < 105; ++k) {
         cube.apply("R U");
     }
+
     assert(two_gen_index(cube) == 0);
     return 0;
 }

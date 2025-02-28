@@ -2,7 +2,6 @@
 #include "coordinate.hpp"
 #include "cubie_cube.hpp"
 
-constexpr unsigned NP = 15;  // number of pairs among the 6 corners
 using Pair = std::set<Cubie>;
 
 void show(const Pair& pair) {
@@ -14,6 +13,7 @@ void show(const Pair& pair) {
 }
 
 using Pairing = std::set<Pair>;
+
 void show(const Pairing& pairing) {
     for (const Pair& p : pairing) {
         show(p);
@@ -94,7 +94,11 @@ unsigned two_gen_edge_index(const CubieCube& cc) {
     assert(cc.ep[LB] == LB && cc.eo[LB] == 0);  // LB solved
     assert(eo_index(cc.eo) == 0);               // EO solved
 
-    for (unsigned k = 0; k < 7; ++k) return permutation_index(ep);
+    for (unsigned k = 0; k < 7; ++k) {
+        ep[k] = cc.ep[edges[k]];
+    };
+
+    return permutation_index(ep);
 }
 
 unsigned two_gen_index(const CubieCube& cc) {
