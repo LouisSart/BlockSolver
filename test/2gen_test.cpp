@@ -24,5 +24,9 @@ int main() {
     std::set<unsigned> check_duplicates{two_gen_corner_index_table.begin(),
                                         two_gen_corner_index_table.end()};
     assert(check_duplicates.size() == 120);
+
+    make_pruning_table(two_gen_corner_ptable, two_gen_corner_index,
+                       two_gen_moves);
+    make_pruning_table(two_gen_edge_ptable, two_gen_edge_index, two_gen_moves);
     return 0;
 }

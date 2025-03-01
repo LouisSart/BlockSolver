@@ -104,11 +104,10 @@ unsigned two_gen_edge_index(const CubieCube& cc) {
 }
 
 unsigned two_gen_index(const CubieCube& cc) {
-    return two_gen_corner_index(cc) * 5040 + two_gen_edge_index(cc);
+    return (two_gen_corner_index(cc) * 5040 + two_gen_edge_index(cc)) / 2;
 }
 
 std::array<unsigned, 120> two_gen_corner_index_table;
-
 void make_corner_index_table() {
     std::deque<CubieCube> queue;
     queue.push_back(CubieCube());
@@ -131,39 +130,43 @@ void make_corner_index_table() {
     }
 };
 
-// std::array<unsigned, 5040 * 6> two_gen_edge_mtable;
-// std::array<unsigned, 120 * 243 * 6> two_gen_corner_mtable;
-// struct TwoGenCube {
-//     unsigned corner_index;
-//     unsigned edge_index;
-// };
+std::array<Move, 6> two_gen_moves{U, U2, U3, R, R2, R3};
+constexpr unsigned N_TWO_GEN_CP = factorial(5);
+constexpr unsigned N_TWO_GEN_CO = ipow(3, 5);
+constexpr unsigned N_TWO_GEN_EP = factorial(7);
+std::array<unsigned, N_TWO_GEN_CP * N_TWO_GEN_CO> two_gen_corner_ptable;
+std::array<unsigned, N_TWO_GEN_EP> two_gen_edge_ptable;
 
-std::array<unsigned, 5040 * 29160 / 2> two_gen_table;
-void make_two_gen_pruning_table() {
-    std::fill(two_gen_table.begin(), two_gen_table.end(), 255);
+template <std::size_t N, typename Indexer, std::size_t NM>
+void make_pruning_table(std::array<unsigned, N>& ptable, const Indexer& index,
+                        std::array<Move, NM>& moves) {
+    std::fill(ptable.begin(), ptable.end(), 255);
 
-    std::queue<CubieCube> queue;
-    queue.push(CubieCube());
+    std::deque<CubieCube> queue{CubieCube()};
 
-    two_gen_table[two_gen_index(CubieCube())] = 0;
+    ptable[index(CubieCube())] = 0;
 
     while (!queue.empty()) {
-        CubieCube cc = queue.front();
-        queue.pop();
+        CubieCube cc = queue.back();
 
-        unsigned index = two_gen_index(cc);
-        unsigned depth = two_gen_table[index];
+        unsigned i = index(cc);
+        unsigned depth = ptable[i];
+        assert(i < ptable.size());
 
-        std::array<Move, 6> two_gen_moves{U, U2, U, R, R2, R};
         for (unsigned k = 0; k < 6; ++k) {
             CubieCube cc2 = cc;
-            cc2.apply(two_gen_moves[k]);
+            cc2.apply(moves[k]);
 
-            unsigned index2 = two_gen_index(cc2);
-            if (two_gen_table[index2] == 255) {
-                two_gen_table[index2] = depth + 1;
-                queue.push(cc2);
+            unsigned ii = index(cc2);
+            assert(ii < ptable.size());
+            if (ptable[ii] == 255) {
+                ptable[ii] = depth + 1;
+                queue.push_front(cc2);
             }
         }
+        queue.pop_back();
+    }
+    for (unsigned k = 0; k < 5040; ++k) {
+        assert(two_gen_edge_ptable[k] < 255);
     }
 }
