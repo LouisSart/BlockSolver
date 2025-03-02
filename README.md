@@ -38,7 +38,6 @@ Examples :
 
 ```console
 epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver 222 -M 6 "R L U D F B"
-R L U D F B (6)
 B' U' D' L' (4)
 B' U' D' R' (4)
 F' B' D' L' (4)
@@ -51,13 +50,11 @@ F' U' D' R' (4)
 
 ```console
 epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver F2L-1 "R' U' F L D F2 R2 D L2 U' L2 F2 U' F L2 D' F2 R' D' B2 U2 L' F2 R' U' F"
-R' U' F L D F2 R2 D L2 U' L2 F2 U' F L2 D' F2 R' D' B2 U2 L' F2 R' U' F (26)
 D2 B' U2 R2 B2 L F' L' F U (10)
 ```
 
 ```console
 epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver multistep -M 13 -b 1000 "R' U' F  D' B' U' D2 L' U2 L B2 R2 B2 U2 F' L B2 R' U' F"
-R' U' F D' B' U' D2 L' U2 L B2 R2 B2 U2 F' L B2 R' U' F (20)
 ----------------
 D' L' B2 U2 L2 // 2x2x2 (5/5)
 (F2 R2 F U F2) // 2x2x3 (5/10)
@@ -90,11 +87,6 @@ I don't plan on implementing a two sided search algorithm because it prevents th
 
 EO is implemented but is not yet usable. I don't think it is very interesting to have another EO>DR solver since there are already very good ones. See [nissy](https://nissy.tronto.net/), [cubelib](https://github.com/Jobarion/cubelib) and [Mallard](https://joba.me/mallard/) for human Thistlewaite solutions.
 One application that I can see for those steps is blockino solving, but this is not the priority implementation.
-
-### To-do list ###
-
-- Optimal solvers : look for solutions on inverse
-- Allow to look for suboptimal intermediate solutions in multistep solver
 
 # Some documentation #
 ### CubieCube ###
