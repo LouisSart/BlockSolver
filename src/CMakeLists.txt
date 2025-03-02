@@ -4,7 +4,7 @@ target_sources(block_solver PRIVATE
         222.hpp
         223.hpp
         F2L-1.hpp
-        2gen.hpp
+        two_gen.hpp
         multistep.hpp
         block.hpp
         generator.hpp

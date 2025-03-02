@@ -1,9 +1,16 @@
 #pragma once
-#include <queue>
+#include <cassert>     // assert
+#include <filesystem>  // locate table files
+#include <fstream>     // write tables into files
+#include <queue>       // std::deque
 
 #include "coordinate.hpp"
 #include "cubie_cube.hpp"
+#include "search.hpp"  // IDAstar
 
+namespace fs = std::filesystem;
+
+namespace two_gen {
 using Pair = std::set<Cubie>;
 
 void show(const Pair& pair) {
@@ -68,7 +75,7 @@ unsigned pairing_index(const CubieCube& cc) {
     return permutation_index(perm);
 }
 
-unsigned two_gen_corner_index(const CubieCube& cc) {
+unsigned corner_index(const CubieCube& cc) {
     static std::array<unsigned, 6> corners{ULF, URF, URB, ULB, DRF, DRB};
     static std::array<unsigned, 6> co;
 
@@ -85,7 +92,7 @@ unsigned two_gen_corner_index(const CubieCube& cc) {
     return cco * 120 + ccp;
 }
 
-unsigned two_gen_edge_index(const CubieCube& cc) {
+unsigned edge_index(const CubieCube& cc) {
     static std::array<unsigned, 7> edges{UF, UR, UB, UL, RF, RB, DR};
     static std::array<unsigned, 7> ep;
 
@@ -103,23 +110,23 @@ unsigned two_gen_edge_index(const CubieCube& cc) {
     return permutation_index(ep);
 }
 
-unsigned two_gen_index(const CubieCube& cc) {
-    return (two_gen_corner_index(cc) * 5040 + two_gen_edge_index(cc)) / 2;
+unsigned index(const CubieCube& cc) {
+    return (corner_index(cc) * 5040 + edge_index(cc)) / 2;
 }
 
-std::array<unsigned, 120> two_gen_corner_index_table;
+std::array<unsigned, 120> corner_index_table;
 void make_corner_index_table() {
     std::deque<CubieCube> queue;
     queue.push_back(CubieCube());
-    two_gen_corner_index_table.fill(40321);
+    corner_index_table.fill(40321);
     while (!queue.empty()) {
         CubieCube cc = queue.back();
         queue.pop_back();
         unsigned index = pairing_index(cc);
-        if (two_gen_corner_index_table[index] == 40321) {
+        if (corner_index_table[index] == 40321) {
             std::array<unsigned, 8> cp{cc.cp[0], cc.cp[1], cc.cp[2], cc.cp[3],
                                        cc.cp[4], cc.cp[5], cc.cp[6], cc.cp[7]};
-            two_gen_corner_index_table[index] = permutation_index(cp);
+            corner_index_table[index] = permutation_index(cp);
 
             for (const Move m : {R, U}) {
                 CubieCube next = cc;
@@ -130,12 +137,12 @@ void make_corner_index_table() {
     }
 };
 
-std::array<Move, 6> two_gen_moves{U, U2, U3, R, R2, R3};
+std::array<Move, 6> moves{U, U2, U3, R, R2, R3};
 constexpr unsigned N_TWO_GEN_CP = factorial(5);
 constexpr unsigned N_TWO_GEN_CO = ipow(3, 5);
 constexpr unsigned N_TWO_GEN_EP = factorial(7);
-std::array<unsigned, N_TWO_GEN_CP * N_TWO_GEN_CO> two_gen_corner_ptable;
-std::array<unsigned, N_TWO_GEN_EP> two_gen_edge_ptable;
+std::array<unsigned, N_TWO_GEN_CP * N_TWO_GEN_CO> corner_ptable;
+std::array<unsigned, N_TWO_GEN_EP> edge_ptable;
 
 template <std::size_t N, typename Indexer, std::size_t NM>
 void make_pruning_table(std::array<unsigned, N>& ptable, const Indexer& index,
@@ -167,12 +174,87 @@ void make_pruning_table(std::array<unsigned, N>& ptable, const Indexer& index,
         queue.pop_back();
     }
     for (unsigned k = 0; k < 5040; ++k) {
-        assert(two_gen_edge_ptable[k] < 255);
+        assert(edge_ptable[k] < 255);
     }
 }
 
-unsigned two_gen_estimate(const CubieCube& cc) {
-    unsigned e_index = two_gen_edge_ptable[two_gen_edge_index(cc)];
-    unsigned c_index = two_gen_corner_ptable[two_gen_corner_index(cc)];
+auto filedir = fs::current_path() / "pruning_tables" / "two_gen";
+auto corner_filepath = filedir / "corners";
+auto edge_filepath = filedir / "edges";
+
+void write_tables() {
+    fs::create_directories(filedir);
+    {
+        std::ofstream file(corner_filepath, std::ios::binary);
+        file.write(reinterpret_cast<char*>(corner_ptable.data()),
+                   sizeof(unsigned) * corner_ptable.size());
+        file.close();
+    }
+    {
+        std::ofstream file(edge_filepath, std::ios::binary);
+        file.write(reinterpret_cast<char*>(edge_ptable.data()),
+                   sizeof(unsigned) * edge_ptable.size());
+        file.close();
+    }
+}
+
+void load_tables() {
+    if (fs::exists(corner_filepath) && fs::exists(edge_filepath)) {
+        assert(fs::exists(corner_filepath));
+        {
+            std::ifstream file(corner_filepath, std::ios::binary);
+            file.read(reinterpret_cast<char*>(corner_ptable.data()),
+                      sizeof(unsigned) * corner_ptable.size());
+            file.close();
+        }
+        assert(fs::exists(edge_filepath));
+        {
+            std::ifstream file(edge_filepath, std::ios::binary);
+            file.read(reinterpret_cast<char*>(edge_ptable.data()),
+                      sizeof(unsigned) * edge_ptable.size());
+            file.close();
+        }
+    } else {
+        std::cout << "Pruning table not found, generating" << std::endl;
+        make_pruning_table(corner_ptable, corner_index, moves);
+        make_pruning_table(edge_ptable, edge_index, moves);
+        write_tables();
+    }
+}
+
+unsigned estimate(const CubieCube& cc) {
+    unsigned e_index = edge_ptable[edge_index(cc)];
+    unsigned c_index = corner_ptable[corner_index(cc)];
     return std::max(e_index, c_index);
 }
+
+auto initialize(const Algorithm& scramble) {
+    load_tables();
+    CubieCube cc;
+    cc.apply(scramble);
+
+    return make_root(cc);
+}
+
+bool is_solved(const CubieCube& cc) { return cc.is_solved(); }
+void apply(const Move& move, CubieCube& cc) { cc.apply(move); }
+
+std::vector<Move> directions(const Node<CubieCube>::sptr node) {
+    if (node->parent == nullptr) {
+        return {R, R2, R3, U, U2, U3};
+    } else if (node->last_moves.back() == R || node->last_moves.back() == R2 ||
+               node->last_moves.back() == R3) {
+        return {U, U2, U3};
+    } else {
+        return {R, R2, R3};
+    }
+}
+
+auto solve(const Node<CubieCube>::sptr root, const unsigned& max_depth,
+           const unsigned& slackness) {
+    auto solutions = IDAstar<false>(root, apply, estimate, is_solved,
+                                    directions, max_depth, slackness);
+    return solutions;
+}
+
+}  // namespace two_gen

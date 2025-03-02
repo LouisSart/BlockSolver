@@ -7,10 +7,12 @@
 #include "F2L-1.hpp"
 #include "multistep.hpp"
 #include "option.hpp"
+#include "two_gen.hpp"
 
 int main(int argc, const char* argv[]) {
     auto scramble = Algorithm(argv[argc - 1]);
-    scramble.show();
+
+    unsigned slackness = get_option("-s", argc, argv, 0);
     unsigned max_depth = get_option("-M", argc, argv, 15);
 
     if (strcmp(argv[1], "123") == 0) {
@@ -43,13 +45,20 @@ int main(int argc, const char* argv[]) {
         solutions.show();
     } else if (strcmp(argv[1], "multistep") == 0) {
         unsigned breadth = get_option("-b", argc, argv, 5000);
-        unsigned slackness = get_option("-s", argc, argv, 0);
         auto solutions = multistep(scramble, max_depth, breadth, slackness);
 
         for (auto&& node : solutions) {
             std::cout << "----------------" << std::endl;
             node->get_skeleton({"2x2x2", "2x2x3", "F2L-1"}).show();
         }
+    } else if (strcmp(argv[1], "two_gen") == 0) {
+        auto root = two_gen::initialize(scramble);
+
+        auto solutions = two_gen::solve(root, max_depth, slackness);
+
+        solutions.sort_by_depth();
+        solutions.show();
+
     } else {
         std::cout << "Invalid argument: " << argv[1] << std::endl;
     }
