@@ -170,3 +170,9 @@ void make_pruning_table(std::array<unsigned, N>& ptable, const Indexer& index,
         assert(two_gen_edge_ptable[k] < 255);
     }
 }
+
+unsigned two_gen_estimate(const CubieCube& cc) {
+    unsigned e_index = two_gen_edge_ptable[two_gen_edge_index(cc)];
+    unsigned c_index = two_gen_corner_ptable[two_gen_corner_index(cc)];
+    return std::max(e_index, c_index);
+}
