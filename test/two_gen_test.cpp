@@ -2,15 +2,13 @@
 
 #include "search.hpp"
 
-namespace tg = two_gen;
-
 void pairing_test() {
-    assert(tg::pairing_index(CubieCube()) == 0);
+    assert(two_gen::pairing_index(CubieCube()) == 0);
 
     CubieCube cube;
     cube.apply("R' U R' U' R' U' R' U R U R2");
-    for (const tg::Pairing& key : tg::pairings) {
-        tg::Pairing value = tg::get_pairing(cube, key);
+    for (const two_gen::Pairing& key : two_gen::pairings) {
+        two_gen::Pairing value = two_gen::get_pairing(cube, key);
         assert(value == key);
     }
 }  // namespace )
@@ -21,21 +19,24 @@ void two_gen_index_test() {
         cube.apply("R U");
     }
 
-    assert(tg::index(cube) == 0);
+    assert(two_gen::index(cube) == 0);
 }
 
 void corner_index_test() {
-    for (unsigned k : tg::corner_index_table) {
-        assert(k < 40321);
+    two_gen::make_corner_index_table();
+    for (unsigned k : two_gen::corner_index_table) {
+        assert(k < 40320);
     }
-    std::set<unsigned> check_duplicates{tg::corner_index_table.begin(),
-                                        tg::corner_index_table.end()};
+    std::set<unsigned> check_duplicates{two_gen::corner_index_table.begin(),
+                                        two_gen::corner_index_table.end()};
     assert(check_duplicates.size() == 120);
 }
 
 void pruning_table_test() {
-    tg::make_pruning_table(tg::corner_ptable, tg::corner_index, tg::moves);
-    tg::make_pruning_table(tg::edge_ptable, tg::edge_index, tg::moves);
+    two_gen::make_pruning_table(two_gen::corner_ptable, two_gen::corner_index,
+                                two_gen::moves);
+    two_gen::make_pruning_table(two_gen::edge_ptable, two_gen::edge_index,
+                                two_gen::moves);
 }
 
 void two_gen_solve_test() {
@@ -45,15 +46,13 @@ void two_gen_solve_test() {
 
     solutions.sort_by_depth();
     solutions.show();
-    solutions.show();
 }
 
 int main() {
     pairing_test();
     two_gen_index_test();
-    tg::make_corner_index_table();
-    pruning_table_test();
     corner_index_test();
+    pruning_table_test();
     two_gen_solve_test();
     return 0;
 }
