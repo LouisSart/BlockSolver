@@ -65,10 +65,17 @@ struct BlockMoveTable {
     }
 
     void apply(const unsigned move, CoordinateBlockCube& cbc) const {
-        auto&& [ccl, ccp] = get_new_ccl_ccp(cbc.ccl, cbc.ccp, move);
-        auto&& cco = get_new_cco(cbc.ccl, cbc.cco, move);
-        auto&& [cel, cep] = get_new_cel_cep(cbc.cel, cbc.cep, move);
-        auto&& ceo = get_new_ceo(cbc.cel, cbc.ceo, move);
+        unsigned ccl = 0, ccp = 0, cco = 0;
+        unsigned cel = 0, cep = 0, ceo = 0;
+        if constexpr (nc > 0) {
+            auto&& [ccl, ccp] = get_new_ccl_ccp(cbc.ccl, cbc.ccp, move);
+            auto&& cco = get_new_cco(cbc.ccl, cbc.cco, move);
+        }
+        if constexpr (ne > 0) {
+            auto&& [cel, cep] = get_new_cel_cep(cbc.cel, cbc.cep, move);
+            auto&& ceo = get_new_ceo(cbc.cel, cbc.ceo, move);
+        }
+
         cbc.set(ccl, cel, ccp, cep, cco, ceo);
     }
 
