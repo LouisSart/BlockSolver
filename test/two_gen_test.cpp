@@ -48,11 +48,20 @@ void two_gen_solve_test() {
     solutions.show();
 }
 
+void two_gen_reduction_index_test() {
+    CubieCube cc;
+
+    for (auto move : {R, U, L, F, D3, B}) {
+        cc.apply(move);
+    }
+}
+
 int main() {
     pairing_test();
     two_gen_index_test();
     corner_index_test();
     pruning_table_test();
     two_gen_solve_test();
+    two_gen_reduction_index_test();
     return 0;
 }

@@ -4,6 +4,7 @@
 #include <fstream>     // write tables into files
 #include <queue>       // std::deque
 
+#include "223.hpp"  // 2x2x3 solver
 #include "coordinate.hpp"
 #include "cubie_cube.hpp"
 #include "search.hpp"  // IDAstar
@@ -258,3 +259,21 @@ auto solve(const Node<CubieCube>::sptr root, const unsigned& max_depth,
 }
 
 }  // namespace two_gen
+
+namespace two_gen_reduction {
+namespace b223 = block_solver_223;
+
+constexpr unsigned CSIZE = factorial(8);
+constexpr unsigned ESIZE = ipow(2, 11);
+constexpr unsigned TABLE_SIZE = CSIZE * ESIZE;
+
+unsigned cp_eo_index(const CubieCube& cc) {
+    unsigned cpi = permutation_index<8>(cc.cp);
+    unsigned eoi = eo_index<12, true>(cc.eo);
+    assert(cpi < CSIZE);
+    assert(eoi < ESIZE);
+
+    return cpi * ESIZE + eoi;
+}
+
+}  // namespace two_gen_reduction
