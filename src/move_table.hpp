@@ -65,16 +65,11 @@ struct BlockMoveTable {
     }
 
     void apply(const unsigned move, CoordinateBlockCube& cbc) const {
-        unsigned ccl = 0, ccp = 0, cco = 0;
-        unsigned cel = 0, cep = 0, ceo = 0;
-        if constexpr (nc > 0) {
-            auto&& [ccl, ccp] = get_new_ccl_ccp(cbc.ccl, cbc.ccp, move);
-            auto&& cco = get_new_cco(cbc.ccl, cbc.cco, move);
-        }
-        if constexpr (ne > 0) {
-            auto&& [cel, cep] = get_new_cel_cep(cbc.cel, cbc.cep, move);
-            auto&& ceo = get_new_ceo(cbc.cel, cbc.ceo, move);
-        }
+        auto&& [ccl, ccp] = get_new_ccl_ccp(cbc.ccl, cbc.ccp, move);
+        auto&& cco = get_new_cco(cbc.ccl, cbc.cco, move);
+
+        auto&& [cel, cep] = get_new_cel_cep(cbc.cel, cbc.cep, move);
+        auto&& ceo = get_new_ceo(cbc.cel, cbc.ceo, move);
 
         cbc.set(ccl, cel, ccp, cep, cco, ceo);
     }
@@ -122,24 +117,36 @@ struct BlockMoveTable {
 
     std::tuple<unsigned, unsigned> get_new_ccl_ccp(unsigned ccl, unsigned ccp,
                                                    unsigned move) const {
-        assert(N_HTM_MOVES * (ccl * n_cp + ccp) + move < cp_table_size);
-        unsigned new_cp_idx = cp_table[N_HTM_MOVES * (ccl * n_cp + ccp) + move];
+        unsigned new_cp_idx = 0;
+        if constexpr (nc > 0) {
+            assert(N_HTM_MOVES * (ccl * n_cp + ccp) + move < cp_table_size);
+            new_cp_idx = cp_table[N_HTM_MOVES * (ccl * n_cp + ccp) + move];
+        }
         return std::make_tuple(new_cp_idx / n_cp, new_cp_idx % n_cp);
     }
 
     std::tuple<unsigned, unsigned> get_new_cel_cep(unsigned cel, unsigned cep,
                                                    unsigned move) const {
-        assert(N_HTM_MOVES * (cel * n_ep + cep) + move < ep_table_size);
-        unsigned new_ep_idx = ep_table[N_HTM_MOVES * (cel * n_ep + cep) + move];
+        unsigned new_ep_idx = 0;
+        if constexpr (nc > 0) {
+            assert(N_HTM_MOVES * (cel * n_ep + cep) + move < ep_table_size);
+            new_ep_idx = ep_table[N_HTM_MOVES * (cel * n_ep + cep) + move];
+        }
         return std::make_tuple(new_ep_idx / n_ep, new_ep_idx % n_ep);
     }
 
     unsigned get_new_cco(unsigned ccl, unsigned cco, unsigned move) const {
+        if constexpr (nc == 0) {
+            return 0;
+        }
         assert(N_HTM_MOVES * (ccl * n_co + cco) + move < co_table_size);
         return co_table[N_HTM_MOVES * (ccl * n_co + cco) + move];
     }
 
     unsigned get_new_ceo(unsigned cel, unsigned ceo, unsigned move) const {
+        if constexpr (ne == 0) {
+            return 0;
+        }
         assert(N_HTM_MOVES * (cel * n_eo + ceo) + move < eo_table_size);
         return eo_table[N_HTM_MOVES * (cel * n_eo + ceo) + move];
     }
