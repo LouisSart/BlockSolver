@@ -264,7 +264,6 @@ namespace b223 = block_solver_223;
 
 constexpr unsigned CSIZE = factorial(8);
 constexpr unsigned ESIZE = ipow(2, 11);
-constexpr unsigned TABLE_SIZE = CSIZE * ESIZE;
 constexpr unsigned NB = 3;
 constexpr unsigned NS = b223::NS;
 using Cube = std::array<MultiBlockCube<NB>, NS>;
@@ -324,6 +323,51 @@ auto cc_initialize(const CubieCube& scramble_cc) {
     }
 
     return make_root(ret);
+}
+
+// CHECKME -> marche en théorie mais prend un temps fou
+constexpr unsigned TABLE_SIZE = CSIZE * ESIZE;
+std::array<unsigned, TABLE_SIZE> cp_eo_table;
+void make_pruning_table() {
+    cp_eo_table.fill(255);   // initialize the table with 255
+    two_gen::load_tables();  // make sure the two_gen table is loaded
+
+    unsigned set_count = 0;
+    for (unsigned k : two_gen::corner_index_table) {
+        cp_eo_table[k * ESIZE] = 0;  // every 2gen position set to h=0
+        set_count++;
+    }
+
+    CoordinateBlockCube cbc;
+    unsigned depth = 0;
+    while (set_count < TABLE_SIZE) {
+        for (unsigned k = 0; k < TABLE_SIZE; ++k) {
+            if (cp_eo_table[k] == 255) {
+                unsigned cpi = k / ESIZE;
+                unsigned eoi = k % ESIZE;
+                cbc.set(0, 0, cpi, 0, 0, eoi);
+
+                for (auto move : default_directions) {
+                    auto child = cbc;
+                    c_m_table.apply(move, child);
+                    eo_m_table.apply(move, child);
+
+                    auto child_index = child.ccp * ESIZE + child.ceo;
+
+                    if (cp_eo_table[child_index] == depth) {
+                        cp_eo_table[k] = depth + 1;
+                        set_count++;
+                        break;  // found a child, no need to check others
+                    }
+                }
+            }
+        }
+        ++depth;
+    }
+
+    for (auto k : cp_eo_table) {
+        assert(k < 255);  // all entries should be less than 255
+    }
 }
 
 }  // namespace two_gen_reduction

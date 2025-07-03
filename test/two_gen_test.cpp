@@ -61,6 +61,8 @@ void two_gen_reduction_index_test() {
     assert(!two_gen_reduction::is_solved(cube));
 }
 
+void two_gen_reduction_table_test() { two_gen_reduction::make_pruning_table(); }
+
 int main() {
     pairing_test();
     two_gen_index_test();
@@ -68,5 +70,6 @@ int main() {
     pruning_table_test();
     two_gen_solve_test();
     two_gen_reduction_index_test();
+    two_gen_reduction_table_test();
     return 0;
 }
