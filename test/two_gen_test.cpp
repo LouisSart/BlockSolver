@@ -49,11 +49,16 @@ void two_gen_solve_test() {
 }
 
 void two_gen_reduction_index_test() {
-    CubieCube cc;
+    auto root = two_gen_reduction::cc_initialize(CubieCube());
+    auto cube = root->state;
 
-    for (auto move : {R, U, L, F, D3, B}) {
-        cc.apply(move);
+    assert(two_gen_reduction::is_solved(cube));
+    for (auto move : {F, B3, R2, F3, B, U2}) {
+        two_gen_reduction::apply(move, cube);
     }
+    assert(two_gen_reduction::is_solved(cube));
+    two_gen_reduction::apply(R, cube);
+    assert(!two_gen_reduction::is_solved(cube));
 }
 
 int main() {
