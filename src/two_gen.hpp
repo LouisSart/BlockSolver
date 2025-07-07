@@ -325,6 +325,46 @@ auto cc_initialize(const CubieCube& scramble_cc) {
     return make_root(ret);
 }
 
+constexpr unsigned N_EQ_CLASSES = 336;  // 336 = 8! / 5!
+std::array<unsigned, 40320> corner_equivalence_table;
+void make_corner_equivalence_table() {
+    // Reduce the number of corner permutations by using an equivalence index
+    // every two permutations with the same equivalence index have the same
+    // optimal reduction to two gen.
+    std::array<CubieCube, 120> two_gen_permutations;
+    for (unsigned k = 0; k < 120; ++k) {
+        unsigned p_index = two_gen::corner_index_table[k];
+        two_gen_permutations[k] = CubieCube();
+        permutation_from_index(p_index, two_gen_permutations[k].cp);
+    }
+
+    corner_equivalence_table.fill(N_EQ_CLASSES);
+    unsigned class_index = 0;
+    std::deque<CubieCube> queue{CubieCube()};
+    while (queue.size() > 0) {
+        CubieCube cc = queue.back();
+        queue.pop_back();
+
+        unsigned index = permutation_index(cc.cp);
+        if (corner_equivalence_table[index] == N_EQ_CLASSES) {
+            assert(class_index < N_EQ_CLASSES);
+
+            for (const CubieCube& perm : two_gen_permutations) {
+                CubieCube eq = perm;
+                eq.apply(cc);
+                corner_equivalence_table[permutation_index(eq.cp)] =
+                    class_index;
+            }
+            for (auto move : HTM_Moves) {
+                CubieCube next = cc;
+                next.apply(move);
+                queue.push_front(next);
+            }
+            ++class_index;
+        }
+    }
+}
+
 // CHECKME -> marche en théorie mais prend un temps fou
 constexpr unsigned TABLE_SIZE = CSIZE * ESIZE;
 std::array<unsigned, TABLE_SIZE> cp_eo_table;
