@@ -61,7 +61,12 @@ void two_gen_reduction_index_test() {
     assert(!two_gen_reduction::is_solved(cube));
 }
 
-void two_gen_reduction_table_test() { two_gen_reduction::make_pruning_table(); }
+void two_gen_reduction_table_test() {
+    two_gen_reduction::make_corner_equivalence_table();
+    two_gen_reduction::make_pruning_table();
+    two_gen_reduction::write_tables();
+    two_gen_reduction::load_tables();
+}
 
 int main() {
     pairing_test();

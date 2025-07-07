@@ -370,10 +370,7 @@ unsigned cp_eo_index(const CubieCube& cc) {
 constexpr unsigned TABLE_SIZE = N_EQ_CLASSES * ESIZE;
 std::array<unsigned, TABLE_SIZE> ptable;
 void make_pruning_table() {
-    ptable.fill(255);                 // initialize the table with 255
-    make_corner_equivalence_table();  // we need that table
-
-    std::fill(ptable.begin(), ptable.end(), 255);
+    ptable.fill(255);  // initialize the table with 255
     ptable[cp_eo_index(CubieCube())] = 0;
 
     std::deque<CubieCube> queue{CubieCube()};
@@ -399,6 +396,47 @@ void make_pruning_table() {
     }
     for (unsigned h : ptable) {
         assert(h < 255);
+    }
+}
+
+auto filedir = fs::current_path() / "pruning_tables" / "two_gen_reduction";
+auto equivalence_filepath = filedir / "corner_equivalence";
+auto cp_eo_filepath = filedir / "cp_eo_ptable";
+void write_tables() {
+    fs::create_directories(filedir);
+    {
+        std::ofstream file(equivalence_filepath, std::ios::binary);
+        file.write(reinterpret_cast<char*>(corner_equivalence_table.data()),
+                   sizeof(unsigned) * corner_equivalence_table.size());
+        file.close();
+    }
+    {
+        std::ofstream file(cp_eo_filepath, std::ios::binary);
+        file.write(reinterpret_cast<char*>(ptable.data()),
+                   sizeof(unsigned) * ptable.size());
+        file.close();
+    }
+}
+
+void load_tables() {
+    if (fs::exists(equivalence_filepath) && fs::exists(cp_eo_filepath)) {
+        {
+            std::ifstream file(equivalence_filepath, std::ios::binary);
+            file.read(reinterpret_cast<char*>(corner_equivalence_table.data()),
+                      sizeof(unsigned) * corner_equivalence_table.size());
+            file.close();
+        }
+        {
+            std::ifstream file(cp_eo_filepath, std::ios::binary);
+            file.read(reinterpret_cast<char*>(ptable.data()),
+                      sizeof(unsigned) * ptable.size());
+            file.close();
+        }
+    } else {
+        std::cout << "Pruning table not found, generating" << std::endl;
+        make_corner_equivalence_table();
+        make_pruning_table();
+        write_tables();
     }
 }
 
