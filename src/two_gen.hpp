@@ -268,15 +268,6 @@ constexpr unsigned NB = 3;
 constexpr unsigned NS = b223::NS;
 using Cube = std::array<MultiBlockCube<NB>, NS>;
 
-unsigned cp_eo_index(const CubieCube& cc) {
-    unsigned cpi = permutation_index<8>(cc.cp);
-    unsigned eoi = eo_index<12, true>(cc.eo);
-    assert(cpi < CSIZE);
-    assert(eoi < ESIZE);
-
-    return cpi * ESIZE + eoi;
-}
-
 auto corner_block =
     Block<8, 0>("Corners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {});
 auto c_m_table = BlockMoveTable(corner_block);
@@ -331,6 +322,8 @@ void make_corner_equivalence_table() {
     // Reduce the number of corner permutations by using an equivalence index
     // every two permutations with the same equivalence index have the same
     // optimal reduction to two gen.
+
+    two_gen::load_tables();  // make sure the two_gen table is loaded
     std::array<CubieCube, 120> two_gen_permutations;
     for (unsigned k = 0; k < 120; ++k) {
         unsigned p_index = two_gen::corner_index_table[k];
@@ -365,48 +358,47 @@ void make_corner_equivalence_table() {
     }
 }
 
-// CHECKME -> marche en théorie mais prend un temps fou
-constexpr unsigned TABLE_SIZE = CSIZE * ESIZE;
-std::array<unsigned, TABLE_SIZE> cp_eo_table;
+unsigned cp_eo_index(const CubieCube& cc) {
+    unsigned cpi = corner_equivalence_table[permutation_index<8>(cc.cp)];
+    unsigned eoi = eo_index<12, true>(cc.eo);
+    assert(cpi < N_EQ_CLASSES);
+    assert(eoi < ESIZE);
+
+    return cpi * ESIZE + eoi;
+}
+
+constexpr unsigned TABLE_SIZE = N_EQ_CLASSES * ESIZE;
+std::array<unsigned, TABLE_SIZE> ptable;
 void make_pruning_table() {
-    cp_eo_table.fill(255);   // initialize the table with 255
-    two_gen::load_tables();  // make sure the two_gen table is loaded
+    ptable.fill(255);                 // initialize the table with 255
+    make_corner_equivalence_table();  // we need that table
 
-    unsigned set_count = 0;
-    for (unsigned k : two_gen::corner_index_table) {
-        cp_eo_table[k * ESIZE] = 0;  // every 2gen position set to h=0
-        set_count++;
-    }
+    std::fill(ptable.begin(), ptable.end(), 255);
+    ptable[cp_eo_index(CubieCube())] = 0;
 
-    CoordinateBlockCube cbc;
-    unsigned depth = 0;
-    while (set_count < TABLE_SIZE) {
-        for (unsigned k = 0; k < TABLE_SIZE; ++k) {
-            if (cp_eo_table[k] == 255) {
-                unsigned cpi = k / ESIZE;
-                unsigned eoi = k % ESIZE;
-                cbc.set(0, 0, cpi, 0, 0, eoi);
+    std::deque<CubieCube> queue{CubieCube()};
+    while (!queue.empty()) {
+        CubieCube cc = queue.back();
 
-                for (auto move : default_directions) {
-                    auto child = cbc;
-                    c_m_table.apply(move, child);
-                    eo_m_table.apply(move, child);
+        unsigned i = cp_eo_index(cc);
+        unsigned depth = ptable[i];
+        assert(i < ptable.size());
 
-                    auto child_index = child.ccp * ESIZE + child.ceo;
+        for (auto move : HTM_Moves) {
+            CubieCube cc2 = cc;
+            cc2.apply(move);
 
-                    if (cp_eo_table[child_index] == depth) {
-                        cp_eo_table[k] = depth + 1;
-                        set_count++;
-                        break;  // found a child, no need to check others
-                    }
-                }
+            unsigned ii = cp_eo_index(cc2);
+            assert(ii < ptable.size());
+            if (ptable[ii] == 255) {
+                ptable[ii] = depth + 1;
+                queue.push_front(cc2);
             }
         }
-        ++depth;
+        queue.pop_back();
     }
-
-    for (auto k : cp_eo_table) {
-        assert(k < 255);  // all entries should be less than 255
+    for (unsigned h : ptable) {
+        assert(h < 255);
     }
 }
 
