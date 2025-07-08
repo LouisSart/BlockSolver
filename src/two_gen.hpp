@@ -262,66 +262,12 @@ auto solve(const Node<CubieCube>::sptr root, const unsigned& max_depth,
 namespace two_gen_reduction {
 namespace b223 = block_solver_223;
 
-constexpr unsigned CSIZE = factorial(8);
-constexpr unsigned ESIZE = ipow(2, 11);
-constexpr unsigned NB = 3;
-constexpr unsigned NS = b223::NS;
-using Cube = std::array<MultiBlockCube<NB>, NS>;
-
-auto corner_block =
-    Block<8, 0>("Corners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {});
-auto c_m_table = BlockMoveTable(corner_block);
-auto eo_m_table = EOMoveTable();
-
-void local_apply(const Move& move, const std::array<unsigned, b223::NB>& syms,
-                 MultiBlockCube<NB>& subcube) {
-    b223::m_table.sym_apply(move, syms[0], subcube[0]);
-    b223::m_table.sym_apply(move, syms[1], subcube[1]);
-    c_m_table.sym_apply(move, syms[0], subcube[2]);
-    eo_m_table.sym_apply(move, syms[0], subcube[2]);
-}
-
-void apply(const Move& move, Cube& cube) {
-    for (unsigned k = 0; k < NS; ++k) {
-        local_apply(move, b223::rotations[k], cube[k]);
-    }
-};
-
-bool local_is_solved(const MultiBlockCube<NB>& subcube) {
-    return (b223::block.is_solved(subcube[0]) &&
-            b223::block.is_solved(subcube[1]) &&
-            corner_block.is_solved(subcube[2]) && subcube[2].ceo == 0);
-}
-
-auto is_solved = [](const Cube& cube) {
-    for (unsigned k = 0; k < NS; ++k) {
-        if (local_is_solved(cube[k])) return true;
-    }
-    return false;
-};
-
-auto cc_initialize(const CubieCube& scramble_cc) {
-    Cube ret;
-
-    for (unsigned k = 0; k < NS; ++k) {
-        ret[k][0] = b223::block.to_coordinate_block_cube(
-            scramble_cc.get_conjugate(b223::rotations[k][0]));
-        ret[k][1] = b223::block.to_coordinate_block_cube(
-            scramble_cc.get_conjugate(b223::rotations[k][1]));
-        ret[k][2] = corner_block.to_coordinate_block_cube(
-            scramble_cc.get_conjugate(b223::rotations[k][0]));
-        ret[k][2].ceo = eo_index<NE, true>(scramble_cc.eo);
-    }
-
-    return make_root(ret);
-}
-
 constexpr unsigned N_EQ_CLASSES = 336;  // 336 = 8! / 5!
 std::array<unsigned, 40320> corner_equivalence_table;
 void make_corner_equivalence_table() {
     // Reduce the number of corner permutations by using an equivalence index
     // every two permutations with the same equivalence index have the same
-    // optimal reduction to two gen.
+    // reduction sequences to two gen.
 
     two_gen::load_tables();  // make sure the two_gen table is loaded
     std::array<CubieCube, 120> two_gen_permutations;
@@ -358,6 +304,7 @@ void make_corner_equivalence_table() {
     }
 }
 
+constexpr unsigned ESIZE = ipow(2, 11);  // Number of possible eo states
 unsigned cp_eo_index(const CubieCube& cc) {
     unsigned cpi = corner_equivalence_table[permutation_index<8>(cc.cp)];
     unsigned eoi = eo_index<12, true>(cc.eo);
@@ -439,5 +386,74 @@ void load_tables() {
         write_tables();
     }
 }
+
+constexpr unsigned NB = 3;
+constexpr unsigned NS = b223::NS;
+using Cube = std::array<MultiBlockCube<NB>, NS>;
+
+auto corner_block =
+    Block<8, 0>("Corners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {});
+auto c_m_table = BlockMoveTable(corner_block);
+auto eo_m_table = EOMoveTable();
+
+void local_apply(const Move& move, const std::array<unsigned, b223::NB>& syms,
+                 MultiBlockCube<NB>& subcube) {
+    b223::m_table.sym_apply(move, syms[0], subcube[0]);
+    b223::m_table.sym_apply(move, syms[1], subcube[1]);
+    c_m_table.sym_apply(move, syms[0], subcube[2]);
+    eo_m_table.sym_apply(move, syms[0], subcube[2]);
+}
+
+void apply(const Move& move, Cube& cube) {
+    for (unsigned k = 0; k < NS; ++k) {
+        local_apply(move, b223::rotations[k], cube[k]);
+    }
+};
+
+bool local_is_solved(const MultiBlockCube<NB>& subcube) {
+    return (b223::block.is_solved(subcube[0]) &&
+            b223::block.is_solved(subcube[1]) &&
+            corner_block.is_solved(subcube[2]) && subcube[2].ceo == 0);
+}
+
+auto is_solved = [](const Cube& cube) {
+    for (unsigned k = 0; k < NS; ++k) {
+        if (local_is_solved(cube[k])) return true;
+    }
+    return false;
+};
+
+auto cc_initialize(const CubieCube& scramble_cc) {
+    Cube ret;
+
+    for (unsigned k = 0; k < NS; ++k) {
+        ret[k][0] = b223::block.to_coordinate_block_cube(
+            scramble_cc.get_conjugate(b223::rotations[k][0]));
+        ret[k][1] = b223::block.to_coordinate_block_cube(
+            scramble_cc.get_conjugate(b223::rotations[k][1]));
+        ret[k][2] = corner_block.to_coordinate_block_cube(
+            scramble_cc.get_conjugate(b223::rotations[k][0]));
+        ret[k][2].ceo = eo_index<NE, true>(scramble_cc.eo);
+    }
+
+    return make_root(ret);
+}
+
+unsigned max_estimate(const MultiBlockCube<NB>& cube) {
+    unsigned h223 = std::max(b223::p_table.get_estimate(cube[0]),
+                             b223::p_table.get_estimate(cube[1]));
+    unsigned h_cp_eo =
+        ptable[corner_equivalence_table[cube[2].ccp] * ESIZE + cube[2].ceo];
+    return std::max(h223, h_cp_eo);
+}
+
+auto estimate = [](const Cube& cube) {
+    unsigned ret = max_estimate(cube[0]);
+    for (unsigned k = 0; k < NS; ++k) {
+        unsigned e = max_estimate(cube[k]);
+        ret = ret < e ? ret : e;
+    }
+    return ret;
+};
 
 }  // namespace two_gen_reduction

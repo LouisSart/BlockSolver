@@ -59,6 +59,11 @@ void two_gen_reduction_index_test() {
     assert(two_gen_reduction::is_solved(cube));
     two_gen_reduction::apply(R, cube);
     assert(!two_gen_reduction::is_solved(cube));
+
+    two_gen_reduction::apply(F, cube);
+    assert(two_gen_reduction::estimate(cube) == 1);
+    two_gen_reduction::apply(B, cube);
+    assert(two_gen_reduction::estimate(cube) == 2);
 }
 
 void two_gen_reduction_table_test() {
