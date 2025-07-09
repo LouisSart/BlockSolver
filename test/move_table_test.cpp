@@ -132,6 +132,23 @@ void test_sym_apply(Block&& b) {
     }
 }
 
+void test_eo_sym_apply() {
+    auto table = EOMoveTable();
+    auto random = CubieCube::random_state();
+
+    for (unsigned s = 0; s < N_SYM; ++s) {
+        auto cc_conj = random.get_conjugate(s);
+        auto cbc = CoordinateBlockCube();
+        cbc.ceo = eo_index<NE, true>(cc_conj.eo);
+
+        for (Move move : HTM_Moves) {
+            table.sym_apply(move, s, cbc);
+            cc_conj.apply(move);
+        }
+        assert((cbc.ceo == eo_index<NE, true>(cc_conj.eo)));
+    }
+}
+
 void test_to_cubie_cube() {
     Block<2, 5> b("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL});
     BlockMoveTable m_table(b);
@@ -167,5 +184,6 @@ int main() {
     test_load();
     test_eo_table();
     test_sym_apply(Block<2, 5>("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL}));
+    test_eo_sym_apply();
     return 0;
 }
