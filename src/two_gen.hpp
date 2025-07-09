@@ -391,29 +391,57 @@ constexpr unsigned NB = 3;
 constexpr unsigned NS = b223::NS;
 using Cube = std::array<MultiBlockCube<NB>, NS>;
 
+std::array<std::array<unsigned, NB>, NS> rotations = {{
+    {symmetry_index(0, 0, 0, 0), symmetry_index(2, 3, 0, 0),
+     symmetry_index(0, 3, 0, 0)},  // DB
+    {symmetry_index(0, 1, 0, 0), symmetry_index(2, 0, 0, 0),
+     symmetry_index(0, 0, 0, 0)},  // DL
+    {symmetry_index(0, 2, 0, 0), symmetry_index(2, 1, 0, 0),
+     symmetry_index(0, 1, 0, 0)},  // DF
+    {symmetry_index(0, 3, 0, 0), symmetry_index(2, 2, 0, 0),
+     symmetry_index(0, 2, 0, 0)},  // DR
+    {symmetry_index(0, 0, 1, 0), symmetry_index(2, 3, 1, 0),
+     symmetry_index(0, 3, 1, 0)},  // UB
+    {symmetry_index(0, 1, 1, 0), symmetry_index(2, 0, 1, 0),
+     symmetry_index(0, 0, 1, 0)},  // UR
+    {symmetry_index(0, 3, 1, 0), symmetry_index(2, 2, 1, 0),
+     symmetry_index(0, 2, 1, 0)},  // UL
+    {symmetry_index(0, 2, 1, 0), symmetry_index(2, 1, 1, 0),
+     symmetry_index(0, 1, 1, 0)},  // UF
+    {symmetry_index(1, 0, 0, 0), symmetry_index(1, 3, 1, 0),
+     symmetry_index(2, 0, 0, 0)},  // LB
+    {symmetry_index(1, 1, 0, 0), symmetry_index(1, 2, 1, 0),
+     symmetry_index(2, 1, 0, 0)},  // LF
+    {symmetry_index(1, 3, 0, 0), symmetry_index(1, 0, 1, 0),
+     symmetry_index(2, 3, 0, 0)},  // RB
+    {symmetry_index(1, 2, 0, 0), symmetry_index(1, 1, 1, 0),
+     symmetry_index(2, 2, 0, 0)},  // RF
+}};
+
 auto corner_block =
     Block<8, 0>("Corners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {});
 auto c_m_table = BlockMoveTable(corner_block);
 auto eo_m_table = EOMoveTable();
 
-void local_apply(const Move& move, const std::array<unsigned, b223::NB>& syms,
+void local_apply(const Move& move, const std::array<unsigned, NB>& syms,
                  MultiBlockCube<NB>& subcube) {
     b223::m_table.sym_apply(move, syms[0], subcube[0]);
     b223::m_table.sym_apply(move, syms[1], subcube[1]);
-    c_m_table.sym_apply(move, syms[0], subcube[2]);
-    eo_m_table.sym_apply(move, syms[0], subcube[2]);
+    c_m_table.sym_apply(move, syms[2], subcube[2]);
+    eo_m_table.sym_apply(move, syms[2], subcube[2]);
 }
 
 void apply(const Move& move, Cube& cube) {
     for (unsigned k = 0; k < NS; ++k) {
-        local_apply(move, b223::rotations[k], cube[k]);
+        local_apply(move, rotations[k], cube[k]);
     }
 };
 
 bool local_is_solved(const MultiBlockCube<NB>& subcube) {
     return (b223::block.is_solved(subcube[0]) &&
             b223::block.is_solved(subcube[1]) &&
-            corner_block.is_solved(subcube[2]) && subcube[2].ceo == 0);
+            corner_equivalence_table[subcube[2].ccp] == 0 &&
+            subcube[2].ceo == 0);
 }
 
 auto is_solved = [](const Cube& cube) {
@@ -428,12 +456,13 @@ auto cc_initialize(const CubieCube& scramble_cc) {
 
     for (unsigned k = 0; k < NS; ++k) {
         ret[k][0] = b223::block.to_coordinate_block_cube(
-            scramble_cc.get_conjugate(b223::rotations[k][0]));
+            scramble_cc.get_conjugate(rotations[k][0]));
         ret[k][1] = b223::block.to_coordinate_block_cube(
-            scramble_cc.get_conjugate(b223::rotations[k][1]));
+            scramble_cc.get_conjugate(rotations[k][1]));
         ret[k][2] = corner_block.to_coordinate_block_cube(
-            scramble_cc.get_conjugate(b223::rotations[k][0]));
-        ret[k][2].ceo = eo_index<NE, true>(scramble_cc.eo);
+            scramble_cc.get_conjugate(rotations[k][2]));
+        ret[k][2].ceo =
+            eo_index<NE, true>(scramble_cc.get_conjugate(rotations[k][2]).eo);
     }
 
     return make_root(ret);

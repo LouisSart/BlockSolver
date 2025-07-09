@@ -49,21 +49,27 @@ void two_gen_solve_test() {
 }
 
 void two_gen_reduction_index_test() {
+    namespace b223 = block_solver_223;
     auto root = two_gen_reduction::cc_initialize(CubieCube());
     auto cube = root->state;
 
     assert(two_gen_reduction::is_solved(cube));
-    for (auto move : {F, B3, R2, F3, B, U2}) {
+    for (auto move : {R, U, R3, U2, R}) {
         two_gen_reduction::apply(move, cube);
     }
     assert(two_gen_reduction::is_solved(cube));
-    two_gen_reduction::apply(R, cube);
-    assert(!two_gen_reduction::is_solved(cube));
+    assert(two_gen_reduction::estimate(cube) == 0);
+
+    for (auto move : {F, B3, R2, F3, B}) {
+        two_gen_reduction::apply(move, cube);
+    }
+    assert(two_gen_reduction::is_solved(cube));
+    assert(two_gen_reduction::estimate(cube) == 0);
 
     two_gen_reduction::apply(F, cube);
-    assert(two_gen_reduction::estimate(cube) == 1);
+    assert(two_gen_reduction::max_estimate(cube[1]) == 1);
     two_gen_reduction::apply(B, cube);
-    assert(two_gen_reduction::estimate(cube) == 2);
+    assert(two_gen_reduction::max_estimate(cube[1]) == 2);
 }
 
 void two_gen_reduction_table_test() {
