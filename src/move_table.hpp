@@ -117,7 +117,7 @@ struct BlockMoveTable {
 
     std::tuple<unsigned, unsigned> get_new_ccl_ccp(unsigned ccl, unsigned ccp,
                                                    unsigned move) const {
-        unsigned new_cp_idx = 0;
+        unsigned new_cp_idx = ccl * n_cp + ccp;
         if constexpr (nc > 0) {
             assert(N_HTM_MOVES * (ccl * n_cp + ccp) + move < cp_table_size);
             new_cp_idx = cp_table[N_HTM_MOVES * (ccl * n_cp + ccp) + move];
@@ -127,8 +127,8 @@ struct BlockMoveTable {
 
     std::tuple<unsigned, unsigned> get_new_cel_cep(unsigned cel, unsigned cep,
                                                    unsigned move) const {
-        unsigned new_ep_idx = 0;
-        if constexpr (nc > 0) {
+        unsigned new_ep_idx = cel * n_ep + cep;
+        if constexpr (ne > 0) {
             assert(N_HTM_MOVES * (cel * n_ep + cep) + move < ep_table_size);
             new_ep_idx = ep_table[N_HTM_MOVES * (cel * n_ep + cep) + move];
         }
