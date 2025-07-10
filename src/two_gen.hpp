@@ -173,9 +173,6 @@ void make_pruning_table(std::array<unsigned, N>& ptable, const Indexer& index,
         }
         queue.pop_back();
     }
-    for (unsigned k = 0; k < 5040; ++k) {
-        assert(edge_ptable[k] < 255);
-    }
 }
 
 auto filedir = fs::current_path() / "pruning_tables" / "two_gen";
