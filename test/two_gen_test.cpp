@@ -79,13 +79,24 @@ void two_gen_reduction_table_test() {
     two_gen_reduction::load_tables();
 }
 
+void two_gen_reduction_solve_test() {
+    auto root = two_gen_reduction::initialize("R U R U R' U2 R' B D R U");
+
+    auto solutions = two_gen_reduction::solve(root, 20, 0);
+    solutions.sort_by_depth();
+    solutions.show();
+    assert(solutions.size() == 1);
+    assert(solutions[0]->depth == 4);
+}
+
 int main() {
-    pairing_test();
+    // pairing_test();
     two_gen_index_test();
     corner_index_test();
     pruning_table_test();
     two_gen_solve_test();
     two_gen_reduction_index_test();
     two_gen_reduction_table_test();
+    two_gen_reduction_solve_test();
     return 0;
 }

@@ -269,13 +269,14 @@ void make_corner_equivalence_table() {
     // every two permutations with the same equivalence index have the same
     // reduction sequences to two gen.
 
-    two_gen::load_tables();  // make sure the two_gen table is loaded
+    two_gen::make_corner_index_table();  // make sure the conversion table is up
     std::array<CubieCube, 120> two_gen_permutations;
     for (unsigned k = 0; k < 120; ++k) {
         unsigned p_index = two_gen::corner_index_table[k];
         two_gen_permutations[k] = CubieCube();
         permutation_from_index(p_index, two_gen_permutations[k].cp);
     }
+    unsigned check_counter = 0;
 
     corner_equivalence_table.fill(N_EQ_CLASSES);
     unsigned class_index = 0;
@@ -468,6 +469,12 @@ auto cc_initialize(const CubieCube& scramble_cc) {
     return make_root(ret);
 }
 
+auto initialize(const Algorithm& alg) {
+    CubieCube cc;
+    cc.apply(alg);
+    return cc_initialize(cc);
+}
+
 unsigned max_estimate(const MultiBlockCube<NB>& cube) {
     unsigned h223 = std::max(b223::p_table.get_estimate(cube[0]),
                              b223::p_table.get_estimate(cube[1]));
@@ -485,4 +492,10 @@ auto estimate = [](const Cube& cube) {
     return ret;
 };
 
+auto solve(const Node<Cube>::sptr root, const unsigned& max_depth,
+           const unsigned& slackness) {
+    auto solutions =
+        IDAstar<true>(root, apply, estimate, is_solved, max_depth, slackness);
+    return solutions;
+}
 }  // namespace two_gen_reduction
