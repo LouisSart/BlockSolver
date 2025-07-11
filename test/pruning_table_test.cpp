@@ -7,23 +7,16 @@
 void test_generate() {
     auto b = Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB});
     auto mtable = BlockMoveTable(b);
-    auto apply = mtable.get_apply();
-
-    auto index = [&b](const CoordinateBlockCube& cbc) {
-        unsigned ci = cbc.ccl * b.n_cp * b.n_co + (cbc.ccp * b.n_co + cbc.cco);
-        unsigned ei = cbc.cel * b.n_ep * b.n_eo + (cbc.cep * b.n_eo + cbc.ceo);
-        return ei * b.n_cs + ci;
-    };
 
     constexpr size_t table_size = b.n_es * b.n_cs;
     PruningTable<table_size> ptable;
-    ptable.generate<CoordinateBlockCube>(apply, index);
+    ptable.generate<CoordinateBlockCube>(mtable.get_apply(), b.get_indexer());
 
     assert(ptable.is_filled());
 
-    ptable.write("pruning_table/222_table.dat");
+    ptable.write(b.id);
     PruningTable<table_size> reload;
-    reload.load("pruning_table/222_table.dat");
+    reload.load(b.id);
 
     assert(reload.is_filled());
     for (unsigned i = 0; i < table_size; ++i) {
@@ -44,9 +37,9 @@ void test_EO_generate() {
 
     assert(ptable.is_filled());
 
-    ptable.write("pruning_table/eo_table.dat");
+    ptable.write("eo");
     PruningTable<table_size> reload;
-    reload.load("pruning_table/eo_table.dat");
+    reload.load("eo");
 
     assert(reload.is_filled());
     for (unsigned i = 0; i < table_size; ++i) {

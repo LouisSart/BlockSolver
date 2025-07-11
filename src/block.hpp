@@ -8,6 +8,7 @@
 #include "coordinate.hpp"
 #include "coordinate_block_cube.hpp"
 #include "cubie_cube.hpp"
+#include "pruning_table.hpp"
 #include "utils.hpp"
 
 template <unsigned nc, unsigned ne>
@@ -180,6 +181,16 @@ struct Block {
         return cc;
     }
 
+    unsigned index(const CoordinateBlockCube &cbc) const {
+        unsigned ci = cbc.ccl * n_cp * n_co + (cbc.ccp * n_co + cbc.cco);
+        unsigned ei = cbc.cel * n_ep * n_eo + (cbc.cep * n_eo + cbc.ceo);
+        return ei * n_cs + ci;
+    }
+
+    auto get_indexer() const {
+        return [this](const CoordinateBlockCube &cbc) { return index(cbc); };
+    }
+
     bool is_solved(const CoordinateBlockCube &cbc) { return cbc == solved; }
 
     auto get_is_solved() {
@@ -200,4 +211,13 @@ struct Block {
         std::cout << "   Edges: ";
         print_array(edges);
     };
+};
+
+template <unsigned nc, unsigned ne>
+auto load_pruning_table(const Block<nc, ne> &b) {
+    // Load the pruning table for the given block
+    constexpr size_t table_size = b.n_es * b.n_cs;
+    PruningTable<table_size> ptable;
+    ptable.load(b.id);
+    return ptable;
 };
