@@ -5,25 +5,17 @@
 #include "move_table.hpp"
 
 template <unsigned nc, unsigned ne>
-void test_generate(Block<nc, ne>& block) {
-    auto mtable = BlockMoveTable(block);
+void test_generate(Block<nc, ne>& b) {
+    auto mtable = BlockMoveTable(b);
     auto apply = mtable.get_apply();
 
-    constexpr unsigned n_cp = factorial(nc);
-    constexpr unsigned n_co = ipow(3, nc);
-    constexpr unsigned n_ep = factorial(ne);
-    constexpr unsigned n_eo = ipow(2, ne);
-    constexpr size_t n_corner_states =
-        (factorial(8) / factorial(8 - nc)) * ipow(3, nc);
-    constexpr size_t n_edge_states =
-        (factorial(12) / factorial(12 - ne)) * ipow(2, ne);
-    constexpr size_t table_size = n_corner_states * n_edge_states;
-    auto index = [](const CoordinateBlockCube& cbc) {
-        unsigned ci = cbc.ccl * n_cp * n_co + (cbc.ccp * n_co + cbc.cco);
-        unsigned ei = cbc.cel * n_ep * n_eo + (cbc.cep * n_eo + cbc.ceo);
-        return ei * n_corner_states + ci;
+    auto index = [&b](const CoordinateBlockCube& cbc) {
+        unsigned ci = cbc.ccl * b.n_cp * b.n_co + (cbc.ccp * b.n_co + cbc.cco);
+        unsigned ei = cbc.cel * b.n_ep * b.n_eo + (cbc.cep * b.n_eo + cbc.ceo);
+        return ei * b.n_cs + ci;
     };
 
+    constexpr size_t table_size = b.n_es * b.n_cs;
     PruningTable<table_size> ptable;
     // Ici le mot-clé template est nécessaire car nous sommes dans une
     // fonction elle-même template. Le compilateur ne sait pas encore

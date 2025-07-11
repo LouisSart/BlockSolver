@@ -19,6 +19,16 @@ struct Block {
     std::string id;
 
     CoordinateBlockCube solved;  // The solved state cbc
+
+    static constexpr unsigned n_cp = factorial(nc);
+    static constexpr unsigned n_co = ipow(3, nc);
+    static constexpr unsigned n_ep = factorial(ne);
+    static constexpr unsigned n_eo = ipow(2, ne);
+    static constexpr unsigned n_cl = binomial(NC, nc);
+    static constexpr unsigned n_el = binomial(NE, ne);
+    static constexpr size_t n_cs = n_cp * n_co * n_cl;
+    static constexpr size_t n_es = n_ep * n_eo * n_el;
+
    private:
     // Buffer arrays for CubieCube <=> CoordinateBlockCube conversion
     std::array<unsigned, NC> cl;  // Corner layout
