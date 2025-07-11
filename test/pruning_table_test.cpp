@@ -4,8 +4,8 @@
 #include "cubie_cube.hpp"
 #include "move_table.hpp"
 
-template <unsigned nc, unsigned ne>
-void test_generate(Block<nc, ne>& b) {
+void test_generate() {
+    auto b = Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB});
     auto mtable = BlockMoveTable(b);
     auto apply = mtable.get_apply();
 
@@ -17,12 +17,18 @@ void test_generate(Block<nc, ne>& b) {
 
     constexpr size_t table_size = b.n_es * b.n_cs;
     PruningTable<table_size> ptable;
-    // Ici le mot-clé template est nécessaire car nous sommes dans une
-    // fonction elle-même template. Le compilateur ne sait pas encore
-    // à ce stade que la fonction generate est templatée !
-    ptable.template generate<CoordinateBlockCube>(apply, index);
+    ptable.generate<CoordinateBlockCube>(apply, index);
 
     assert(ptable.is_filled());
+
+    ptable.write("pruning_table/222_table.dat");
+    PruningTable<table_size> reload;
+    reload.load("pruning_table/222_table.dat");
+
+    assert(reload.is_filled());
+    for (unsigned i = 0; i < table_size; ++i) {
+        assert(ptable.estimate(i) == reload.estimate(i));
+    }
 }
 
 void test_EO_generate() {
@@ -37,11 +43,19 @@ void test_EO_generate() {
     ptable.generate<CoordinateBlockCube>(apply, index);
 
     assert(ptable.is_filled());
+
+    ptable.write("pruning_table/eo_table.dat");
+    PruningTable<table_size> reload;
+    reload.load("pruning_table/eo_table.dat");
+
+    assert(reload.is_filled());
+    for (unsigned i = 0; i < table_size; ++i) {
+        assert(ptable.estimate(i) == reload.estimate(i));
+    }
 }
 
 int main() {
-    auto DLB_222 = Block<1, 3>("DLB_222", {DLB}, {DL, LB, DB});
-    test_generate(DLB_222);
+    test_generate();
     test_EO_generate();
     return 0;
 }
