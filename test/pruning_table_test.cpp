@@ -109,7 +109,7 @@ void test_EO_generate() {
     auto index = [](const CoordinateBlockCube& cbc) { return cbc.ceo; };
 
     PruningTable<table_size> ptable;
-    ptable.template generate<CoordinateBlockCube>(apply, index);
+    ptable.generate<CoordinateBlockCube>(apply, index);
 
     assert(ptable.is_filled());
 }
