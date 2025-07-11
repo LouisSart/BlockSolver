@@ -102,9 +102,7 @@ void test_generate(Block<nc, ne>& block) {
 
 void test_EO_generate() {
     auto mtable = EOMoveTable();
-    auto apply = [&mtable](const Move& move, CoordinateBlockCube& cbc) {
-        mtable.apply(move, cbc);
-    };
+    auto apply = mtable.get_apply();
 
     constexpr unsigned n_eo = ipow(2, NE - 1);
     constexpr size_t table_size = n_eo;

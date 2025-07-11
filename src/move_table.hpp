@@ -335,6 +335,7 @@ struct EOMoveTable {
             apply(move, cube);
         };
     }
+
     void apply_inverse(const Move& move, CoordinateBlockCube& cube) const {
         apply(inverse_of_HTM_Moves[move], cube);
     }
@@ -355,6 +356,18 @@ struct EOMoveTable {
                    CoordinateBlockCube& cube) const {
         for (auto move : alg.sequence) {
             sym_apply(move, sym_index, cube);
+        };
+    }
+
+    auto get_apply() const {
+        return [this](const Move& move, CoordinateBlockCube& cbc) {
+            this->apply(move, cbc);
+        };
+    }
+
+    auto get_sym_apply(const unsigned& sym_index) {
+        return [this, &sym_index](const Move& move, CoordinateBlockCube& cube) {
+            this->sym_apply(move, sym_index, cube);
         };
     }
 };
