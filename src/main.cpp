@@ -51,7 +51,7 @@ int main(int argc, const char* argv[]) {
             std::cout << "----------------" << std::endl;
             node->get_skeleton({"2x2x2", "2x2x3", "F2L-1"}).show();
         }
-    } else if (strcmp(argv[1], "two_gen") == 0) {
+    } else if (strcmp(argv[1], "two_gen_finish") == 0) {
         auto root = two_gen::initialize(scramble);
 
         auto solutions = two_gen::solve(root, max_depth, slackness);
@@ -65,6 +65,16 @@ int main(int argc, const char* argv[]) {
         auto solutions = two_gen_reduction::solve(root, max_depth, slackness);
         solutions.sort_by_depth();
         solutions.show();
+    } else if (strcmp(argv[1], "two_gen") == 0) {
+        two_gen::load_tables();
+        two_gen_reduction::load_tables();
+
+        auto solutions = two_gen_solve(scramble, max_depth, slackness);
+        for (auto sol : solutions) {
+            print("------------");
+            sol[0].show();
+            sol[1].show(sol[0].size());
+        }
     } else {
         std::cout << "Invalid argument: " << argv[1] << std::endl;
     }

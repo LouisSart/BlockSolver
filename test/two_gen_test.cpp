@@ -32,14 +32,13 @@ void corner_index_test() {
     assert(check_duplicates.size() == 120);
 }
 
-void two_gen_solve_test() {
+void two_gen_finish_test() {
     two_gen::load_tables();
     auto root = two_gen::initialize("R U R U R U R U R U R U R U R");
 
     auto solutions = two_gen::solve(root, 20, 0);
-
-    solutions.sort_by_depth();
-    solutions.show();
+    assert(solutions.size() == 2);
+    assert(solutions[0]->depth == 15);
 }
 
 void two_gen_reduction_index_test() {
@@ -71,18 +70,26 @@ void two_gen_reduction_solve_test() {
     auto root = two_gen_reduction::initialize("R U R U R' U2 R' B D R U");
 
     auto solutions = two_gen_reduction::solve(root, 20, 0);
-    solutions.sort_by_depth();
-    solutions.show();
     assert(solutions.size() == 1);
     assert(solutions[0]->depth == 4);
+}
+
+void two_gen_solve_test() {
+    auto solutions = two_gen_solve(
+        "R' U' F U' R' D L' U2 B' R2 U2 D' B2 R2 U' R2 U L2 B2 L F' R' U' F",
+        25, 0);
+    assert(solutions.size() == 3);
+    assert(solutions[0][0].size() == 10);
+    assert(solutions[0][1].size() == 15);
 }
 
 int main() {
     pairing_test();
     two_gen_index_test();
     corner_index_test();
-    two_gen_solve_test();
+    two_gen_finish_test();
     two_gen_reduction_index_test();
     two_gen_reduction_solve_test();
+    two_gen_solve_test();
     return 0;
 }

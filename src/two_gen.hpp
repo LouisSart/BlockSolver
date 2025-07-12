@@ -384,4 +384,44 @@ auto solve(const Node<Cube>::sptr root, const unsigned& max_depth,
         IDAstar<false>(root, apply, estimate, is_solved, max_depth, slackness);
     return solutions;
 }
+
+unsigned solved_symmetry(const Cube& cube) {
+    unsigned sym = 0;
+    for (unsigned k = 0; k < NS; ++k) {
+        if (local_is_solved(cube[k])) {
+            sym = rotations[k][2];
+            return sym;
+        }
+    }
+    assert(false);
+    return 0;
+}
+
 }  // namespace two_gen_reduction
+
+auto two_gen_solve(const Algorithm& scramble, const unsigned max_depth = 20,
+                   const unsigned slackness = 0) {
+    auto root_1 = two_gen_reduction::initialize(scramble);
+    auto phase_1_solutions =
+        two_gen_reduction::solve(root_1, max_depth, slackness);
+
+    std::vector<std::array<StepAlgorithm, 2>> solutions;
+    for (unsigned k = 0; k < phase_1_solutions.size(); ++k) {
+        auto depth = phase_1_solutions[k]->depth;
+        auto sym =
+            two_gen_reduction::solved_symmetry(phase_1_solutions[k]->state);
+        auto cube2 = CubieCube(scramble);
+        cube2.apply(phase_1_solutions[k]->get_path());
+        cube2 = cube2.get_conjugate(sym);
+        auto root_2 = make_root(cube2);
+        auto phase_2_solutions = two_gen::solve(root_2, max_depth - depth, 0);
+        if (phase_2_solutions.size() > 0) {
+            solutions.push_back(
+                {StepAlgorithm(phase_1_solutions[k]->get_path(), "Reduction"),
+                 StepAlgorithm(
+                     anti_symmetrize(phase_2_solutions[0]->get_path(), sym),
+                     "Finish")});
+        }
+    }
+    return solutions;
+}
