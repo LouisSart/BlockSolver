@@ -46,10 +46,14 @@ void apply(const Move& move, Cube& cube) {
     }
 };
 
+unsigned get_estimate(const CoordinateBlockCube& subcube) {
+    return p_table.estimate(block.index(subcube));
+};
+
 unsigned max_estimate(const MultiBlockCube<NB>& cube) {
-    return p_table.get_estimate(cube[0]) > p_table.get_estimate(cube[1])
-               ? p_table.get_estimate(cube[0])
-               : p_table.get_estimate(cube[1]);
+    return get_estimate(cube[0]) > get_estimate(cube[1])
+               ? get_estimate(cube[0])
+               : get_estimate(cube[1]);
 }
 
 auto estimate = [](const Cube& cube) {

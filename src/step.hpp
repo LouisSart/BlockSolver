@@ -43,13 +43,13 @@ auto get_is_solved(Block& block) {
     };
 }
 
-template <std::size_t NB, typename PruningTable>
-auto get_estimator(const PruningTable& p_table) {
-    return [&p_table](const MultiBlockCube<NB>& cube) {
+template <std::size_t NB, typename PruningTable, typename Indexer>
+auto get_estimator(const PruningTable& p_table, const Indexer& index) {
+    return [&p_table, &index](const MultiBlockCube<NB>& cube) {
         // Return the minimum estimate over all the cbcs
-        unsigned ret = p_table.get_estimate(cube[0]);
+        unsigned ret = p_table.estimate(index(cube[0]));
         for (auto cbc : cube) {
-            auto e = p_table.get_estimate(cbc);
+            auto e = p_table.estimate(index(cbc));
             ret = (e < ret) ? e : ret;
         }
         return ret;
@@ -90,13 +90,13 @@ auto make_optimal_block_solver(Block<nc, ne>& block,
     static auto m_table = BlockMoveTable(block);
     static auto p_table = load_pruning_table(block);
     static auto apply = get_sym_apply<NS>(m_table, rotations);
-    static auto estimate = get_estimator<NS>(p_table);
+    static auto estimate = get_estimator<NS>(p_table, block.get_indexer());
     static auto is_solved = get_is_solved<NS>(block);
 
     return [](const auto root, const unsigned max_depth = 20,
               const unsigned slackness = 0) {
-        return IDAstar<false>(root, apply, estimate, is_solved, max_depth,
-                              slackness);
+        return IDAstar<true>(root, apply, estimate, is_solved, max_depth,
+                             slackness);
     };
 }
 
@@ -134,9 +134,10 @@ auto make_optimal_split_block_solver(
         }
     };
 
-    static auto max_estimate = [](const MultiBlockCube<2>& subcube) {
-        auto e1 = p_table1.get_estimate(subcube[0]);
-        auto e2 = p_table2.get_estimate(subcube[1]);
+    static auto max_estimate = [block1,
+                                block2](const MultiBlockCube<2>& subcube) {
+        auto e1 = p_table1.estimate(block1.index(subcube[0]));
+        auto e2 = p_table2.estimate(block2.index(subcube[1]));
         return e1 > e2 ? e1 : e2;
     };
 

@@ -473,8 +473,8 @@ auto initialize(const Algorithm& alg) {
 }
 
 unsigned max_estimate(const MultiBlockCube<NB>& cube) {
-    unsigned h223 = std::max(b223::p_table.get_estimate(cube[0]),
-                             b223::p_table.get_estimate(cube[1]));
+    unsigned h223 =
+        std::max(b223::get_estimate(cube[0]), b223::get_estimate(cube[1]));
     unsigned h_cp_eo =
         ptable[corner_equivalence_table[cube[2].ccp] * ESIZE + cube[2].ceo];
     return std::max(h223, h_cp_eo);

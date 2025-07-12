@@ -212,12 +212,3 @@ struct Block {
         print_array(edges);
     };
 };
-
-template <unsigned nc, unsigned ne>
-auto load_pruning_table(const Block<nc, ne> &b) {
-    // Load the pruning table for the given block
-    constexpr size_t table_size = b.n_es * b.n_cs;
-    PruningTable<table_size> ptable;
-    ptable.load(b.id);
-    return ptable;
-};

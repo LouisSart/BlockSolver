@@ -17,7 +17,6 @@ int main(int argc, const char* argv[]) {
 
     if (strcmp(argv[1], "123") == 0) {
         auto root = block_solver_123::initialize(scramble);
-
         auto solutions = block_solver_123::solve(root, max_depth, slackness);
 
         solutions.sort_by_depth();
