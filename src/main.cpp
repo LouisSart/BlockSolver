@@ -11,6 +11,7 @@
 
 int main(int argc, const char* argv[]) {
     auto scramble = Algorithm(argv[argc - 1]);
+    scramble.show();
 
     unsigned slackness = get_option("-s", argc, argv, 0);
     unsigned max_depth = get_option("-M", argc, argv, 15);
@@ -58,6 +59,12 @@ int main(int argc, const char* argv[]) {
         solutions.sort_by_depth();
         solutions.show();
 
+    } else if (strcmp(argv[1], "two_gen_reduction") == 0) {
+        auto root = two_gen_reduction::initialize(scramble);
+
+        auto solutions = two_gen_reduction::solve(root, max_depth, slackness);
+        solutions.sort_by_depth();
+        solutions.show();
     } else {
         std::cout << "Invalid argument: " << argv[1] << std::endl;
     }

@@ -355,6 +355,7 @@ auto cc_initialize(const CubieCube& scramble_cc) {
 }
 
 auto initialize(const Algorithm& alg) {
+    load_tables();
     CubieCube cc;
     cc.apply(alg);
     return cc_initialize(cc);
@@ -380,7 +381,7 @@ auto estimate = [](const Cube& cube) {
 auto solve(const Node<Cube>::sptr root, const unsigned& max_depth,
            const unsigned& slackness) {
     auto solutions =
-        IDAstar<true>(root, apply, estimate, is_solved, max_depth, slackness);
+        IDAstar<false>(root, apply, estimate, is_solved, max_depth, slackness);
     return solutions;
 }
 }  // namespace two_gen_reduction
