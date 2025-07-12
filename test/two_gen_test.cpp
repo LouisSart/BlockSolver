@@ -56,6 +56,7 @@ void two_gen_solve_test() {
 
 void two_gen_reduction_index_test() {
     namespace b223 = block_solver_223;
+    two_gen_reduction::load_tables();
     auto root = two_gen_reduction::cc_initialize(CubieCube());
     auto cube = root->state;
 
@@ -78,13 +79,6 @@ void two_gen_reduction_index_test() {
     assert(two_gen_reduction::max_estimate(cube[1]) == 2);
 }
 
-void two_gen_reduction_table_test() {
-    two_gen_reduction::make_corner_equivalence_table();
-    two_gen_reduction::make_pruning_table();
-    two_gen_reduction::write_tables();
-    two_gen_reduction::load_tables();
-}
-
 void two_gen_reduction_solve_test() {
     auto root = two_gen_reduction::initialize("R U R U R' U2 R' B D R U");
 
@@ -102,7 +96,6 @@ int main() {
     pruning_table_test();
     two_gen_solve_test();
     two_gen_reduction_index_test();
-    two_gen_reduction_table_test();
     two_gen_reduction_solve_test();
     return 0;
 }

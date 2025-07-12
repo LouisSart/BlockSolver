@@ -313,75 +313,19 @@ unsigned cp_eo_index(const CubieCube& cc) {
 }
 
 constexpr unsigned TABLE_SIZE = N_EQ_CLASSES * ESIZE;
-std::array<unsigned, TABLE_SIZE> ptable;
-void make_pruning_table() {
-    ptable.fill(255);  // initialize the table with 255
-    ptable[cp_eo_index(CubieCube())] = 0;
-
-    std::deque<CubieCube> queue{CubieCube()};
-    while (!queue.empty()) {
-        CubieCube cc = queue.back();
-
-        unsigned i = cp_eo_index(cc);
-        unsigned depth = ptable[i];
-        assert(i < ptable.size());
-
-        for (auto move : HTM_Moves) {
-            CubieCube cc2 = cc;
-            cc2.apply(move);
-
-            unsigned ii = cp_eo_index(cc2);
-            assert(ii < ptable.size());
-            if (ptable[ii] == 255) {
-                ptable[ii] = depth + 1;
-                queue.push_front(cc2);
-            }
-        }
-        queue.pop_back();
-    }
-    for (unsigned h : ptable) {
-        assert(h < 255);
-    }
-}
-
-auto filedir = fs::current_path() / "pruning_tables" / "two_gen_reduction";
-auto equivalence_filepath = filedir / "corner_equivalence";
-auto cp_eo_filepath = filedir / "cp_eo_ptable";
-void write_tables() {
-    fs::create_directories(filedir);
-    {
-        std::ofstream file(equivalence_filepath, std::ios::binary);
-        file.write(reinterpret_cast<char*>(corner_equivalence_table.data()),
-                   sizeof(unsigned) * corner_equivalence_table.size());
-        file.close();
-    }
-    {
-        std::ofstream file(cp_eo_filepath, std::ios::binary);
-        file.write(reinterpret_cast<char*>(ptable.data()),
-                   sizeof(unsigned) * ptable.size());
-        file.close();
-    }
-}
+PruningTable<TABLE_SIZE> ptable;
 
 void load_tables() {
-    if (fs::exists(equivalence_filepath) && fs::exists(cp_eo_filepath)) {
-        {
-            std::ifstream file(equivalence_filepath, std::ios::binary);
-            file.read(reinterpret_cast<char*>(corner_equivalence_table.data()),
-                      sizeof(unsigned) * corner_equivalence_table.size());
-            file.close();
-        }
-        {
-            std::ifstream file(cp_eo_filepath, std::ios::binary);
-            file.read(reinterpret_cast<char*>(ptable.data()),
-                      sizeof(unsigned) * ptable.size());
-            file.close();
-        }
+    make_corner_equivalence_table();
+    if (ptable.load("two_gen_reduction")) {
+        return;
     } else {
-        std::cout << "Pruning table not found, generating" << std::endl;
-        make_corner_equivalence_table();
-        make_pruning_table();
-        write_tables();
+        std::cout << "generating..." << std::endl;
+        ptable.generate(
+            CubieCube(),
+            [](const Move& move, CubieCube& cc) { cc.apply(move); },
+            cp_eo_index);  // generate the pruning table
+        ptable.write("two_gen_reduction");
     }
 }
 
