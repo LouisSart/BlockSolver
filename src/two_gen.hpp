@@ -141,81 +141,25 @@ std::array<Move, 6> moves{U, U2, U3, R, R2, R3};
 constexpr unsigned N_TWO_GEN_CP = factorial(5);
 constexpr unsigned N_TWO_GEN_CO = ipow(3, 5);
 constexpr unsigned N_TWO_GEN_EP = factorial(7);
-std::array<unsigned, N_TWO_GEN_CP * N_TWO_GEN_CO> corner_ptable;
-std::array<unsigned, N_TWO_GEN_EP> edge_ptable;
-
-template <std::size_t N, typename Indexer, std::size_t NM>
-void make_pruning_table(std::array<unsigned, N>& ptable, const Indexer& index,
-                        std::array<Move, NM>& moves) {
-    std::fill(ptable.begin(), ptable.end(), 255);
-
-    std::deque<CubieCube> queue{CubieCube()};
-
-    ptable[index(CubieCube())] = 0;
-
-    while (!queue.empty()) {
-        CubieCube cc = queue.back();
-
-        unsigned i = index(cc);
-        unsigned depth = ptable[i];
-        assert(i < ptable.size());
-
-        for (unsigned k = 0; k < 6; ++k) {
-            CubieCube cc2 = cc;
-            cc2.apply(moves[k]);
-
-            unsigned ii = index(cc2);
-            assert(ii < ptable.size());
-            if (ptable[ii] == 255) {
-                ptable[ii] = depth + 1;
-                queue.push_front(cc2);
-            }
-        }
-        queue.pop_back();
-    }
-}
-
-auto filedir = fs::current_path() / "pruning_tables" / "two_gen";
-auto corner_filepath = filedir / "corners";
-auto edge_filepath = filedir / "edges";
-
-void write_tables() {
-    fs::create_directories(filedir);
-    {
-        std::ofstream file(corner_filepath, std::ios::binary);
-        file.write(reinterpret_cast<char*>(corner_ptable.data()),
-                   sizeof(unsigned) * corner_ptable.size());
-        file.close();
-    }
-    {
-        std::ofstream file(edge_filepath, std::ios::binary);
-        file.write(reinterpret_cast<char*>(edge_ptable.data()),
-                   sizeof(unsigned) * edge_ptable.size());
-        file.close();
-    }
-}
+PruningTable<N_TWO_GEN_CP * N_TWO_GEN_CO> corner_ptable;
+PruningTable<N_TWO_GEN_EP> edge_ptable;
 
 void load_tables() {
-    if (fs::exists(corner_filepath) && fs::exists(edge_filepath)) {
-        assert(fs::exists(corner_filepath));
-        {
-            std::ifstream file(corner_filepath, std::ios::binary);
-            file.read(reinterpret_cast<char*>(corner_ptable.data()),
-                      sizeof(unsigned) * corner_ptable.size());
-            file.close();
-        }
-        assert(fs::exists(edge_filepath));
-        {
-            std::ifstream file(edge_filepath, std::ios::binary);
-            file.read(reinterpret_cast<char*>(edge_ptable.data()),
-                      sizeof(unsigned) * edge_ptable.size());
-            file.close();
-        }
+    if (corner_ptable.load("two_gen_corners") &&
+        edge_ptable.load("two_gen_edges")) {
+        return;
     } else {
-        std::cout << "Pruning table not found, generating" << std::endl;
-        make_pruning_table(corner_ptable, corner_index, moves);
-        make_pruning_table(edge_ptable, edge_index, moves);
-        write_tables();
+        std::cout << "generating..;" << std::endl;
+        corner_ptable.generate(
+            CubieCube(),
+            [](const Move& move, CubieCube& cc) { cc.apply(move); },
+            corner_index, {R, R2, R3, U, U2, U3});
+        edge_ptable.generate(
+            CubieCube(),
+            [](const Move& move, CubieCube& cc) { cc.apply(move); }, edge_index,
+            {R, R2, R3, U, U2, U3});
+        corner_ptable.write("two_gen_corners");
+        edge_ptable.write("two_gen_edges");
     }
 }
 

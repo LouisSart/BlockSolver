@@ -32,20 +32,8 @@ void corner_index_test() {
     assert(check_duplicates.size() == 120);
 }
 
-void pruning_table_test() {
-    two_gen::make_pruning_table(two_gen::corner_ptable, two_gen::corner_index,
-                                two_gen::moves);
-    for (unsigned k : two_gen::corner_ptable) {
-        assert(k < 255);
-    }
-    two_gen::make_pruning_table(two_gen::edge_ptable, two_gen::edge_index,
-                                two_gen::moves);
-    for (unsigned k : two_gen::edge_ptable) {
-        assert(k < 255);
-    }
-}
-
 void two_gen_solve_test() {
+    two_gen::load_tables();
     auto root = two_gen::initialize("R U R U R U R U R U R U R U R");
 
     auto solutions = two_gen::solve(root, 20, 0);
@@ -93,7 +81,6 @@ int main() {
     pairing_test();
     two_gen_index_test();
     corner_index_test();
-    pruning_table_test();
     two_gen_solve_test();
     two_gen_reduction_index_test();
     two_gen_reduction_solve_test();
