@@ -6,6 +6,22 @@
 #include "pruning_table.hpp"          // load_ptr(Strategy)
 #include "search.hpp"                 // DFS and IDA*
 
+template <unsigned nc, unsigned ne>
+auto load_pruning_table(Block<nc, ne>& b) {
+    // Load the pruning table for the given block
+    constexpr size_t table_size = b.n_es * b.n_cs;
+    PruningTable<table_size> ptable;
+    bool check = ptable.load(b.id);
+    if (!check) {
+        print("Generating pruning table: ", b.id);
+        BlockMoveTable<nc, ne> mtable(b);
+        auto root = b.to_coordinate_block_cube(CubieCube());
+        ptable.generate(root, mtable.get_apply(), b.get_indexer());
+    }
+    ptable.write(b.id);
+    return ptable;
+};
+
 template <std::size_t NB, typename MoveTable>
 auto get_sym_apply(const MoveTable& m_table,
                    const std::array<unsigned, NB>& rotations) {
