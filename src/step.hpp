@@ -95,8 +95,8 @@ auto make_optimal_block_solver(Block<nc, ne>& block,
 
     return [](const auto root, const unsigned max_depth = 20,
               const unsigned slackness = 0) {
-        return IDAstar<true>(root, apply, estimate, is_solved, max_depth,
-                             slackness);
+        return IDAstar<false>(root, apply, estimate, is_solved, max_depth,
+                              slackness);
     };
 }
 
