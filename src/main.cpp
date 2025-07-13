@@ -11,7 +11,6 @@
 
 int main(int argc, const char* argv[]) {
     auto scramble = Algorithm(argv[argc - 1]);
-    scramble.show();
 
     unsigned slackness = get_option("-s", argc, argv, 0);
     unsigned max_depth = get_option("-M", argc, argv, 15);
