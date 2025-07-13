@@ -405,7 +405,11 @@ auto two_gen_solve(const Algorithm& scramble, const unsigned max_depth = 20,
     auto phase_1_solutions =
         two_gen_reduction::solve(root_1, max_depth, slackness);
 
-    std::vector<std::array<StepAlgorithm, 2>> solutions;
+    auto root_1_inverse = two_gen_reduction::initialize(scramble.get_inverse());
+    auto phase_1_solutions_inverse =
+        two_gen_reduction::solve(root_1_inverse, max_depth, slackness);
+
+    std::vector<Skeleton> solutions;
     for (unsigned k = 0; k < phase_1_solutions.size(); ++k) {
         auto depth = phase_1_solutions[k]->depth;
         auto sym =
@@ -416,11 +420,31 @@ auto two_gen_solve(const Algorithm& scramble, const unsigned max_depth = 20,
         auto root_2 = make_root(cube2);
         auto phase_2_solutions = two_gen::solve(root_2, max_depth - depth, 0);
         if (phase_2_solutions.size() > 0) {
-            solutions.push_back(
+            solutions.push_back(Skeleton(
                 {StepAlgorithm(phase_1_solutions[k]->get_path(), "Reduction"),
                  StepAlgorithm(
                      anti_symmetrize(phase_2_solutions[0]->get_path(), sym),
-                     "Finish")});
+                     "Finish")}));
+        }
+    }
+    for (unsigned k = 0; k < phase_1_solutions_inverse.size(); ++k) {
+        auto depth = phase_1_solutions_inverse[k]->depth;
+        auto sym = two_gen_reduction::solved_symmetry(
+            phase_1_solutions_inverse[k]->state);
+        auto cube2 = CubieCube(scramble.get_inverse());
+        cube2.apply(phase_1_solutions_inverse[k]->get_path());
+        cube2 = cube2.get_conjugate(sym);
+        auto root_2 = make_root(cube2);
+        auto phase_2_solutions = two_gen::solve(root_2, max_depth - depth, 0);
+        if (phase_2_solutions.size() > 0) {
+            auto phase_1_alg = StepAlgorithm(
+                phase_1_solutions_inverse[k]->get_path(), "Reduction");
+            phase_1_alg.inv_flag = true;
+            auto phase_2_alg = StepAlgorithm(
+                anti_symmetrize(phase_2_solutions[0]->get_path(), sym),
+                "Finish");
+            phase_2_alg.inv_flag = true;
+            solutions.push_back(Skeleton({phase_1_alg, phase_2_alg}));
         }
     }
     return solutions;

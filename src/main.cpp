@@ -72,8 +72,7 @@ int main(int argc, const char* argv[]) {
         auto solutions = two_gen_solve(scramble, max_depth, slackness);
         for (auto sol : solutions) {
             print("------------");
-            sol[0].show();
-            sol[1].show(sol[0].size());
+            sol.show();
         }
     } else {
         std::cout << "Invalid argument: " << argv[1] << std::endl;
