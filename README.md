@@ -7,7 +7,7 @@ It can also solve the F2L-1 suboptimally in three steps : 2x2x2, 2x2x3 and F2L-1
 ### Configuration ###
 
 ```console
-cmake -B build
+cmake -B build -DCMAKE_BUILD_TYPE=Release
 ```
 
 ### Compilation ###
