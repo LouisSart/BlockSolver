@@ -203,63 +203,17 @@ auto solve(const Node<CubieCube>::sptr root, const unsigned& max_depth,
 namespace two_gen_reduction {
 namespace b223 = block_solver_223;
 
-constexpr unsigned N_EQ_CLASSES = 336;  // 336 = 8! / 5!
-std::array<unsigned, 40320> corner_equivalence_table;
-void make_corner_equivalence_table() {
-    // Reduce the number of corner permutations by using an equivalence index
-    // every two permutations with the same equivalence index have the same
-    // reduction sequences to two gen.
-
-    two_gen::make_corner_index_table();  // make sure the conversion table is up
-    std::array<CubieCube, 120> two_gen_permutations;
-    for (unsigned k = 0; k < 120; ++k) {
-        unsigned p_index = two_gen::corner_index_table[k];
-        two_gen_permutations[k] = CubieCube();
-        permutation_from_index(p_index, two_gen_permutations[k].cp);
-    }
-    unsigned check_counter = 0;
-
-    corner_equivalence_table.fill(N_EQ_CLASSES);
-    unsigned class_index = 0;
-    std::deque<CubieCube> queue{CubieCube()};
-    while (queue.size() > 0) {
-        CubieCube cc = queue.back();
-        queue.pop_back();
-
-        unsigned index = permutation_index(cc.cp);
-        if (corner_equivalence_table[index] == N_EQ_CLASSES) {
-            assert(class_index < N_EQ_CLASSES);
-
-            for (const CubieCube& perm : two_gen_permutations) {
-                CubieCube eq = perm;
-                eq.apply(cc);
-                corner_equivalence_table[permutation_index(eq.cp)] =
-                    class_index;
-            }
-            for (auto move : HTM_Moves) {
-                CubieCube next = cc;
-                next.apply(move);
-                queue.push_front(next);
-            }
-            ++class_index;
-        }
-    }
-}
-
-constexpr unsigned ESIZE = ipow(2, 11);  // Number of possible eo states
-unsigned cp_eo_index(const CubieCube& cc) {
-    unsigned cpi = corner_equivalence_table[permutation_index<8>(cc.cp)];
-    unsigned eoi = eo_index<12, true>(cc.eo);
-    assert(cpi < N_EQ_CLASSES);
-    assert(eoi < ESIZE);
-
-    return cpi * ESIZE + eoi;
-}
-
 constexpr unsigned NB = 3;
 constexpr unsigned NS = b223::NS;
 using Cube = std::array<MultiBlockCube<NB>, NS>;
+constexpr unsigned N_EQ_CLASSES = 336;   // 336 = 8! / 5!
+constexpr unsigned ESIZE = ipow(2, 11);  // Number of possible eo states
+constexpr unsigned TABLE_SIZE = N_EQ_CLASSES * ESIZE;
 
+auto corner_block =
+    Block<8, 0>("Corners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {});
+auto c_m_table = BlockMoveTable(corner_block);
+auto eo_m_table = EOMoveTable();
 std::array<std::array<unsigned, NB>, NS> rotations = {{
     {symmetry_index(0, 0, 0, 0), symmetry_index(2, 3, 0, 0),
      symmetry_index(0, 3, 0, 0)},  // DB
@@ -287,10 +241,8 @@ std::array<std::array<unsigned, NB>, NS> rotations = {{
      symmetry_index(2, 2, 0, 0)},  // RF
 }};
 
-auto corner_block =
-    Block<8, 0>("Corners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {});
-auto c_m_table = BlockMoveTable(corner_block);
-auto eo_m_table = EOMoveTable();
+std::array<unsigned, 40320> corner_equivalence_table;
+PruningTable<TABLE_SIZE> ptable;
 
 void local_apply(const Move& move, const std::array<unsigned, NB>& syms,
                  MultiBlockCube<NB>& subcube) {
@@ -349,8 +301,63 @@ unsigned phase_2_index(const MultiBlockCube<NB>& cube) {
     return corner_equivalence_table[cube[2].ccp] * ESIZE + cube[2].ceo;
 }
 
-constexpr unsigned TABLE_SIZE = N_EQ_CLASSES * ESIZE;
-PruningTable<TABLE_SIZE> ptable;
+unsigned max_estimate(const MultiBlockCube<NB>& cube) {
+    unsigned h223 =
+        std::max(b223::get_estimate(cube[0]), b223::get_estimate(cube[1]));
+    unsigned hphase2 = ptable[phase_2_index(cube)];
+    return std::max(h223, hphase2);
+}
+
+auto estimate = [](const Cube& cube) {
+    unsigned ret = max_estimate(cube[0]);
+    for (unsigned k = 0; k < NS; ++k) {
+        unsigned e = max_estimate(cube[k]);
+        ret = ret < e ? ret : e;
+    }
+    return ret;
+};
+
+void make_corner_equivalence_table() {
+    // Reduce the number of corner permutations by using an equivalence index
+    // every two permutations with the same equivalence index have the same
+    // reduction sequences to two gen.
+
+    two_gen::make_corner_index_table();  // make sure the conversion table is up
+    std::array<CubieCube, 120> two_gen_permutations;
+    for (unsigned k = 0; k < 120; ++k) {
+        unsigned p_index = two_gen::corner_index_table[k];
+        two_gen_permutations[k] = CubieCube();
+        permutation_from_index(p_index, two_gen_permutations[k].cp);
+    }
+    unsigned check_counter = 0;
+
+    corner_equivalence_table.fill(N_EQ_CLASSES);
+    unsigned class_index = 0;
+    std::deque<CubieCube> queue{CubieCube()};
+    while (queue.size() > 0) {
+        CubieCube cc = queue.back();
+        queue.pop_back();
+
+        unsigned index = permutation_index(cc.cp);
+        if (corner_equivalence_table[index] == N_EQ_CLASSES) {
+            assert(class_index < N_EQ_CLASSES);
+
+            for (const CubieCube& perm : two_gen_permutations) {
+                CubieCube eq = perm;
+                eq.apply(cc);
+                corner_equivalence_table[permutation_index(eq.cp)] =
+                    class_index;
+            }
+            for (auto move : HTM_Moves) {
+                CubieCube next = cc;
+                next.apply(move);
+                queue.push_front(next);
+            }
+            ++class_index;
+        }
+    }
+}
+
 void load_tables() {
     make_corner_equivalence_table();
     if (ptable.load("two_gen_reduction")) {
@@ -373,22 +380,6 @@ auto initialize(const Algorithm& alg) {
     cc.apply(alg);
     return cc_initialize(cc);
 }
-
-unsigned max_estimate(const MultiBlockCube<NB>& cube) {
-    unsigned h223 =
-        std::max(b223::get_estimate(cube[0]), b223::get_estimate(cube[1]));
-    unsigned hphase2 = ptable[phase_2_index(cube)];
-    return std::max(h223, hphase2);
-}
-
-auto estimate = [](const Cube& cube) {
-    unsigned ret = max_estimate(cube[0]);
-    for (unsigned k = 0; k < NS; ++k) {
-        unsigned e = max_estimate(cube[k]);
-        ret = ret < e ? ret : e;
-    }
-    return ret;
-};
 
 auto solve(const Node<Cube>::sptr root, const unsigned& max_depth,
            const unsigned& slackness) {
