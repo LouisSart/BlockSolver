@@ -361,12 +361,15 @@ auto initialize(const Algorithm& alg) {
     return cc_initialize(cc);
 }
 
+unsigned phase_2_index(const MultiBlockCube<NB>& cube) {
+    return corner_equivalence_table[cube[2].ccp] * ESIZE + cube[2].ceo;
+}
+
 unsigned max_estimate(const MultiBlockCube<NB>& cube) {
     unsigned h223 =
         std::max(b223::get_estimate(cube[0]), b223::get_estimate(cube[1]));
-    unsigned h_cp_eo =
-        ptable[corner_equivalence_table[cube[2].ccp] * ESIZE + cube[2].ceo];
-    return std::max(h223, h_cp_eo);
+    unsigned hphase2 = ptable[phase_2_index(cube)];
+    return std::max(h223, hphase2);
 }
 
 auto estimate = [](const Cube& cube) {
