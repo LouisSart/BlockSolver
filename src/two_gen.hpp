@@ -208,7 +208,9 @@ constexpr unsigned NS = b223::NS;
 using Cube = std::array<MultiBlockCube<NB>, NS>;
 constexpr unsigned N_EQ_CLASSES = 336;   // 336 = 8! / 5!
 constexpr unsigned ESIZE = ipow(2, 11);  // Number of possible eo states
-constexpr unsigned TABLE_SIZE = N_EQ_CLASSES * ESIZE;
+constexpr unsigned N_COMB_3EDGES =
+    binomial(12, 3);  // Number of states that the 3 LF, DL, LB edges can be
+constexpr unsigned TABLE_SIZE = N_EQ_CLASSES * ESIZE * N_COMB_3EDGES;
 
 auto corner_block =
     Block<8, 0>("Corners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {});
@@ -298,7 +300,11 @@ auto cc_initialize(const CubieCube& scramble_cc) {
 }
 
 unsigned phase_2_index(const MultiBlockCube<NB>& cube) {
-    return corner_equivalence_table[cube[2].ccp] * ESIZE + cube[2].ceo;
+    unsigned ci = corner_equivalence_table[cube[2].ccp];  // two gen corner
+                                                          // equivalence class
+    unsigned ei = cube[2].ceo;                            // eo state index
+    unsigned cl = cube[0].cel;  // layout coordinate of the 3 edges from DL 123
+    return (ci * ESIZE + ei) * N_COMB_3EDGES + cl;
 }
 
 unsigned max_estimate(const MultiBlockCube<NB>& cube) {
@@ -364,7 +370,7 @@ void load_tables() {
         return;
     } else {
         std::cout << "generating..." << std::endl;
-        ptable.generate(
+        ptable.generate<true>(
             local_cc_initialize(CubieCube(), 1),
             [](const Move& move, MultiBlockCube<NB>& cube) {
                 local_apply(move, rotations[1], cube);
