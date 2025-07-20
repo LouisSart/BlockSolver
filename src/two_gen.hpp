@@ -149,7 +149,7 @@ void load_tables() {
         edge_ptable.load("two_gen_edges")) {
         return;
     } else {
-        std::cout << "generating..;" << std::endl;
+        std::cout << "generating..." << std::endl;
         corner_ptable.generate(
             CubieCube(),
             [](const Move& move, CubieCube& cc) { cc.apply(move); },
@@ -256,23 +256,6 @@ unsigned cp_eo_index(const CubieCube& cc) {
     return cpi * ESIZE + eoi;
 }
 
-constexpr unsigned TABLE_SIZE = N_EQ_CLASSES * ESIZE;
-PruningTable<TABLE_SIZE> ptable;
-
-void load_tables() {
-    make_corner_equivalence_table();
-    if (ptable.load("two_gen_reduction")) {
-        return;
-    } else {
-        std::cout << "generating..." << std::endl;
-        ptable.generate(
-            CubieCube(),
-            [](const Move& move, CubieCube& cc) { cc.apply(move); },
-            cp_eo_index);  // generate the pruning table
-        ptable.write("two_gen_reduction");
-    }
-}
-
 constexpr unsigned NB = 3;
 constexpr unsigned NS = b223::NS;
 using Cube = std::array<MultiBlockCube<NB>, NS>;
@@ -337,21 +320,51 @@ auto is_solved = [](const Cube& cube) {
     return false;
 };
 
+auto local_cc_initialize(const CubieCube& scramble_cc, const unsigned k) {
+    MultiBlockCube<NB> ret;
+
+    ret[0] = b223::block.to_coordinate_block_cube(
+        scramble_cc.get_conjugate(rotations[k][0]));
+    ret[1] = b223::block.to_coordinate_block_cube(
+        scramble_cc.get_conjugate(rotations[k][1]));
+    ret[2] = corner_block.to_coordinate_block_cube(
+        scramble_cc.get_conjugate(rotations[k][2]));
+    ret[2].ceo =
+        eo_index<NE, true>(scramble_cc.get_conjugate(rotations[k][2]).eo);
+
+    return ret;
+}
+
 auto cc_initialize(const CubieCube& scramble_cc) {
     Cube ret;
 
     for (unsigned k = 0; k < NS; ++k) {
-        ret[k][0] = b223::block.to_coordinate_block_cube(
-            scramble_cc.get_conjugate(rotations[k][0]));
-        ret[k][1] = b223::block.to_coordinate_block_cube(
-            scramble_cc.get_conjugate(rotations[k][1]));
-        ret[k][2] = corner_block.to_coordinate_block_cube(
-            scramble_cc.get_conjugate(rotations[k][2]));
-        ret[k][2].ceo =
-            eo_index<NE, true>(scramble_cc.get_conjugate(rotations[k][2]).eo);
+        ret[k] = local_cc_initialize(scramble_cc, k);
     }
 
     return make_root(ret);
+}
+
+unsigned phase_2_index(const MultiBlockCube<NB>& cube) {
+    return corner_equivalence_table[cube[2].ccp] * ESIZE + cube[2].ceo;
+}
+
+constexpr unsigned TABLE_SIZE = N_EQ_CLASSES * ESIZE;
+PruningTable<TABLE_SIZE> ptable;
+void load_tables() {
+    make_corner_equivalence_table();
+    if (ptable.load("two_gen_reduction")) {
+        return;
+    } else {
+        std::cout << "generating..." << std::endl;
+        ptable.generate(
+            local_cc_initialize(CubieCube(), 1),
+            [](const Move& move, MultiBlockCube<NB>& cube) {
+                local_apply(move, rotations[1], cube);
+            },
+            phase_2_index);  // generate the pruning table
+        ptable.write("two_gen_reduction");
+    }
 }
 
 auto initialize(const Algorithm& alg) {
@@ -359,10 +372,6 @@ auto initialize(const Algorithm& alg) {
     CubieCube cc;
     cc.apply(alg);
     return cc_initialize(cc);
-}
-
-unsigned phase_2_index(const MultiBlockCube<NB>& cube) {
-    return corner_equivalence_table[cube[2].ccp] * ESIZE + cube[2].ceo;
 }
 
 unsigned max_estimate(const MultiBlockCube<NB>& cube) {
