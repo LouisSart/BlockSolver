@@ -22,20 +22,20 @@ auto load_pruning_table(Block<nc, ne>& b) {
     return ptable;
 };
 
-template <std::size_t NB, typename MoveTable>
+template <std::size_t NS, typename MoveTable>
 auto get_sym_apply(const MoveTable& m_table,
-                   const std::array<unsigned, NB>& rotations) {
-    return [&m_table, &rotations](const Move& move, MultiBlockCube<NB>& cube) {
-        for (unsigned k = 0; k < NB; ++k) {
+                   const std::array<unsigned, NS>& rotations) {
+    return [&m_table, &rotations](const Move& move, MultiBlockCube<NS>& cube) {
+        for (unsigned k = 0; k < NS; ++k) {
             m_table.sym_apply(move, rotations[k], cube[k]);
         }
     };
 }
 
-template <std::size_t NB, typename Block>
+template <std::size_t NS, typename Block>
 auto get_is_solved(Block& block) {
-    return [&block](const MultiBlockCube<NB>& cube) {
-        // Returns true if at least one of the cbc is solved
+    return [&block](const MultiBlockCube<NS>& cube) {
+        // Returns true if at least one of the symmetries is solved
         for (auto cbc : cube) {
             if (block.is_solved(cbc)) return true;
         }
