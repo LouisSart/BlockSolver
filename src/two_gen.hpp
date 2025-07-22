@@ -422,6 +422,7 @@ unsigned solved_symmetry(const Cube& cube) {
 
 }  // namespace two_gen_reduction
 
-auto finish = make_stepper(make_root<CubieCube>, two_gen::solve, STEPFINAL{});
+auto finish =
+    make_stepper(make_root<CubieCube>, two_gen::solve, STEPFINAL{}, NONISS);
 auto reduction = make_stepper(two_gen_reduction::cc_initialize,
                               two_gen_reduction::solve, finish);
