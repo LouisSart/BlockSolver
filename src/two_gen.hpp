@@ -11,6 +11,7 @@
 #include "search.hpp"  // IDAstar
 
 namespace fs = std::filesystem;
+namespace b223 = block_solver_223;
 
 namespace two_gen {
 using Pair = std::set<Cubie>;
@@ -77,12 +78,22 @@ unsigned pairing_index(const CubieCube& cc) {
     return permutation_index(perm);
 }
 
+bool is_two_gen(const CubieCube& cc) {
+    return (cc.cp[DLF] == DLF && cc.co[DLF] == 0) &&  // DLF solved
+           (cc.cp[DLB] == DLB && cc.co[DLB] == 0) &&  // DLB solved
+           (cc.ep[DF] == DF && cc.eo[DF] == 0) &&     // DF solved
+           (cc.ep[DL] == DL && cc.eo[DL] == 0) &&     // DL solved
+           (cc.ep[DB] == DB && cc.eo[DB] == 0) &&     // DB solved
+           (cc.ep[LF] == LF && cc.eo[LF] == 0) &&     // LF solved
+           (cc.ep[LB] == LB && cc.eo[LB] == 0) &&     // LB solved
+           (eo_index(cc.eo) == 0);                    // EO solved
+}
+
 unsigned corner_index(const CubieCube& cc) {
     static std::array<unsigned, 6> corners{ULF, URF, URB, ULB, DRF, DRB};
     static std::array<unsigned, 6> co;
 
-    assert(cc.cp[DLF] == DLF && cc.co[DLF] == 0);  // DLF solved
-    assert(cc.cp[DLB] == DLB && cc.co[DLB] == 0);  // DLB solved
+    assert(is_two_gen(cc));
 
     for (unsigned k = 0; k < 6; ++k) {
         co[k] = cc.co[corners[k]];
@@ -98,12 +109,7 @@ unsigned edge_index(const CubieCube& cc) {
     static std::array<unsigned, 7> edges{UF, UR, UB, UL, RF, RB, DR};
     static std::array<unsigned, 7> ep;
 
-    assert(cc.ep[DF] == DF && cc.eo[DF] == 0);  // DF solved
-    assert(cc.ep[DL] == DL && cc.eo[DL] == 0);  // DL solved
-    assert(cc.ep[DB] == DB && cc.eo[DB] == 0);  // DB solved
-    assert(cc.ep[LF] == LF && cc.eo[LF] == 0);  // LF solved
-    assert(cc.ep[LB] == LB && cc.eo[LB] == 0);  // LB solved
-    assert(eo_index(cc.eo) == 0);               // EO solved
+    assert(is_two_gen(cc));
 
     for (unsigned k = 0; k < 7; ++k) {
         ep[k] = cc.ep[edges[k]];
@@ -143,6 +149,7 @@ constexpr unsigned N_TWO_GEN_CO = ipow(3, 5);
 constexpr unsigned N_TWO_GEN_EP = factorial(7);
 PruningTable<N_TWO_GEN_CP * N_TWO_GEN_CO> corner_ptable;
 PruningTable<N_TWO_GEN_EP> edge_ptable;
+constexpr unsigned NS = b223::NS;
 
 void load_tables() {
     if (corner_ptable.load("two_gen_corners") &&
@@ -163,12 +170,6 @@ void load_tables() {
     }
 }
 
-unsigned estimate(const CubieCube& cc) {
-    unsigned e_index = edge_ptable[edge_index(cc)];
-    unsigned c_index = corner_ptable[corner_index(cc)];
-    return std::max(e_index, c_index);
-}
-
 auto initialize(const Algorithm& scramble) {
     load_tables();
     CubieCube cc;
@@ -177,22 +178,59 @@ auto initialize(const Algorithm& scramble) {
     return make_root(cc);
 }
 
-bool is_solved(const CubieCube& cc) { return cc.is_solved(); }
-void apply(const Move& move, CubieCube& cc) { cc.apply(move); }
-
-std::vector<Move> directions(const Node<CubieCube>::sptr node) {
-    if (node->parent == nullptr) {
-        return {R, R2, R3, U, U2, U3};
-    } else if (node->last_moves.back() == R || node->last_moves.back() == R2 ||
-               node->last_moves.back() == R3) {
-        return {U, U2, U3};
-    } else {
-        return {R, R2, R3};
-    }
-}
-
 auto solve(const Node<CubieCube>::sptr root, const unsigned& max_depth,
            const unsigned& slackness) {
+    std::array<unsigned, NS> rotations{
+        symmetry_index(0, 3, 0, 0),  // DB
+        symmetry_index(0, 0, 0, 0),  // DL
+        symmetry_index(0, 1, 0, 0),  // DF
+        symmetry_index(0, 2, 0, 0),  // DR
+        symmetry_index(0, 3, 1, 0),  // UB
+        symmetry_index(0, 0, 1, 0),  // UR
+        symmetry_index(0, 2, 1, 0),  // UL
+        symmetry_index(0, 1, 1, 0),  // UF
+        symmetry_index(2, 0, 0, 0),  // LB
+        symmetry_index(2, 1, 0, 0),  // LF
+        symmetry_index(2, 3, 0, 0),  // RB
+        symmetry_index(2, 2, 0, 0),  // RF
+    };
+
+    unsigned sym;
+    CubieCube cc = root->state;
+    for (unsigned s : rotations) {
+        // Find the two_gen_rotation
+        if (is_two_gen(cc.get_conjugate(s))) {
+            sym = s;
+        }
+    }
+
+    auto estimate = [&sym](const CubieCube& cc) {
+        CubieCube conj = cc.get_conjugate(sym);
+        unsigned e_index = edge_ptable[edge_index(conj)];
+        unsigned c_index = corner_ptable[corner_index(conj)];
+        return std::max(e_index, c_index);
+    };
+
+    auto is_solved = [](const CubieCube& cc) { return cc.is_solved(); };
+    auto apply = [&sym](const Move& move, CubieCube& cc) { cc.apply(move); };
+
+    auto directions =
+        [&sym](const Node<CubieCube>::sptr node) -> std::vector<Move> {
+        if (node->parent == nullptr) {
+            return {move_anti_conj(R, sym),  move_anti_conj(R2, sym),
+                    move_anti_conj(R3, sym), move_anti_conj(U, sym),
+                    move_anti_conj(U2, sym), move_anti_conj(U3, sym)};
+        } else if (node->last_moves.back() == move_anti_conj(R, sym) ||
+                   node->last_moves.back() == move_anti_conj(R2, sym) ||
+                   node->last_moves.back() == move_anti_conj(R3, sym)) {
+            return {move_anti_conj(U, sym), move_anti_conj(U2, sym),
+                    move_anti_conj(U3, sym)};
+        } else {
+            return {move_anti_conj(R, sym), move_anti_conj(R2, sym),
+                    move_anti_conj(R3, sym)};
+        }
+    };
+
     auto solutions = IDAstar<false>(root, apply, estimate, is_solved,
                                     directions, max_depth, slackness);
     return solutions;
@@ -201,7 +239,6 @@ auto solve(const Node<CubieCube>::sptr root, const unsigned& max_depth,
 }  // namespace two_gen
 
 namespace two_gen_reduction {
-namespace b223 = block_solver_223;
 
 constexpr unsigned NB = 3;
 constexpr unsigned NS = b223::NS;

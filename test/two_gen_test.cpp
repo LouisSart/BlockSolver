@@ -34,7 +34,7 @@ void corner_index_test() {
 
 void two_gen_finish_test() {
     two_gen::load_tables();
-    auto root = two_gen::initialize("R U R U R U R U R U R U R U R");
+    auto root = two_gen::initialize("B L B L B L B L B L B L B L B");
 
     auto solutions = two_gen::solve(root, 20, 0);
     assert(solutions.size() == 2);
