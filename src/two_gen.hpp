@@ -404,20 +404,8 @@ auto initialize(const Algorithm& alg) {
 auto solve(const Node<Cube>::sptr root, const unsigned& max_depth,
            const unsigned& slackness) {
     auto solutions =
-        IDAstar<false>(root, apply, estimate, is_solved, max_depth, slackness);
+        IDAstar<true>(root, apply, estimate, is_solved, max_depth, slackness);
     return solutions;
-}
-
-unsigned solved_symmetry(const Cube& cube) {
-    unsigned sym = 0;
-    for (unsigned k = 0; k < NS; ++k) {
-        if (local_is_solved(cube[k])) {
-            sym = two_gen::rotations[k];
-            return sym;
-        }
-    }
-    assert(false);
-    return 0;
 }
 
 }  // namespace two_gen_reduction

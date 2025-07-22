@@ -112,7 +112,7 @@ int main(int argc, const char* argv[]) {
         auto solutions = reduction({root}, max_depth, breadth, slackness);
         for (auto&& node : solutions) {
             std::cout << "----------------" << std::endl;
-            node->get_skeleton({"2-gen Reduction", "Finish"}).show();
+            node->get_skeleton({"Reduction", "2-Gen Finish"}).show();
         }
     } else {
         std::cout << "Invalid argument: " << argv[1] << std::endl;
