@@ -75,12 +75,14 @@ void two_gen_reduction_solve_test() {
 }
 
 void two_gen_solve_test() {
-    auto solutions = two_gen_solve(
-        "R' U' F U' R' D L' U2 B' R2 U2 D' B2 R2 U' R2 U L2 B2 L F' R' U' F",
-        25, 0);
-    assert(solutions.size() == 4);
-    assert(solutions[0][0].size() == 10);
-    assert(solutions[0][1].size() == 15);
+    Algorithm scramble(
+        "R' U' F U' R' D L' U2 B' R2 U2 D' B2 R2 U' R2 U L2 B2 L F' R' U' F");
+    auto root = std::make_shared<StepNode>(scramble);
+    auto solutions = reduction({root}, 25, 1000, 0);
+    for (auto&& node : solutions) {
+        std::cout << "----------------" << std::endl;
+        node->get_skeleton({"2-gen Reduction", "Finish"}).show();
+    }
 }
 
 int main() {

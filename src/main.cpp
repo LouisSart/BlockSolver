@@ -14,6 +14,7 @@ int main(int argc, const char* argv[]) {
 
     unsigned slackness = get_option("-s", argc, argv, 0);
     unsigned max_depth = get_option("-M", argc, argv, 15);
+    unsigned breadth = get_option("-b", argc, argv, 5000);
     bool linear = find_option("-L", argc, argv);
 
     if (strcmp(argv[1], "123") == 0) {
@@ -73,7 +74,6 @@ int main(int argc, const char* argv[]) {
             solutions_inverse.show(true);
         }
     } else if (strcmp(argv[1], "multistep") == 0) {
-        unsigned breadth = get_option("-b", argc, argv, 5000);
         auto solutions = multistep(scramble, max_depth, breadth, slackness);
 
         for (auto&& node : solutions) {
@@ -106,10 +106,11 @@ int main(int argc, const char* argv[]) {
         two_gen::load_tables();
         two_gen_reduction::load_tables();
 
-        auto solutions = two_gen_solve(scramble, max_depth, slackness);
-        for (auto sol : solutions) {
-            print("------------");
-            sol.show();
+        auto root = std::make_shared<StepNode>(scramble);
+        auto solutions = reduction({root}, max_depth, breadth, slackness);
+        for (auto&& node : solutions) {
+            std::cout << "----------------" << std::endl;
+            node->get_skeleton({"2-gen Reduction", "Finish"}).show();
         }
     } else {
         std::cout << "Invalid argument: " << argv[1] << std::endl;

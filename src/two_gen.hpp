@@ -8,7 +8,8 @@
 #include "223.hpp"  // 2x2x3 solver
 #include "coordinate.hpp"
 #include "cubie_cube.hpp"
-#include "search.hpp"  // IDAstar
+#include "search.hpp"     // IDAstar
+#include "step_node.hpp"  // steppers
 
 namespace fs = std::filesystem;
 namespace b223 = block_solver_223;
@@ -178,23 +179,23 @@ auto initialize(const Algorithm& scramble) {
     return make_root(cc);
 }
 
+std::array<unsigned, NS> rotations{
+    symmetry_index(0, 3, 0, 0),  // DB
+    symmetry_index(0, 0, 0, 0),  // DL
+    symmetry_index(0, 1, 0, 0),  // DF
+    symmetry_index(0, 2, 0, 0),  // DR
+    symmetry_index(0, 3, 1, 0),  // UB
+    symmetry_index(0, 0, 1, 0),  // UR
+    symmetry_index(0, 2, 1, 0),  // UL
+    symmetry_index(0, 1, 1, 0),  // UF
+    symmetry_index(2, 0, 0, 0),  // LB
+    symmetry_index(2, 1, 0, 0),  // LF
+    symmetry_index(2, 3, 0, 0),  // RB
+    symmetry_index(2, 2, 0, 0),  // RF
+};
+
 auto solve(const Node<CubieCube>::sptr root, const unsigned& max_depth,
            const unsigned& slackness) {
-    std::array<unsigned, NS> rotations{
-        symmetry_index(0, 3, 0, 0),  // DB
-        symmetry_index(0, 0, 0, 0),  // DL
-        symmetry_index(0, 1, 0, 0),  // DF
-        symmetry_index(0, 2, 0, 0),  // DR
-        symmetry_index(0, 3, 1, 0),  // UB
-        symmetry_index(0, 0, 1, 0),  // UR
-        symmetry_index(0, 2, 1, 0),  // UL
-        symmetry_index(0, 1, 1, 0),  // UF
-        symmetry_index(2, 0, 0, 0),  // LB
-        symmetry_index(2, 1, 0, 0),  // LF
-        symmetry_index(2, 3, 0, 0),  // RB
-        symmetry_index(2, 2, 0, 0),  // RF
-    };
-
     unsigned sym;
     CubieCube cc = root->state;
     for (unsigned s : rotations) {
@@ -253,47 +254,23 @@ auto corner_block =
     Block<8, 0>("Corners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {});
 auto c_m_table = BlockMoveTable(corner_block);
 auto eo_m_table = EOMoveTable();
-std::array<std::array<unsigned, NB>, NS> rotations = {{
-    {symmetry_index(0, 0, 0, 0), symmetry_index(2, 3, 0, 0),
-     symmetry_index(0, 3, 0, 0)},  // DB
-    {symmetry_index(0, 1, 0, 0), symmetry_index(2, 0, 0, 0),
-     symmetry_index(0, 0, 0, 0)},  // DL
-    {symmetry_index(0, 2, 0, 0), symmetry_index(2, 1, 0, 0),
-     symmetry_index(0, 1, 0, 0)},  // DF
-    {symmetry_index(0, 3, 0, 0), symmetry_index(2, 2, 0, 0),
-     symmetry_index(0, 2, 0, 0)},  // DR
-    {symmetry_index(0, 0, 1, 0), symmetry_index(2, 3, 1, 0),
-     symmetry_index(0, 3, 1, 0)},  // UB
-    {symmetry_index(0, 1, 1, 0), symmetry_index(2, 0, 1, 0),
-     symmetry_index(0, 0, 1, 0)},  // UR
-    {symmetry_index(0, 3, 1, 0), symmetry_index(2, 2, 1, 0),
-     symmetry_index(0, 2, 1, 0)},  // UL
-    {symmetry_index(0, 2, 1, 0), symmetry_index(2, 1, 1, 0),
-     symmetry_index(0, 1, 1, 0)},  // UF
-    {symmetry_index(1, 0, 0, 0), symmetry_index(1, 3, 1, 0),
-     symmetry_index(2, 0, 0, 0)},  // LB
-    {symmetry_index(1, 1, 0, 0), symmetry_index(1, 2, 1, 0),
-     symmetry_index(2, 1, 0, 0)},  // LF
-    {symmetry_index(1, 3, 0, 0), symmetry_index(1, 0, 1, 0),
-     symmetry_index(2, 3, 0, 0)},  // RB
-    {symmetry_index(1, 2, 0, 0), symmetry_index(1, 1, 1, 0),
-     symmetry_index(2, 2, 0, 0)},  // RF
-}};
-
 std::array<unsigned, 40320> corner_equivalence_table;
 PruningTable<TABLE_SIZE> ptable;
 
-void local_apply(const Move& move, const std::array<unsigned, NB>& syms,
+void local_apply(const Move& move, const unsigned& k,
                  MultiBlockCube<NB>& subcube) {
-    b223::m_table.sym_apply(move, syms[0], subcube[0]);
-    b223::m_table.sym_apply(move, syms[1], subcube[1]);
-    c_m_table.sym_apply(move, syms[2], subcube[2]);
-    eo_m_table.sym_apply(move, syms[2], subcube[2]);
+    b223::m_table.sym_apply(move, b223::rotations[k][0], subcube[0]);
+    b223::m_table.sym_apply(move, b223::rotations[k][1], subcube[1]);
+    c_m_table.sym_apply(move, two_gen::rotations[k], subcube[2]);
+    eo_m_table.sym_apply(move, two_gen::rotations[k], subcube[2]);
 }
 
 void apply(const Move& move, Cube& cube) {
     for (unsigned k = 0; k < NS; ++k) {
-        local_apply(move, rotations[k], cube[k]);
+        b223::m_table.sym_apply(move, b223::rotations[k][0], cube[k][0]);
+        b223::m_table.sym_apply(move, b223::rotations[k][1], cube[k][1]);
+        c_m_table.sym_apply(move, two_gen::rotations[k], cube[k][2]);
+        eo_m_table.sym_apply(move, two_gen::rotations[k], cube[k][2]);
     }
 };
 
@@ -315,13 +292,13 @@ auto local_cc_initialize(const CubieCube& scramble_cc, const unsigned k) {
     MultiBlockCube<NB> ret;
 
     ret[0] = b223::block.to_coordinate_block_cube(
-        scramble_cc.get_conjugate(rotations[k][0]));
+        scramble_cc.get_conjugate(b223::rotations[k][0]));
     ret[1] = b223::block.to_coordinate_block_cube(
-        scramble_cc.get_conjugate(rotations[k][1]));
+        scramble_cc.get_conjugate(b223::rotations[k][1]));
     ret[2] = corner_block.to_coordinate_block_cube(
-        scramble_cc.get_conjugate(rotations[k][2]));
+        scramble_cc.get_conjugate(two_gen::rotations[k]));
     ret[2].ceo =
-        eo_index<NE, true>(scramble_cc.get_conjugate(rotations[k][2]).eo);
+        eo_index<NE, true>(scramble_cc.get_conjugate(two_gen::rotations[k]).eo);
 
     return ret;
 }
@@ -410,7 +387,7 @@ void load_tables() {
         ptable.generate<true>(
             local_cc_initialize(CubieCube(), 1),
             [](const Move& move, MultiBlockCube<NB>& cube) {
-                local_apply(move, rotations[1], cube);
+                local_apply(move, 1, cube);
             },
             phase_2_index);  // generate the pruning table
         ptable.write("two_gen_reduction");
@@ -435,7 +412,7 @@ unsigned solved_symmetry(const Cube& cube) {
     unsigned sym = 0;
     for (unsigned k = 0; k < NS; ++k) {
         if (local_is_solved(cube[k])) {
-            sym = rotations[k][2];
+            sym = two_gen::rotations[k];
             return sym;
         }
     }
@@ -445,53 +422,6 @@ unsigned solved_symmetry(const Cube& cube) {
 
 }  // namespace two_gen_reduction
 
-auto two_gen_solve(const Algorithm& scramble, const unsigned max_depth = 20,
-                   const unsigned slackness = 0) {
-    auto root_1 = two_gen_reduction::initialize(scramble);
-    auto phase_1_solutions =
-        two_gen_reduction::solve(root_1, max_depth, slackness);
-
-    auto root_1_inverse = two_gen_reduction::initialize(scramble.get_inverse());
-    auto phase_1_solutions_inverse =
-        two_gen_reduction::solve(root_1_inverse, max_depth, slackness);
-
-    std::vector<Skeleton> solutions;
-    for (unsigned k = 0; k < phase_1_solutions.size(); ++k) {
-        auto depth = phase_1_solutions[k]->depth;
-        auto sym =
-            two_gen_reduction::solved_symmetry(phase_1_solutions[k]->state);
-        auto cube2 = CubieCube(scramble);
-        cube2.apply(phase_1_solutions[k]->get_path());
-        cube2 = cube2.get_conjugate(sym);
-        auto root_2 = make_root(cube2);
-        auto phase_2_solutions = two_gen::solve(root_2, max_depth - depth, 0);
-        if (phase_2_solutions.size() > 0) {
-            solutions.push_back(Skeleton(
-                {StepAlgorithm(phase_1_solutions[k]->get_path(), "Reduction"),
-                 StepAlgorithm(
-                     anti_symmetrize(phase_2_solutions[0]->get_path(), sym),
-                     "Finish")}));
-        }
-    }
-    for (unsigned k = 0; k < phase_1_solutions_inverse.size(); ++k) {
-        auto depth = phase_1_solutions_inverse[k]->depth;
-        auto sym = two_gen_reduction::solved_symmetry(
-            phase_1_solutions_inverse[k]->state);
-        auto cube2 = CubieCube(scramble.get_inverse());
-        cube2.apply(phase_1_solutions_inverse[k]->get_path());
-        cube2 = cube2.get_conjugate(sym);
-        auto root_2 = make_root(cube2);
-        auto phase_2_solutions = two_gen::solve(root_2, max_depth - depth, 0);
-        if (phase_2_solutions.size() > 0) {
-            auto phase_1_alg = StepAlgorithm(
-                phase_1_solutions_inverse[k]->get_path(), "Reduction");
-            phase_1_alg.inv_flag = true;
-            auto phase_2_alg = StepAlgorithm(
-                anti_symmetrize(phase_2_solutions[0]->get_path(), sym),
-                "Finish");
-            phase_2_alg.inv_flag = true;
-            solutions.push_back(Skeleton({phase_1_alg, phase_2_alg}));
-        }
-    }
-    return solutions;
-}
+auto finish = make_stepper(make_root<CubieCube>, two_gen::solve, STEPFINAL{});
+auto reduction = make_stepper(two_gen_reduction::cc_initialize,
+                              two_gen_reduction::solve, finish);
