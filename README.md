@@ -4,6 +4,10 @@ It will find all optimal solutions over all possible symmetries of the cube.
 
 It can also solve the F2L-1 suboptimally in three steps : 2x2x2, 2x2x3 and F2L-1 by switching before each step.
 
+clone with :
+
+git clone --recursive https://github.com/LouisSart/BlockSolver.git
+
 ### Configuration ###
 
 ```console
