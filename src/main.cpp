@@ -81,6 +81,7 @@ int main(int argc, const char* argv[]) {
             node->get_skeleton({"2x2x2", "2x2x3", "F2L-1"}).show();
         }
     } else if (strcmp(argv[1], "two_gen_finish") == 0) {
+        unsigned max_depth = get_option("-M", argc, argv, 20);
         auto root = two_gen::initialize(scramble);
 
         auto solutions = two_gen::solve(root, max_depth, slackness);
@@ -103,6 +104,7 @@ int main(int argc, const char* argv[]) {
             solutions_inverse.show(true);
         }
     } else if (strcmp(argv[1], "two_gen") == 0) {
+        unsigned max_depth = get_option("-M", argc, argv, 25);
         two_gen::load_tables();
         two_gen_reduction::load_tables();
 
