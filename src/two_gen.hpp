@@ -383,7 +383,7 @@ void load_tables() {
         return;
     } else {
         std::cout << "generating..." << std::endl;
-        ptable.generate<true>(
+        ptable.generate(
             local_cc_initialize(CubieCube(), 1),
             [](const Move& move, MultiBlockCube<NB>& cube) {
                 local_apply(move, 1, cube);
