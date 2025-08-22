@@ -16,18 +16,18 @@ using Cube = MultiBlockCube<NS>;
 Block<2, 5> block("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL});
 
 std::array<unsigned, NS> rotations = {
-    symmetry_index(0, 0, 0, 0),  // DL
-    symmetry_index(0, 1, 0, 0),  // DB
-    symmetry_index(0, 2, 0, 0),  // DR
-    symmetry_index(0, 3, 0, 0),  // DF
-    symmetry_index(0, 0, 1, 0),  // UR
-    symmetry_index(0, 1, 1, 0),  // UF
-    symmetry_index(0, 2, 1, 0),  // UL
-    symmetry_index(0, 3, 1, 0),  // UB
-    symmetry_index(1, 0, 0, 0),  // LB
-    symmetry_index(1, 2, 0, 0),  // LF
-    symmetry_index(1, 0, 0, 1),  // RB
-    symmetry_index(1, 2, 0, 1)   // RF
+    symmetry_index(0, 0, 0, 0),  // DL 0
+    symmetry_index(0, 3, 0, 0),  // DB 1
+    symmetry_index(0, 2, 0, 0),  // DR 2
+    symmetry_index(0, 1, 0, 0),  // DF 3
+    symmetry_index(0, 1, 1, 0),  // UF 4
+    symmetry_index(0, 2, 1, 0),  // UL 5
+    symmetry_index(0, 3, 1, 0),  // UB 6
+    symmetry_index(0, 0, 1, 0),  // UR 7
+    symmetry_index(2, 0, 0, 0),  // LB 8
+    symmetry_index(2, 1, 0, 0),  // LF 9
+    symmetry_index(2, 3, 0, 0),  // RB 10
+    symmetry_index(2, 2, 0, 0)   // RF 11
 };
 
 auto initialize = make_root_initializer(block, rotations);

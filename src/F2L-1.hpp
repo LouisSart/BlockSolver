@@ -16,9 +16,9 @@ using Cube = b223::Cube;
 // Array of the 2x2x3 block pairs which need to be
 // simultaneously solved to have F2L-1 solved
 std::array<std::array<unsigned, NB>, NS> block_pairs = {
-    {{0, 1},  {1, 2},  {2, 3}, {3, 0}, {4, 5},  {5, 6},  {6, 7},  {7, 4},
-     {0, 9},  {9, 6},  {6, 8}, {8, 0}, {11, 4}, {4, 10}, {10, 2}, {2, 11},
-     {3, 11}, {11, 5}, {5, 9}, {9, 3}, {1, 10}, {10, 7}, {7, 8},  {8, 1}}};
+    {{0, 1}, {1, 2}, {2, 3},  {3, 0},  {4, 5},  {5, 6},  {6, 7},  {7, 4},
+     {8, 0}, {0, 9}, {9, 5},  {5, 8},  {2, 10}, {10, 7}, {7, 11}, {11, 2},
+     {3, 9}, {9, 4}, {4, 11}, {11, 3}, {1, 8},  {8, 6},  {6, 10}, {10, 1}}};
 
 unsigned local_estimate(const CoordinateBlockCube& cbc1,
                         const CoordinateBlockCube& cbc2) {
