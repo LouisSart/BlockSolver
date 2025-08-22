@@ -12,7 +12,7 @@ void test_generate() {
     PruningTable<table_size> ptable;
     auto root = b.to_coordinate_block_cube(CubieCube());
     ptable.generate(root, mtable.get_apply(), b.get_indexer(),
-                    b.get_from_index(), HTM_Moves);
+                    b.get_from_index());
 
     assert(ptable.is_filled());
 
@@ -41,7 +41,7 @@ void test_EO_generate() {
     };
 
     PruningTable<table_size> ptable;
-    ptable.generate(CoordinateBlockCube(), apply, index, from_index, HTM_Moves);
+    ptable.generate(CoordinateBlockCube(), apply, index, from_index);
 
     assert(ptable.is_filled());
 
