@@ -187,8 +187,26 @@ struct Block {
         return ei * n_cs + ci;
     }
 
+    CoordinateBlockCube to_coordinate_block_cube(const unsigned &coord) const {
+        unsigned ci = coord % n_cs;
+        unsigned ccl = ci / (n_cp * n_co);
+        unsigned ccp = (ci % (n_cp * n_co)) / n_co,
+                 cco = (ci % (n_cp * n_co)) % n_co;
+        unsigned ei = coord / n_cs;
+        unsigned cel = ei / (n_ep * n_eo);
+        unsigned cep = (ei % (n_ep * n_eo)) / n_eo,
+                 ceo = (ei % (n_ep * n_eo)) % n_eo;
+        return CoordinateBlockCube(ccl, cel, ccp, cep, cco, ceo);
+    }
+
     auto get_indexer() const {
         return [this](const CoordinateBlockCube &cbc) { return index(cbc); };
+    }
+
+    auto get_from_index() const {
+        return [this](const unsigned &coord) {
+            return to_coordinate_block_cube(coord);
+        };
     }
 
     bool is_solved(const CoordinateBlockCube &cbc) { return cbc == solved; }

@@ -13,10 +13,12 @@ auto load_pruning_table(Block<nc, ne>& b) {
     PruningTable<table_size> ptable;
     bool check = ptable.load(b.id);
     if (!check) {
-        print("Generating pruning table: ", b.id);
+        print("Generating pruning table", b.id);
         BlockMoveTable<nc, ne> mtable(b);
         auto root = b.to_coordinate_block_cube(CubieCube());
-        ptable.generate(root, mtable.get_apply(), b.get_indexer());
+        ptable.template generate<true>(root, mtable.get_apply(),
+                                       b.get_indexer(), b.get_from_index(),
+                                       HTM_Moves);
     }
     ptable.write(b.id);
     return ptable;

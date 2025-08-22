@@ -8,7 +8,12 @@
 
 void test_block() {
     Block<2, 5> b("DL_223", {DLF, DLB}, {LF, LB, DF, DB, DL});
-    b.show();
+    auto cc = CubieCube::random_state();
+
+    CoordinateBlockCube cbc = b.to_coordinate_block_cube(cc);
+    unsigned c = b.index(cbc);
+    assert(b.to_coordinate_block_cube(c) == cbc);
+    assert(b.to_cubie_cube(cbc) == cc);
 }
 
 template <unsigned nc, unsigned ne>

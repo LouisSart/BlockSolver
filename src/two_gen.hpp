@@ -158,11 +158,11 @@ void load_tables() {
         return;
     } else {
         std::cout << "generating..." << std::endl;
-        corner_ptable.generate(
+        corner_ptable.generate_BFS(
             CubieCube(),
             [](const Move& move, CubieCube& cc) { cc.apply(move); },
             corner_index, {R, R2, R3, U, U2, U3});
-        edge_ptable.generate(
+        edge_ptable.generate_BFS(
             CubieCube(),
             [](const Move& move, CubieCube& cc) { cc.apply(move); }, edge_index,
             {R, R2, R3, U, U2, U3});
@@ -383,7 +383,7 @@ void load_tables() {
         return;
     } else {
         std::cout << "generating..." << std::endl;
-        ptable.generate(
+        ptable.generate_BFS<true>(
             local_cc_initialize(CubieCube(), 1),
             [](const Move& move, MultiBlockCube<NB>& cube) {
                 local_apply(move, 1, cube);

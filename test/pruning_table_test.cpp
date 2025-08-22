@@ -11,7 +11,8 @@ void test_generate() {
     constexpr size_t table_size = b.n_es * b.n_cs;
     PruningTable<table_size> ptable;
     auto root = b.to_coordinate_block_cube(CubieCube());
-    ptable.generate(root, mtable.get_apply(), b.get_indexer());
+    ptable.generate(root, mtable.get_apply(), b.get_indexer(),
+                    b.get_from_index(), HTM_Moves);
 
     assert(ptable.is_filled());
 
@@ -35,9 +36,12 @@ void test_EO_generate() {
     constexpr unsigned n_eo = ipow(2, NE - 1);
     constexpr size_t table_size = n_eo;
     auto index = [](const CoordinateBlockCube& cbc) { return cbc.ceo; };
+    auto from_index = [](const unsigned& c) {
+        return CoordinateBlockCube(0, 0, 0, 0, 0, c);
+    };
 
     PruningTable<table_size> ptable;
-    ptable.generate(CoordinateBlockCube(), apply, index);
+    ptable.generate(CoordinateBlockCube(), apply, index, from_index, HTM_Moves);
 
     assert(ptable.is_filled());
 
