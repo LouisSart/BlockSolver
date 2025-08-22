@@ -131,11 +131,10 @@ Move tables are transition tables that store the result of applying each possibl
 
 ### Pruning ###
 
-For small blocks (1x2x3 and 2x2x2) the pruning value is optimal. The block coordinates described earlier are combined together to give a single coordinate that ranges form 0 to the number of possible states this block can be in. The pruning table is then filled with the optimal distance to solved for each of these states using a BFS generator.
+For small blocks (1x2x3, 2x2x2 and 2x2x3) the pruning value is optimal. The block coordinates described earlier are combined together to give a single coordinate that ranges form 0 to the number of possible states this block can be in. The pruning table is then filled with the optimal distance to solved for each of these states. The table is filled forwards from the goal state using an IDDFS algorithm until about 2% of the pruning values are set. Then the function switches to a backwards scan from the unknown values in the table.
 
-For bigger blocks (2x2x3, F2L-1) this strategy is too computationally expensive so I split the block in several smaller subblocks. The pruning value for the whole block is computed as the maximum heuristic value over all subblocks. The 2x2x3 block is splitted into two 1x2x3 blocks which share two corners and one edge. This is memory efficient because I can use the same table to compute the value for each subblock.
+For the F2L-1 block this strategy is too computationally expensive so I "split" the block in two 2x2x3 blocks (e.g. the DL 2x2x3 + DB 2x2x3 together combine into an F2L-1 block). The pruning value for the whole block is computed as the maximum heuristic value over these two subblocks. This is memory efficient because I can use the same table to compute the value for each subblock.
 
-The program is still pretty slow at table generation when the tables are more than ~100 Mo. I don't intend to build a very optimized code with huge tables, but I'd still appreciate reaching 1 Go tables in a reasonable amount of time. If you have any idea on how to optimize it, let me know.
 
 # Search #
 
