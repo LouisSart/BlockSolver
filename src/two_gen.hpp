@@ -179,26 +179,11 @@ auto initialize(const Algorithm& scramble) {
     return make_root(cc);
 }
 
-std::array<unsigned, NS> rotations{
-    symmetry_index(0, 3, 0, 0),  // DB
-    symmetry_index(0, 0, 0, 0),  // DL
-    symmetry_index(0, 1, 0, 0),  // DF
-    symmetry_index(0, 2, 0, 0),  // DR
-    symmetry_index(0, 3, 1, 0),  // UB
-    symmetry_index(0, 0, 1, 0),  // UR
-    symmetry_index(0, 2, 1, 0),  // UL
-    symmetry_index(0, 1, 1, 0),  // UF
-    symmetry_index(2, 0, 0, 0),  // LB
-    symmetry_index(2, 1, 0, 0),  // LF
-    symmetry_index(2, 3, 0, 0),  // RB
-    symmetry_index(2, 2, 0, 0),  // RF
-};
-
 auto solve(const Node<CubieCube>::sptr root, const unsigned& max_depth,
            const unsigned& slackness) {
     unsigned sym;
     CubieCube cc = root->state;
-    for (unsigned s : rotations) {
+    for (unsigned s : b223::rotations) {
         // Find the two_gen_rotation
         if (is_two_gen(cc.get_conjugate(s))) {
             sym = s;
@@ -240,14 +225,15 @@ auto solve(const Node<CubieCube>::sptr root, const unsigned& max_depth,
 
 namespace two_gen_reduction {
 
-constexpr unsigned NB = 3;
+constexpr unsigned NB = 2;  // first block is 223, second is for two gen
+                            // constraints on corners and edges
 constexpr unsigned NS = b223::NS;
 using Cube = std::array<MultiBlockCube<NB>, NS>;
 constexpr unsigned N_EQ_CLASSES = 336;   // 336 = 8! / 5!
 constexpr unsigned ESIZE = ipow(2, 11);  // Number of possible eo states
-constexpr unsigned N_COMB_3EDGES =
-    binomial(12, 3);  // Number of states that the 3 LF, DL, LB edges can be
-constexpr unsigned TABLE_SIZE = N_EQ_CLASSES * ESIZE * N_COMB_3EDGES;
+// constexpr unsigned N_COMB_3EDGES =
+//     binomial(12, 3);  // Number of states that the 3 LF, DL, LB edges can be
+constexpr unsigned TABLE_SIZE = N_EQ_CLASSES * ESIZE;
 
 auto corner_block =
     Block<8, 0>("Corners", {ULF, URF, URB, ULB, DLF, DRF, DRB, DLB}, {});
@@ -258,26 +244,21 @@ PruningTable<TABLE_SIZE> ptable;
 
 void local_apply(const Move& move, const unsigned& k,
                  MultiBlockCube<NB>& subcube) {
-    b223::m_table.sym_apply(move, b223::rotations[k][0], subcube[0]);
-    b223::m_table.sym_apply(move, b223::rotations[k][1], subcube[1]);
-    c_m_table.sym_apply(move, two_gen::rotations[k], subcube[2]);
-    eo_m_table.sym_apply(move, two_gen::rotations[k], subcube[2]);
+    b223::mt.sym_apply(move, b223::rotations[k], subcube[0]);
+    c_m_table.sym_apply(move, b223::rotations[k], subcube[1]);
+    eo_m_table.sym_apply(move, b223::rotations[k], subcube[1]);
 }
 
 void apply(const Move& move, Cube& cube) {
     for (unsigned k = 0; k < NS; ++k) {
-        b223::m_table.sym_apply(move, b223::rotations[k][0], cube[k][0]);
-        b223::m_table.sym_apply(move, b223::rotations[k][1], cube[k][1]);
-        c_m_table.sym_apply(move, two_gen::rotations[k], cube[k][2]);
-        eo_m_table.sym_apply(move, two_gen::rotations[k], cube[k][2]);
+        local_apply(move, k, cube[k]);
     }
 };
 
 bool local_is_solved(const MultiBlockCube<NB>& subcube) {
     return (b223::block.is_solved(subcube[0]) &&
-            b223::block.is_solved(subcube[1]) &&
-            corner_equivalence_table[subcube[2].ccp] == 0 &&
-            subcube[2].ceo == 0);
+            corner_equivalence_table[subcube[1].ccp] == 0 &&
+            subcube[1].ceo == 0);
 }
 
 auto is_solved = [](const Cube& cube) {
@@ -291,13 +272,11 @@ auto local_cc_initialize(const CubieCube& scramble_cc, const unsigned k) {
     MultiBlockCube<NB> ret;
 
     ret[0] = b223::block.to_coordinate_block_cube(
-        scramble_cc.get_conjugate(b223::rotations[k][0]));
-    ret[1] = b223::block.to_coordinate_block_cube(
-        scramble_cc.get_conjugate(b223::rotations[k][1]));
-    ret[2] = corner_block.to_coordinate_block_cube(
-        scramble_cc.get_conjugate(two_gen::rotations[k]));
-    ret[2].ceo =
-        eo_index<NE, true>(scramble_cc.get_conjugate(two_gen::rotations[k]).eo);
+        scramble_cc.get_conjugate(b223::rotations[k]));
+    ret[1] = corner_block.to_coordinate_block_cube(
+        scramble_cc.get_conjugate(b223::rotations[k]));
+    ret[1].ceo =
+        eo_index<NE, true>(scramble_cc.get_conjugate(b223::rotations[k]).eo);
 
     return ret;
 }
@@ -312,18 +291,16 @@ auto cc_initialize(const CubieCube& scramble_cc) {
     return make_root(ret);
 }
 
-unsigned phase_2_index(const MultiBlockCube<NB>& cube) {
-    unsigned ci = corner_equivalence_table[cube[2].ccp];  // two gen corner
-                                                          // equivalence class
-    unsigned ei = cube[2].ceo;                            // eo state index
-    unsigned cl = cube[0].cel;  // layout coordinate of the 3 edges from DL 123
-    return (ci * ESIZE + ei) * N_COMB_3EDGES + cl;
+unsigned phase_2_index(const CoordinateBlockCube& cube) {
+    unsigned ci = corner_equivalence_table[cube.ccp];  // two gen corner
+                                                       // equivalence class
+    unsigned ei = cube.ceo;                            // eo state index
+    return ci * ESIZE + ei;
 }
 
 unsigned max_estimate(const MultiBlockCube<NB>& cube) {
-    unsigned h223 =
-        std::max(b223::get_estimate(cube[0]), b223::get_estimate(cube[1]));
-    unsigned hphase2 = ptable[phase_2_index(cube)];
+    unsigned h223 = b223::pt.estimate(b223::block.index(cube[0]));
+    unsigned hphase2 = ptable[phase_2_index(cube[1])];
     return std::max(h223, hphase2);
 }
 
@@ -384,9 +361,10 @@ void load_tables() {
     } else {
         std::cout << "generating..." << std::endl;
         ptable.generate_BFS<true>(
-            local_cc_initialize(CubieCube(), 1),
-            [](const Move& move, MultiBlockCube<NB>& cube) {
-                local_apply(move, 1, cube);
+            CoordinateBlockCube(),
+            [](const Move& m, CoordinateBlockCube& cube) {
+                c_m_table.apply(m, cube);
+                eo_m_table.apply(m, cube);
             },
             phase_2_index);  // generate the pruning table
         ptable.write("two_gen_reduction");

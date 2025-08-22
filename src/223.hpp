@@ -30,8 +30,18 @@ std::array<unsigned, NS> rotations = {
     symmetry_index(1, 2, 0, 1)   // RF
 };
 
-auto solve = make_optimal_block_solver(block, rotations);
 auto initialize = make_root_initializer(block, rotations);
 auto cc_initialize = make_root_cc_initializer(block, rotations);
+auto mt = BlockMoveTable(block);
+auto pt = load_pruning_table(block);
+auto apply = get_sym_apply<NS>(mt, rotations);
+auto estimate = get_estimator<NS>(pt, block.get_indexer());
+auto is_solved = get_is_solved<NS>(block);
+
+auto solve = [](const auto root, const unsigned max_depth = 20,
+                const unsigned slackness = 0) {
+    return IDAstar<false>(root, apply, estimate, is_solved, max_depth,
+                          slackness);
+};
 
 }  // namespace block_solver_223
