@@ -1,38 +1,57 @@
 #pragma once
 #include <iostream>
 
+#include "223.hpp"
 #include "option.hpp"
 #include "step.hpp"
 
+namespace b223 = block_solver_223;
+
 namespace block_solver_F2Lm1 {
-constexpr unsigned NB = 2;   // the F2L-1 is splitted into 2 blocks
+constexpr unsigned NB = 2;   // the F2L-1 is splitted into 2 2x2x3 blocks
 constexpr unsigned NS = 24;  // number of F2L-1 symmetries
-auto block1 = Block<3, 3>("222_w_extra_corners", {DLF, DLB, DRB}, {DL, LB, DB});
-auto block2 = Block<2, 4>("2_squares", {DLF, DRB}, {LF, DF, RB, DR});
+auto block = b223::block;
+using Cube = b223::Cube;
 
-std::array<unsigned, NS> rotations{
-    symmetry_index(0, 0, 0, 0), symmetry_index(0, 1, 0, 0),
-    symmetry_index(0, 2, 0, 0), symmetry_index(0, 3, 0, 0),
-    symmetry_index(0, 0, 1, 0), symmetry_index(0, 1, 1, 0),
-    symmetry_index(0, 2, 1, 0), symmetry_index(0, 3, 1, 0),
-    symmetry_index(1, 0, 0, 0), symmetry_index(1, 1, 0, 0),
-    symmetry_index(1, 2, 0, 0), symmetry_index(1, 3, 0, 0),
-    symmetry_index(1, 0, 1, 0), symmetry_index(1, 1, 1, 0),
-    symmetry_index(1, 2, 1, 0), symmetry_index(1, 3, 1, 0),
-    symmetry_index(2, 0, 0, 0), symmetry_index(2, 1, 0, 0),
-    symmetry_index(2, 2, 0, 0), symmetry_index(2, 3, 0, 0),
-    symmetry_index(2, 0, 1, 0), symmetry_index(2, 1, 1, 0),
-    symmetry_index(2, 2, 1, 0), symmetry_index(2, 3, 1, 0),
+// Array of the 2x2x3 block pairs which need to be
+// simultaneously solved to have F2L-1 solved
+std::array<std::array<unsigned, NB>, NS> block_pairs = {
+    {{0, 1},  {1, 2},  {2, 3}, {3, 0}, {4, 5},  {5, 6},  {6, 7},  {7, 4},
+     {0, 9},  {9, 6},  {6, 8}, {8, 0}, {11, 4}, {4, 10}, {10, 2}, {2, 11},
+     {3, 11}, {11, 5}, {5, 9}, {9, 3}, {1, 10}, {10, 7}, {7, 8},  {8, 1}}};
+
+unsigned local_estimate(const CoordinateBlockCube& cbc1,
+                        const CoordinateBlockCube& cbc2) {
+    return std::max(b223::pt.estimate(block.index(cbc1)),
+                    b223::pt.estimate(block.index(cbc2)));
+}
+
+auto estimate(const Cube& cube) {
+    unsigned ret = 1000;
+    for (auto&& [k, l] : block_pairs) {
+        ret = std::min(ret, local_estimate(cube[k], cube[l]));
+    }
+    return ret;
+}
+
+bool local_is_solved(const CoordinateBlockCube& cbc1,
+                     const CoordinateBlockCube& cbc2) {
+    return block.is_solved(cbc1) && block.is_solved(cbc2);
+}
+
+bool is_solved(const Cube& cube) {
+    for (auto&& [k, l] : block_pairs) {
+        if (local_is_solved(cube[k], cube[l])) return true;
+    }
+    return false;
+}
+
+auto initialize = b223::initialize;
+auto cc_initialize = b223::cc_initialize;
+
+auto solve = [](const auto root, const unsigned max_depth = 20,
+                const unsigned slackness = 0) {
+    return IDAstar<false>(root, b223::apply, estimate, is_solved, max_depth,
+                          slackness);
 };
-
-auto cc_initialize(const CubieCube &cc) {
-    return make_split_block_root(cc, block1, block2, rotations);
-}
-
-auto initialize(const Algorithm &scramble) {
-    CubieCube cc(scramble);
-    return cc_initialize(cc);
-}
-
-auto solve = make_optimal_split_block_solver(block1, block2, rotations);
 }  // namespace block_solver_F2Lm1
