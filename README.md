@@ -77,7 +77,7 @@ B U' B' // F2L-1 (3/13)
 ```
 
 ```console
-epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver two_gen -M 15 -s 1 "R U R U R U' R' U2 R' U2 R U2 R' U' R2 U R2"
+epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver two_gen_finish -M 15 -s 1 "R U R U R U' R' U2 R' U2 R U2 R' U' R2 U R2"
 U R U' R2 U' R2 U R' U R2 U' R2 U' R (14)
 R2 U' R2 U R2 U' R' U2 R' U2 R U R' U' R' (15)
 R2 U' R2 U R2 U R' U' R U R2 U' R2 U' R (15)
