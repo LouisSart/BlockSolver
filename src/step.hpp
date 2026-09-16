@@ -18,7 +18,7 @@ auto load_pruning_table(Block<nc, ne>& b) {
         auto root = b.to_coordinate_block_cube(CubieCube());
         ptable.template generate<true>(root, mtable.get_apply(),
                                        b.get_indexer(), b.get_from_index(),
-                                       HTM_Moves);
+                                       10, HTM_Moves);
     }
     ptable.write(b.id);
     return ptable;
