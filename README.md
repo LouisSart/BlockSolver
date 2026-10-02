@@ -44,7 +44,7 @@ where ```step``` can be any of ```123```, ```222```, ```223```, ```F2L-1```, ```
 Examples :
 
 ```console
-epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver 222 -M 6 "R L U D F B"
+$ ./build/src/block_solver 222 -M 6 "R L U D F B"
 B' U' D' L' (4)
 B' U' D' R' (4)
 F' B' D' L' (4)
@@ -56,28 +56,39 @@ F' U' D' R' (4)
 ```
 
 ```console
-epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver F2L-1 -L "R' U' F L D F2 R2 D L2 U' L2 F2 U' F L2 D' F2 R' D' B2 U2 L' F2 R' U' F"
+$ ./build/src/block_solver F2L-1 -s 1 -L "R' U' F L D F2 R2 D L2 U' L2 F2 U' F L2 D' F2 R' D' B2 U2 L' F2 R' U' F"
 D2 B' U2 R2 B2 L F' L' F U (10)
 (R2 U' R2 L2 U' B' L U D F' U2) (11)
 (U' B D R' F2 B' L D2 B' L2 D2) (11)
 (U' F' B2 R' B' D R' B2 D2 B2 U) (11)
 (U' D' F B' L' B2 U2 L2 F2 B R2) (11)
+B' U' B2 R' F U D F2 R2 B2 R2 (11)
+B' U' F' R2 F B2 R' F U D F2 (11)
+B2 R2 U' B D2 L' F2 R' F B D2 (11)
+B2 R2 U' B U2 L2 U2 L D2 F' B (11)
+F' L2 U2 F D2 B L F' L' F U (11)
+F2 B' D2 L' U' F' R2 D L B U (11)
+F B' R' B' R D2 R2 B L2 B2 U (11)
+D2 B' U2 R2 B2 L' U B L' B' L2 (11)
+D2 F' L F2 U F' U' B' R2 B2 U (11)
+U' D2 F U' R2 L F D2 B2 U L2 (11)
+U2 D2 F U' L' B U R2 L2 U R2 (11)
 ```
 
 ```console
-epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver multistep -M 13 -b 1000 "R' U' F  D' B' U' D2 L' U2 L B2 R2 B2 U2 F' L B2 R' U' F"
+$ ./build/src/block_solver multistep -s 1 -M 13 -b 1000 "R' U' F  D' B' U' D2 L' U2 L B2 R2 B2 U2 F' L B2 R' U' F"
 ----------------
 D' L' B2 U2 L2 // 2x2x2 (5/5)
 (F2 R2 F U F2) // 2x2x3 (5/10)
-(U2 R2 U') // F2L-1 (3/13)
+U2 R2 U' // F2L-1 (3/13)
 ----------------
 D' L' B2 U2 L2 // 2x2x2 (5/5)
 (F2 R2 F U F2) // 2x2x3 (5/10)
-B U' B' // F2L-1 (3/13)
+(B U' B') // F2L-1 (3/13)
 ```
 
 ```console
-epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver two_gen -M 15 -s 1 "R U R U R U' R' U2 R' U2 R U2 R' U' R2 U R2"
+$ ./build/src/block_solver two_gen_finish -M 15 -s 1 "R U R U R U' R' U2 R' U2 R U2 R' U' R2 U R2"
 U R U' R2 U' R2 U R' U R2 U' R2 U' R (14)
 R2 U' R2 U R2 U' R' U2 R' U2 R U R' U' R' (15)
 R2 U' R2 U R2 U R' U' R U R2 U' R2 U' R (15)
@@ -85,10 +96,16 @@ R2 U2 R U R' U' R U' R U2 R U2 R' U R2 (15)
 ```
 
 ```console
-epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver two_gen -M 25 -L "R' U' F L D2 R2 U' B2 F2 R2 U' R2 U2 L' F' D2 B' L D' L' U2 R' B2 R' U' F"
-------------
-(U' L2 F' U F' B' D' B' R' L') // Reduction (10/10)
-(D2 B2 D B2 D B2 D2 B2 D B2 D2 B2 D B' D2) // Finish (15/25)
+epicier@w-Optiplex:~/BlockSolver$ ./build/src/block_solver two_gen -M 23 -s 2 "R' U' F L D2 R2 U' B2 F2 R2 U2 L' F' D2 B' L D' L' U2 R' B2 R' U' F"
+----------------
+(U' D2 F D' R' B' U B D F' R U') // Reduction (12/12)
+D2 F2 D2 F D2 F D' F' D F' // 2-Gen Finish (10/22)
+----------------
+U2 B U' D L F' U2 F L U L F // Reduction (12/12)
+D R D2 R D2 R' D R2 D R' D2 // 2-Gen Finish (11/23)
+----------------
+(F' B' U' L' U F2 L' U' F' U2 L2 B2) // Reduction (12/12)
+R' U2 R U2 R' U' R U' R U' R' // 2-Gen Finish (11/23)
 ```
 
 # Goal #

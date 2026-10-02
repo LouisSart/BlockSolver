@@ -25,13 +25,20 @@ std::array<unsigned, NS> rotations{
     symmetry_index(2, 2, 1, 0), symmetry_index(2, 3, 1, 0),
 };
 
-auto cc_initialize(const CubieCube &cc) {
-    return make_split_block_root(cc, block1, block2, rotations);
+auto cc_initialize(const CubieCube &cc, const bool niss = true) {
+    auto normal = make_split_block_root(cc, block1, block2, rotations);
+    if (!niss) {
+        return std::deque{normal};
+    } else {
+        auto inverse = make_split_block_root(cc.get_inverse(), block1, block2, rotations);
+        inverse->inverse = true;
+        return std::deque{normal, inverse};
+    }
 }
 
-auto initialize(const Algorithm &scramble) {
+auto initialize(const Algorithm &scramble, const bool niss = true) {
     CubieCube cc(scramble);
-    return cc_initialize(cc);
+    return cc_initialize(cc, niss);
 }
 
 auto solve = make_optimal_split_block_solver(block1, block2, rotations);

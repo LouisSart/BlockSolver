@@ -76,29 +76,40 @@ auto is_solved = [](const Cube& cube) {
     return false;
 };
 
-auto cc_initialize(const CubieCube& scramble_cc) {
-    Cube ret;
+auto cc_initialize(const CubieCube& scramble_cc, const bool niss = true) {
+    Cube ret, inverse;
 
     for (unsigned k = 0; k < NS; ++k) {
         ret[k][0] = block.to_coordinate_block_cube(
             scramble_cc.get_conjugate(rotations[k][0]));
         ret[k][1] = block.to_coordinate_block_cube(
             scramble_cc.get_conjugate(rotations[k][1]));
-    }
 
-    return make_root(ret);
+        if (niss) {
+            inverse[k][0] = block.to_coordinate_block_cube(
+                scramble_cc.get_inverse().get_conjugate(rotations[k][0]));
+            inverse[k][1] = block.to_coordinate_block_cube(
+                scramble_cc.get_inverse().get_conjugate(rotations[k][1]));
+        }
+    }
+    
+    if (!niss) {
+        return std::deque{make_root(ret)};
+    } else {
+        return std::deque{make_root(ret), make_root(inverse, true)};
+    }
 }
 
-auto initialize(const Algorithm& scramble) {
+auto initialize(const Algorithm& scramble, const bool niss = true) {
     CubieCube scramble_cc(scramble);
-    return cc_initialize(scramble_cc);
+    return cc_initialize(scramble_cc, niss);
 }
 
 using NodePtr = Node<Cube>::sptr;
 
-auto solve(const NodePtr root, const unsigned move_budget = 20,
+auto solve(const std::deque<NodePtr> roots, const unsigned move_budget = 20,
            const unsigned slackness = 0) {
-    return IDAstar<false>(root, apply, estimate, is_solved, move_budget,
+    return IDAstar<false>(roots, apply, estimate, is_solved, move_budget,
                           slackness);
 }
 

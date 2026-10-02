@@ -171,12 +171,14 @@ void load_tables() {
     }
 }
 
-auto initialize(const Algorithm& scramble) {
-    load_tables();
+auto cc_initialize(const CubieCube &cc, const bool niss = false) {
+    return std::deque{make_root(cc)};
+}
+auto initialize(const Algorithm& scramble, const bool niss = false) {
     CubieCube cc;
     cc.apply(scramble);
 
-    return make_root(cc);
+    return cc_initialize(cc);
 }
 
 std::array<unsigned, NS> rotations{
@@ -194,10 +196,10 @@ std::array<unsigned, NS> rotations{
     symmetry_index(2, 2, 0, 0),  // RF
 };
 
-auto solve(const Node<CubieCube>::sptr root, const unsigned& max_depth,
+auto solve(const std::deque<Node<CubieCube>::sptr> roots, const unsigned& max_depth,
            const unsigned& slackness) {
     unsigned sym;
-    CubieCube cc = root->state;
+    CubieCube cc = roots[0]->state;
     for (unsigned s : rotations) {
         // Find the two_gen_rotation
         if (is_two_gen(cc.get_conjugate(s))) {
@@ -231,7 +233,7 @@ auto solve(const Node<CubieCube>::sptr root, const unsigned& max_depth,
                 move_anti_conj(R3, sym)};
     };
 
-    auto solutions = IDAstar<false>(root, apply, estimate, is_solved,
+    auto solutions = IDAstar<false>(roots, apply, estimate, is_solved,
                                     directions, max_depth, slackness);
     return solutions;
 }
@@ -302,14 +304,19 @@ auto local_cc_initialize(const CubieCube& scramble_cc, const unsigned k) {
     return ret;
 }
 
-auto cc_initialize(const CubieCube& scramble_cc) {
-    Cube ret;
+auto cc_initialize(const CubieCube& scramble_cc, const bool niss = true) {
+    Cube ret, inverse;
 
     for (unsigned k = 0; k < NS; ++k) {
         ret[k] = local_cc_initialize(scramble_cc, k);
+
+        if (niss){
+            inverse[k] = local_cc_initialize(scramble_cc.get_inverse(), k);
+        }
     }
 
-    return make_root(ret);
+    if (!niss) return std::deque{make_root(ret)};
+    else return std::deque{make_root(ret), make_root(inverse, true)};
 }
 
 unsigned phase_2_index(const MultiBlockCube<NB>& cube) {
@@ -393,23 +400,22 @@ void load_tables() {
     }
 }
 
-auto initialize(const Algorithm& alg) {
-    load_tables();
+auto initialize(const Algorithm& alg, const bool niss = true) {
     CubieCube cc;
     cc.apply(alg);
-    return cc_initialize(cc);
+    return cc_initialize(cc, niss);
 }
 
-auto solve(const Node<Cube>::sptr root, const unsigned& max_depth,
+auto solve(const std::deque<Node<Cube>::sptr> roots, const unsigned& max_depth,
            const unsigned& slackness) {
     auto solutions =
-        IDAstar<false>(root, apply, estimate, is_solved, max_depth, slackness);
+        IDAstar<false>(roots, apply, estimate, is_solved, max_depth, slackness);
     return solutions;
 }
 
 }  // namespace two_gen_reduction
 
 auto finish =
-    make_stepper(make_root<CubieCube>, two_gen::solve, STEPFINAL{}, NONISS);
+    make_stepper(two_gen::cc_initialize, two_gen::solve, STEPFINAL{}, NONISS);
 auto reduction = make_stepper(two_gen_reduction::cc_initialize,
-                              two_gen_reduction::solve, finish);
+                              two_gen_reduction::solve, finish, NISS);

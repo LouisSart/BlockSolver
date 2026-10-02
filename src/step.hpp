@@ -18,7 +18,7 @@ auto load_pruning_table(Block<nc, ne>& b) {
         auto root = b.to_coordinate_block_cube(CubieCube());
         ptable.template generate<true>(root, mtable.get_apply(),
                                        b.get_indexer(), b.get_from_index(),
-                                       10, HTM_Moves);
+                                       3, 9, HTM_Moves);
     }
     ptable.write(b.id);
     return ptable;
@@ -60,29 +60,37 @@ auto get_estimator(const PruningTable& p_table, const Indexer& index) {
 
 template <typename Block, long unsigned NS>
 auto init_root(const CubieCube& scramble_cc, Block& block,
-               const std::array<unsigned, NS>& rotations) {
-    MultiBlockCube<NS> ret;
+               const std::array<unsigned, NS>& rotations, const bool niss = true) {
+    MultiBlockCube<NS> ret, inverse;
 
     for (unsigned k = 0; k < NS; ++k) {
         ret[k] = block.to_coordinate_block_cube(
             scramble_cc.get_conjugate(rotations[k]));
+        if (niss) {
+            inverse[k] = block.to_coordinate_block_cube(
+                scramble_cc.get_inverse().get_conjugate(rotations[k]));
+        }
     }
-    return make_root(ret);
+    if (!niss) {
+        return std::deque{make_root(ret)};
+    } else {
+        return std::deque{make_root(ret), make_root(inverse, true)};
+    }
 }
 
 template <typename Block, long unsigned NS>
 auto make_root_initializer(Block& block,
                            const std::array<unsigned, NS>& rotations) {
-    return [&block, &rotations](const Algorithm& scramble) {
+    return [&block, &rotations](const Algorithm& scramble, const bool niss = true) {
         CubieCube scramble_cc(scramble);
-        return init_root(scramble_cc, block, rotations);
+        return init_root(scramble_cc, block, rotations, niss);
     };
 }
 template <typename Block, long unsigned NS>
 auto make_root_cc_initializer(Block& block,
                               const std::array<unsigned, NS>& rotations) {
-    return [&block, &rotations](const CubieCube& scramble_cc) {
-        return init_root(scramble_cc, block, rotations);
+    return [&block, &rotations](const CubieCube& scramble_cc, const bool niss = true) {
+        return init_root(scramble_cc, block, rotations, niss);
     };
 }
 
@@ -160,9 +168,9 @@ auto make_optimal_split_block_solver(
         return false;
     };
 
-    return [](const auto root, const unsigned max_depth = 20,
+    return [](const auto roots, const unsigned max_depth = 20,
               const unsigned slackness = 0) {
-        return IDAstar<false>(root, apply, estimate, is_solved, max_depth,
+        return IDAstar<false>(roots, apply, estimate, is_solved, max_depth,
                               slackness);
     };
 }

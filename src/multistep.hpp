@@ -5,11 +5,11 @@
 #include "step_node.hpp"
 
 auto make_step_three = make_stepper(block_solver_F2Lm1::cc_initialize,
-                                    block_solver_F2Lm1::solve, STEPFINAL{});
+                                    block_solver_F2Lm1::solve, STEPFINAL{}, NISS);
 auto make_step_two = make_stepper(block_solver_223::cc_initialize,
-                                  block_solver_223::solve, make_step_three);
+                                  block_solver_223::solve, make_step_three, NISS);
 auto make_step_one = make_stepper(block_solver_222::cc_initialize,
-                                  block_solver_222::solve, make_step_two);
+                                  block_solver_222::solve, make_step_two, NISS);
 
 auto multistep(const CubieCube& scramble, const unsigned max_depth,
                const unsigned breadth, const unsigned slackness) {

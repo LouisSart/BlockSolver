@@ -44,8 +44,8 @@ void two_gen_finish_test() {
 void two_gen_reduction_index_test() {
     namespace b223 = block_solver_223;
     two_gen_reduction::load_tables();
-    auto root = two_gen_reduction::cc_initialize(CubieCube());
-    auto cube = root->state;
+    auto roots = two_gen_reduction::cc_initialize(CubieCube(), true);
+    auto cube = roots[0]->state;
 
     assert(two_gen_reduction::is_solved(cube));
     for (auto move : {R, U, R3, U2, R}) {
