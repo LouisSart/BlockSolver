@@ -29,7 +29,7 @@ int main(int argc, const char* argv[]) {
             auto solutions_inverse =
                 block_solver_123::solve(root_inverse, max_depth, slackness);
             solutions_inverse.sort_by_depth();
-            solutions_inverse.show(true);
+            solutions_inverse.show();
         }
     } else if (strcmp(argv[1], "222") == 0) {
         auto root = block_solver_222::initialize(scramble);
@@ -43,7 +43,7 @@ int main(int argc, const char* argv[]) {
             auto solutions_inverse =
                 block_solver_222::solve(root_inverse, max_depth, slackness);
             solutions_inverse.sort_by_depth();
-            solutions_inverse.show(true);
+            solutions_inverse.show();
         }
     } else if (strcmp(argv[1], "223") == 0) {
         auto root = block_solver_223::initialize(scramble);
@@ -57,7 +57,7 @@ int main(int argc, const char* argv[]) {
             auto solutions_inverse =
                 block_solver_223::solve(root_inverse, max_depth, slackness);
             solutions_inverse.sort_by_depth();
-            solutions_inverse.show(true);
+            solutions_inverse.show();
         }
     } else if (strcmp(argv[1], "F2L-1") == 0) {
         auto root = block_solver_F2Lm1::initialize(scramble);
@@ -71,7 +71,7 @@ int main(int argc, const char* argv[]) {
             auto solutions_inverse =
                 block_solver_F2Lm1::solve(root_inverse, max_depth, slackness);
             solutions_inverse.sort_by_depth();
-            solutions_inverse.show(true);
+            solutions_inverse.show();
         }
     } else if (strcmp(argv[1], "multistep") == 0) {
         auto solutions = multistep(scramble, max_depth, breadth, slackness);
@@ -101,7 +101,7 @@ int main(int argc, const char* argv[]) {
             auto solutions_inverse =
                 two_gen_reduction::solve(root_inverse, max_depth, slackness);
             solutions_inverse.sort_by_depth();
-            solutions_inverse.show(true);
+            solutions_inverse.show();
         }
     } else if (strcmp(argv[1], "two_gen") == 0) {
         unsigned max_depth = get_option("-M", argc, argv, 25);
