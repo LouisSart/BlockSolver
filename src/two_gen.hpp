@@ -410,6 +410,6 @@ auto solve(const Node<Cube>::sptr root, const unsigned& max_depth,
 }  // namespace two_gen_reduction
 
 auto finish =
-    make_stepper(make_root<CubieCube>, two_gen::solve, STEPFINAL{}, NONISS);
+    make_stepper([](const CubieCube &cc){return make_root<CubieCube>(cc, false);}, two_gen::solve, STEPFINAL{}, NONISS);
 auto reduction = make_stepper(two_gen_reduction::cc_initialize,
                               two_gen_reduction::solve, finish);
