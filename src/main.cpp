@@ -79,19 +79,17 @@ int main(int argc, const char* argv[]) {
         solutions.show();
 
     } else if (strcmp(argv[1], "two_gen_reduction") == 0) {
-        auto root = two_gen_reduction::initialize(scramble);
-        auto solutions = two_gen_reduction::solve(root, max_depth, slackness);
+        two_gen_reduction::load_tables();
+        auto roots = std::deque{two_gen_reduction::initialize(scramble)};
+        if (linear) {
+            roots.push_back(
+                two_gen_reduction::initialize(scramble.get_inverse()));
+            roots.back()->inverse = true;
+        }
+        auto solutions =
+            two_gen_reduction::multi_root_solve(roots, max_depth, slackness);
         solutions.sort_by_depth();
         solutions.show();
-
-        if (linear) {
-            auto root_inverse =
-                two_gen_reduction::initialize(scramble.get_inverse());
-            auto solutions_inverse =
-                two_gen_reduction::solve(root_inverse, max_depth, slackness);
-            solutions_inverse.sort_by_depth();
-            solutions_inverse.show();
-        }
     } else if (strcmp(argv[1], "two_gen") == 0) {
         unsigned max_depth = get_option("-M", argc, argv, 25);
         two_gen::load_tables();
