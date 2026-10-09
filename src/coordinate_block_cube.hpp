@@ -22,7 +22,7 @@ struct CoordinateBlockCube {
         ceo = ceo_in;
     };
 
-    bool operator==(const CoordinateBlockCube& other) {
+    bool operator==(const CoordinateBlockCube& other) const {
         return (ccl == other.ccl && cel == other.cel && ccp == other.ccp &&
                 cep == other.cep && cco == other.cco && ceo == other.ceo);
     }
