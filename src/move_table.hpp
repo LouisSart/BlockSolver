@@ -7,23 +7,7 @@
 
 #include "algorithm.hpp"  // apply Algorithm
 #include "block.hpp"
-
-namespace fs = std::filesystem;
-template <typename value_type>
-void load_binary(const std::filesystem::path& table_path, value_type* ptr,
-                 size_t size) {
-    std::ifstream istrm(table_path, std::ios::binary);
-    istrm.read(reinterpret_cast<char*>(ptr), sizeof(value_type) * size);
-    istrm.close();
-}
-
-template <typename value_type>
-void write_binary(const std::filesystem::path& table_path, value_type* ptr,
-                  size_t size) {
-    std::ofstream file(table_path, std::ios::binary);
-    file.write(reinterpret_cast<char*>(ptr), sizeof(value_type) * size);
-    file.close();
-}
+#include "utils.hpp" // load and write
 
 template <unsigned nc, unsigned ne>
 struct BlockMoveTable {

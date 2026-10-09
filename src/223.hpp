@@ -102,4 +102,9 @@ auto solve(const NodePtr root, const unsigned move_budget = 20,
                           slackness);
 }
 
+auto multi_root_solve(const std::deque<NodePtr> roots, const unsigned move_budget = 20,
+           const unsigned slackness = 0) {
+    return IDAstar<false>(roots, apply, estimate, is_solved, move_budget,
+                          slackness);
+}
 }  // namespace block_solver_223
