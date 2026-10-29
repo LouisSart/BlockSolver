@@ -11,7 +11,7 @@ block: obj $(EPICUBE_DIR)/obj/333.o
 	$(CXX) $(STD) $(OPT) $(INC) -c src/block.cpp -o $(OBJ_DIR)/block.o
 	$(CXX) $(STD) $(OPT) $(INC) $(333_OBJ) $(OBJ_DIR)/block.o -o $(OBJ_DIR)/block
 
-$(EPICUBE_DIR)/obj/333.o:
+$(EPICUBE_DIR)/obj/333.o: $(EPICUBE_DIR)/333/333.cpp
 	$(MAKE) obj/333.o -C $(EPICUBE_DIR)
 
 # Objects directory
