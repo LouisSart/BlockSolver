@@ -6,8 +6,8 @@
 
 using namespace Cube333;
 
-fs::path program_name = "block";
-fs::path data_dir = app_data_directory() / program_name;
+static fs::path program_name = "block";
+static fs::path data_dir = app_data_directory() / program_name;
 
 template<unsigned NC, unsigned NE>
 struct Block {
@@ -95,4 +95,48 @@ struct Block {
         }
         return true;
     }
+
+    std::string id() const {
+        CubieCube cc;
+        Layout<Cube333::NC, NC> lc (cc.cp, corners);
+        Layout<Cube333::NE, NE> le (cc.ep, edges);
+
+        auto c_id = lc.index();
+        auto e_id = le.index();
+
+        // Block ID is of the form: ncCcid_neEeid
+        // For example the DLB 2x2x2 has ID: 1C7_3E217
+        return std::to_string(NC) + "C" + std::to_string(c_id) + "_" +
+               std::to_string(NE) + "E" + std::to_string(e_id);
+    }
+};
+
+template<unsigned NC, unsigned NE> 
+struct BlockSolver {
+    const Block<NC, NE> block;
+    PruningTable<Block<NC, NE>::CARD> ptable;
+    fs::path ptable_path;
+
+    BlockSolver(const std::array<unsigned, NC> &c, const std::array<unsigned, NE> &e, const std::string bname = "") : block(c, e) {
+        if (bname.size() == 0) {
+            ptable_path = data_dir / "ptables" / block.id();
+        } else {ptable_path = data_dir / "ptables" / bname;}
+
+        if (!ptable.load(ptable_path)){
+            ptable.template generate<CubieCube, true>(
+                [this](const CubieCube& cc){return block.index(cc);},
+                [this](const unsigned &c, CubieCube& cc){block.from_index(c, cc);},
+                HTM::moves, 3, 7
+            );
+            ptable.write(ptable_path);
+        }
+    }
+
+    auto solve(const CubieCube& cc) {
+        return IDAstar<false, CubieCube>(
+            make_root(cc),
+            [this](const CubieCube &cc) -> unsigned {return ptable.estimate(block.index(cc));},
+            [this](const CubieCube& cc) -> bool {return block.is_solved(cc);},
+            expand, 10);
+    };
 };

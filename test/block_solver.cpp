@@ -22,34 +22,10 @@ void test_partial() {
     check_index(top_corners);
 }
 
-struct CrossSolver {
-    Block<0, 4> cross;
-    PruningTable<Block<0, 4>::CARD> ptable;
-    fs::path ptable_path = data_dir / "ptable" / "cross";
-
-    CrossSolver() : cross({}, {DF, DL, DB, DR}), ptable() {
-        if (!ptable.load(ptable_path)){
-            ptable.generate<CubieCube, true>(
-                [this](const CubieCube& cc){return cross.index(cc);},
-                [this](const unsigned &c, CubieCube& cc){cross.from_index(c, cc);},
-                HTM::moves, 3, 6
-            );
-            ptable.write(ptable_path);
-        }
-    }
-
-    auto solve(const CubieCube& cc) {
-        return IDAstar<false, CubieCube>(
-            make_root(cc),
-            [this](const CubieCube &cc) -> unsigned {return ptable.estimate(cross.index(cc));},
-            [this](const CubieCube& cc) -> bool {return cross.is_solved(cc);},
-            expand, 10);
-    };
-};
-
 int main (){
     test_partial();
     CubieCube cc("R' U' F L U D F2 D' F B U F' R2 F2 U2 F2 D2 R' F2 L2 D2 B2 L R' U' F");
-    assert(CrossSolver().solve(cc).size() == 12);
+    BlockSolver<0, 4> cross_solver({}, {DF, DL, DB, DR});
+    assert(cross_solver.solve(cc).size() == 12);
 	return 0;
 }
