@@ -13,7 +13,7 @@ template<unsigned NC, unsigned NE>
 struct Block {
     static constexpr unsigned CLCARD = Layout<Cube333::NC, NC>::CARD;
     static constexpr unsigned CPCARD = Permutation<NC>::CARD;
-    static constexpr unsigned COCARD = Orientation<NC>::CARD;
+    static constexpr unsigned COCARD = Orientation<NC, 3>::CARD;
     static constexpr unsigned CCARD = CLCARD * CPCARD * COCARD;
     static constexpr unsigned ELCARD = Layout<Cube333::NE, NE>::CARD;
     static constexpr unsigned EPCARD = Permutation<NE>::CARD;

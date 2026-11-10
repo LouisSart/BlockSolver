@@ -12,7 +12,6 @@ void test_partial() {
         CubieCube cc;
         for (unsigned c = 0; c < b.CARD; ++c) {
             b.from_index(c, cc);
-            // print(c, b.index(cc));
             assert(b.index(cc) == c);
         }
     };
@@ -27,5 +26,7 @@ int main (){
     CubieCube cc("R' U' F L U D F2 D' F B U F' R2 F2 U2 F2 D2 R' F2 L2 D2 B2 L R' U' F");
     BlockSolver<0, 4> cross_solver({}, {DF, DL, DB, DR});
     assert(cross_solver.solve(cc).size() == 12);
+    BlockSolver<1, 3> b222_solver({DLB}, {DL, DB, LB});
+    b222_solver.solve(cc);
 	return 0;
 }
