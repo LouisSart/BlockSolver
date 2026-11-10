@@ -126,7 +126,7 @@ struct BlockSolver {
             ptable.template generate<CubieCube, true>(
                 [this](const CubieCube& cc){return block.index(cc);},
                 [this](const unsigned &c, CubieCube& cc){block.from_index(c, cc);},
-                HTM::moves, 3, 7
+                HTM::moves, 3, 3 + NC + NE // weird tuning for switch depths, but it kinda works lol
             );
             ptable.write(ptable_path);
         }
