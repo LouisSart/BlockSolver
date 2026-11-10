@@ -6,6 +6,9 @@
 
 using namespace Cube333;
 
+fs::path program_name = "block";
+fs::path data_dir = app_data_directory() / program_name;
+
 template<unsigned NC, unsigned NE>
 struct Block {
     static constexpr unsigned CLCARD = Layout<Cube333::NC, NC>::CARD;

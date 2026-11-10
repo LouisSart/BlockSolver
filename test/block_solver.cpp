@@ -25,13 +25,17 @@ void test_partial() {
 struct CrossSolver {
     Block<0, 4> cross;
     PruningTable<Block<0, 4>::CARD> ptable;
+    fs::path ptable_path = data_dir / "ptable" / "cross";
 
     CrossSolver() : cross({}, {DF, DL, DB, DR}), ptable() {
-        ptable.generate<CubieCube, true>(
-            [this](const CubieCube& cc){return cross.index(cc);},
-            [this](const unsigned &c, CubieCube& cc){cross.from_index(c, cc);},
-            HTM::moves, 3, 6
-        );
+        if (!ptable.load(ptable_path)){
+            ptable.generate<CubieCube, true>(
+                [this](const CubieCube& cc){return cross.index(cc);},
+                [this](const unsigned &c, CubieCube& cc){cross.from_index(c, cc);},
+                HTM::moves, 3, 6
+            );
+            ptable.write(ptable_path);
+        }
     }
 
     auto solve(const CubieCube& cc) {
