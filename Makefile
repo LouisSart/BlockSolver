@@ -2,14 +2,13 @@ EPICUBE_DIR = extern/EpiCube
 333_OBJ = $(EPICUBE_DIR)/obj/333.o
 CFLAGS = -Wall
 STD = -std=c++20
-# TEST_DIR = test
 INC = -I$(EPICUBE_DIR)/333
 OPT = -O1 
 OBJ_DIR = obj
 
 block: obj $(EPICUBE_DIR)/obj/333.o
-	$(CXX) $(STD) $(OPT) $(INC) -c src/block.cpp -o $(OBJ_DIR)/block.o
-	$(CXX) $(STD) $(OPT) $(INC) $(333_OBJ) $(OBJ_DIR)/block.o -o $(OBJ_DIR)/block
+	$(CXX) $(STD) $(OPT) $(INC) -c test/block_solver.cpp -o $(OBJ_DIR)/block_test.o
+	$(CXX) $(STD) $(OPT) $(INC) $(333_OBJ) obj/block_test.o -o $(OBJ_DIR)/block
 
 $(EPICUBE_DIR)/obj/333.o: $(EPICUBE_DIR)/333/333.cpp $(EPICUBE_DIR)/lib/*
 	$(MAKE) obj/333.o -C $(EPICUBE_DIR)
