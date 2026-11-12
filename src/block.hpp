@@ -106,9 +106,11 @@ struct Block {
     auto is_solved(const CubieCube& cc) const {
         for (auto c : corners) {
             if (cc.cp[c] != c) return false;
+            if (cc.co[c] != 0) return false;
         }
         for (auto e : edges) {
             if (cc.ep[e] != e) return false;
+            if (cc.eo[e] != 0) return false;
         }
         return true;
     }
@@ -155,10 +157,15 @@ struct BlockSolver {
         );
     }
 
-    auto solve(const CubieCube& cc) const {
-        return IDAstar<false, CubieCube>(make_root(cc),
+    auto solve(const std::deque<Node<CubieCube>::sptr> &roots) const {
+        return IDAstar<false, CubieCube>(roots,
             [&](const CubieCube &cc) -> unsigned {return estimate(cc);},
             [&](const CubieCube &cc) -> bool {return is_solved(cc);},
-            expand);
+            expand, 30);
     }
 };
+
+template<typename... Solvers>
+auto make_multistep_solver(Solvers... solvers) {
+    return MultiStep<CubieCube, Solvers...>(solvers...);
+}
