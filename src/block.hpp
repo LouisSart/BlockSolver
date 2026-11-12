@@ -157,7 +157,7 @@ struct BlockSolver {
         );
     }
 
-    auto solve(const std::deque<Node<CubieCube>::sptr> &roots) const {
+    auto solve(const Solutions<CubieCube> &roots) const {
         return IDAstar<false, CubieCube>(roots,
             [&](const CubieCube &cc) -> unsigned {return estimate(cc);},
             [&](const CubieCube &cc) -> bool {return is_solved(cc);},
