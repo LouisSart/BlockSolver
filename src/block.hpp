@@ -8,6 +8,7 @@ using namespace Cube333;
 
 static fs::path program_name = "block";
 static fs::path data_dir = app_data_directory() / program_name;
+static fs::path ptable_dir = data_dir / "ptables";
 
 template<unsigned NC, unsigned NE>
 struct Block {
@@ -24,11 +25,27 @@ struct Block {
     const std::array<unsigned, NC> corners;
     const std::array<unsigned, NE> edges;
 
-    Block(const std::array<unsigned, NC> &c, const std::array<unsigned, NE> &e) : corners{c}, edges{e} {
+    PruningTable<CARD> ptable;
+    fs::path ptable_path;
+
+    Block(const std::array<unsigned, NC> &c, const std::array<unsigned, NE> &e, const std::string bname = "") : corners{c}, edges{e} {
         static_assert(ECARD < std::numeric_limits<unsigned>::max() / CCARD); // do not overflow unsigned
         static_assert(CCARD < std::numeric_limits<unsigned>::max() / ECARD); // do not overflow unsigned
         static_assert(NC < Cube333::NC); // no full corner blocks because of constraints on CO
         static_assert(NE < Cube333::NE); // no full edge blocks because of constraints on EO
+
+        if (bname.size() == 0) {
+            ptable_path = ptable_dir / id();
+        } else {ptable_path = ptable_dir / bname;}
+
+        if (!ptable.load(ptable_path)){
+            ptable.template generate<CubieCube, true>(
+                [this](const CubieCube& cc){return index(cc);},
+                [this](const unsigned &c, CubieCube& cc){from_index(c, cc);},
+                HTM::moves, 3, 3 + NC + NE // weird tuning for switch depths, but it kinda works lol
+            );
+            ptable.write(ptable_path);
+        }
     }
 
     unsigned corner_index(const CubieCube &cc) const {
@@ -96,6 +113,10 @@ struct Block {
         return true;
     }
 
+    unsigned estimate(const CubieCube& cc) const {
+        return ptable.estimate(index(cc));
+    }
+
     std::string id() const {
         CubieCube cc;
         Layout<Cube333::NC, NC> lc (cc.cp, corners);
@@ -111,32 +132,33 @@ struct Block {
     }
 };
 
-template<unsigned NC, unsigned NE> 
+template<typename... Blocks>
 struct BlockSolver {
-    const Block<NC, NE> block;
-    PruningTable<Block<NC, NE>::CARD> ptable;
-    fs::path ptable_path;
+    std::tuple<Blocks...> blocks;
 
-    BlockSolver(const std::array<unsigned, NC> &c, const std::array<unsigned, NE> &e, const std::string bname = "") : block(c, e) {
-        if (bname.size() == 0) {
-            ptable_path = data_dir / "ptables" / block.id();
-        } else {ptable_path = data_dir / "ptables" / bname;}
+    BlockSolver(Blocks... b) : blocks{b...}{}
 
-        if (!ptable.load(ptable_path)){
-            ptable.template generate<CubieCube, true>(
-                [this](const CubieCube& cc){return block.index(cc);},
-                [this](const unsigned &c, CubieCube& cc){block.from_index(c, cc);},
-                HTM::moves, 3, 3 + NC + NE // weird tuning for switch depths, but it kinda works lol
-            );
-            ptable.write(ptable_path);
-        }
+    unsigned estimate(const CubieCube& cc) const {
+        return std::apply(
+            [&](const auto&... block) {
+                return std::max({block.estimate(cc)...});
+            },
+            blocks
+        );
     }
 
-    auto solve(const CubieCube& cc) {
-        return IDAstar<false, CubieCube>(
-            make_root(cc),
-            [this](const CubieCube &cc) -> unsigned {return ptable.estimate(block.index(cc));},
-            [this](const CubieCube& cc) -> bool {return block.is_solved(cc);},
-            expand, 10);
-    };
+    bool is_solved(const CubieCube& cc) const {
+        return std::apply(
+            [&](const auto&... block){
+                return (... && block.is_solved(cc));
+            }, blocks
+        );
+    }
+
+    auto solve(const CubieCube& cc) const {
+        return IDAstar<false, CubieCube>(make_root(cc),
+            [&](const CubieCube &cc) -> unsigned {return estimate(cc);},
+            [&](const CubieCube &cc) -> bool {return is_solved(cc);},
+            expand);
+    }
 };
