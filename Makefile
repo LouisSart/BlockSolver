@@ -24,9 +24,12 @@ $(EPICUBE_DIR)/obj/333.o: $(EPICUBE_DIR)/333/333.cpp $(EPICUBE_DIR)/lib/*
 obj:
 	mkdir -p $(OBJ_DIR)
 
-# Règle de nettoyage
+# Règle de nettoyage des fichiers objets compilés
 clean:
-# 	$(MAKE) clean -C $(EPICUBE_DIR) # probably not a good idea
 	rm -f $(OBJ_DIR)/*.o $(OBJ_DIR)/test 
 
-.PHONY: all clean
+# Règle de nettoyage des datas stockées sur le disque
+cleanup: clean
+	rm -rf $(XDG_DATA_HOME)/epic/
+
+.PHONY: all clean cleanup
