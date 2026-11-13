@@ -6,7 +6,7 @@
 
 using namespace Cube333;
 
-static fs::path program_name = "block";
+static fs::path program_name = "epic";
 static fs::path data_dir = app_data_directory() / program_name;
 static fs::path ptable_dir = data_dir / "ptables";
 
@@ -172,20 +172,97 @@ auto make_multistep_solver(Solvers... solvers) {
     return MultiStep<CubieCube, Solvers...>(solvers...);
 }
 
-struct L3CSolver{
-    Block<4, 0> top_corners;
-    L3CSolver();
-    unsigned estimate(const CubieCube&) const;
-    bool is_solved(const CubieCube&) const;
-    Solutions<CubieCube> solve(const Solutions<CubieCube> &) const;
+template<typename EdgeSolver>
+struct L3CSolver {
+
+    static constexpr unsigned CPCARD = Permutation<Cube333::NC>::CARD;
+    static constexpr unsigned COCARD = Orientation<Cube333::NC, 3>::CARD / 3;
+    static constexpr unsigned CARD = CPCARD * COCARD;
+    EdgeSolver edge_solver;
+    PruningTable<CARD> ptable;
+    fs::path ptable_path = ptable_dir / "corners_to_l3c";
+
+    L3CSolver(const EdgeSolver& es) : edge_solver{es} {
+        auto cycle = [](const std::vector<unsigned> pieces, CubieCube& cc) {
+            std::swap(cc.cp[pieces[0]], cc.cp[pieces[1]]);
+            std::swap(cc.cp[pieces[0]], cc.cp[pieces[2]]);
+        };
+
+        if (!ptable.load(ptable_path)){
+            ptable.reset();
+            ptable.set(index(CubieCube()), 0); // set solved state to 0
+            unsigned counter = 1;
+            for (unsigned c = 0; c < Layout<5, 3>::CARD; ++c) {
+                const std::vector<unsigned> l5c {ULF, URF, URB, ULB, DRF};
+                const Layout<5, 3> l(c);
+                std::vector<unsigned> pieces;
+                for (unsigned i = 0; i < 5; ++i) {
+                    if (l[i] == 1)  pieces.push_back(l5c[i]);
+                }
+                CubieCube cc;
+                for (unsigned _ : {0, 1}){  // cycle the three corners twice
+                    cycle(pieces, cc);
+                    for (unsigned o1 = 0; o1 < 3; ++o1){ // loop through every possible orientation
+                        for (unsigned o2 = 0; o2 < 3; ++o2){
+                            cc.co[pieces[0]] = o1;
+                            cc.co[pieces[1]] = o2;
+                            cc.co[pieces[2]] = (6 - o1 - o2) % 3;
+                            ptable.set(index(cc), 0);
+                            ++counter;
+                        }
+                    }
+                }
+            }
+
+            ptable.template generate<CubieCube, true>(
+                [this](const CubieCube& cc){return index(cc);},
+                [this](const unsigned &c, CubieCube& cc){from_index(c, cc);},
+                HTM::moves, 3, 10, counter // 180 3-corner cycles + the solved state are set to depth zero
+            );
+            ptable.write(ptable_path);
+        }
+
+    }
+
+    unsigned index(const CubieCube& cc) const{
+        return cc.cp.index() * COCARD + cc.co.index(true);
+    }
+
+    void from_index(const unsigned& c, CubieCube& cc) const{
+        cc.cp.set_from_index(c / COCARD);
+        cc.co.set_from_index(c % COCARD, true);
+    }
+
+    unsigned estimate(const CubieCube& cc) const{
+        return std::max(edge_solver.estimate(cc), ptable.estimate(index(cc)));
+    }
+
+    bool is_solved(const CubieCube& cc) const{
+        return edge_solver.is_solved(cc) && (ptable[index(cc)] == 0);
+    }
+
+    Solutions<CubieCube> solve(const Solutions<CubieCube>& roots) const{
+        return IDAstar<false, CubieCube>(roots,
+            [&](const CubieCube &cc) -> unsigned {return estimate(cc);},
+            [&](const CubieCube &cc) -> bool {return is_solved(cc);},
+            expand, 30);
+    }
 };
 
+namespace solvers {
+
 extern Block<1, 3> b222;
-extern Block<1, 2> b223_ext;
-extern Block<1, 2> xxcross_ext;
+extern Block<2, 4> f2lm1;
 extern Block<0, 4> top_cross;
-extern BlockSolver<Block<1, 3>> b222_solver;
-extern BlockSolver<Block<1, 3>, Block<1, 2>> b223_solver;
-extern BlockSolver<Block<1, 3>, Block<1, 2>, Block<1, 2>> xxcross_solver;
-extern BlockSolver<Block<1, 3>, Block<1, 2>, Block<1, 2>, Block<0, 4>> edge_solver;
-extern L3CSolver l3c_solver;
+using B222 = BlockSolver<Block<1, 3>>;
+using F2LM1 = BlockSolver<Block<1, 3>, Block<2, 4>>;
+using EDGES = BlockSolver<Block<1, 3>, Block<2, 4>, Block<0, 4>>;
+using L3C = L3CSolver<EDGES>;
+
+extern B222 b222_solver;
+extern F2LM1 f2lm1_solver;
+extern EDGES edge_solver;
+extern L3C l3c_solver;
+extern MultiStep<CubieCube, B222, F2LM1, EDGES, L3C> three_step_l3c_solver;
+
+} // namespace solvers

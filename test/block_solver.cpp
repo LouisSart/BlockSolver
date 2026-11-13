@@ -27,7 +27,7 @@ void test_block_solves() {
     BlockSolver cross_solver{cross};
     assert(cross_solver.solve({root}).size() == 12);
 
-    auto l3c_solver = L3CSolver();
+    assert(solvers::three_step_l3c_solver.solve({root})[0]->depth == 22);
 }
 
 int main (){
