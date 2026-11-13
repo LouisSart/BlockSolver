@@ -169,3 +169,12 @@ template<typename... Solvers>
 auto make_multistep_solver(Solvers... solvers) {
     return MultiStep<CubieCube, Solvers...>(solvers...);
 }
+
+extern Block<1, 3> b222;
+extern Block<1, 2> b223_ext;
+extern Block<1, 2> xxcross_ext;
+extern Block<0, 4> top_cross;
+extern BlockSolver<Block<1, 3>> b222_solver;
+extern BlockSolver<Block<1, 3>, Block<1, 2>> b223_solver;
+extern BlockSolver<Block<1, 3>, Block<1, 2>, Block<1, 2>> xxcross_solver;
+extern BlockSolver<Block<1, 3>, Block<1, 2>, Block<1, 2>, Block<0, 4>> edge_solver;

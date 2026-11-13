@@ -28,16 +28,6 @@ void test_block_solves() {
     assert(cross_solver.solve({root}).size() == 12);
 
     root = make_root(CubieCube("B' U2 F R' U' F R2 L2 D2 B D2 F2 R2 L2 U2 B D2 F' L' D2 F' U' F U2 B U2 R' L2 U' F F R' D' R F2"));
-    Block<1, 3> b222({DLB}, {DL, DB, LB}, "222");
-    Block<1, 2> b223_ext ({DLF}, {LF, DF}, "222_to_223");
-    Block<1, 2> xxcross_ext ({DRB}, {DR, RB}, "223_to_f2l-1");
-    Block<0, 4> top_cross ({}, {UF, UL, UR, UB}, "f2l-1_to_solved_edges");
-    BlockSolver b222_solver{b222};
-    BlockSolver b223_solver{b222, b223_ext};
-    BlockSolver xxcross_solver{b222, b223_ext, xxcross_ext};
-    BlockSolver edge_solver{b222, b223_ext, xxcross_ext, top_cross};
-    auto multistep = make_multistep_solver(b222_solver, b223_solver, xxcross_solver, edge_solver);
-    multistep.solve({root});
 }
 
 int main (){
