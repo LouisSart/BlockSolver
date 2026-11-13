@@ -27,7 +27,7 @@ void test_block_solves() {
     BlockSolver cross_solver{cross};
     assert(cross_solver.solve({root}).size() == 12);
 
-    root = make_root(CubieCube("B' U2 F R' U' F R2 L2 D2 B D2 F2 R2 L2 U2 B D2 F' L' D2 F' U' F U2 B U2 R' L2 U' F F R' D' R F2"));
+    auto l3c_solver = L3CSolver();
 }
 
 int main (){

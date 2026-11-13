@@ -28,7 +28,7 @@ struct Block {
     PruningTable<CARD> ptable;
     fs::path ptable_path;
 
-    Block(const std::array<unsigned, NC> &c, const std::array<unsigned, NE> &e, const std::string bname = "") : corners{c}, edges{e} {
+    Block(const std::array<unsigned, NC> &c, const std::array<unsigned, NE> &e, const std::string bname = "", const bool no_build = false) : corners{c}, edges{e} {
         static_assert(ECARD < std::numeric_limits<unsigned>::max() / CCARD); // do not overflow unsigned
         static_assert(CCARD < std::numeric_limits<unsigned>::max() / ECARD); // do not overflow unsigned
         static_assert(NC < Cube333::NC); // no full corner blocks because of constraints on CO
@@ -38,13 +38,15 @@ struct Block {
             ptable_path = ptable_dir / id();
         } else {ptable_path = ptable_dir / bname;}
 
-        if (!ptable.load(ptable_path)){
-            ptable.template generate<CubieCube, true>(
-                [this](const CubieCube& cc){return index(cc);},
-                [this](const unsigned &c, CubieCube& cc){from_index(c, cc);},
-                HTM::moves, 3, 3 + NC + NE // weird tuning for switch depths, but it kinda works lol
-            );
-            ptable.write(ptable_path);
+        if(!no_build){
+            if (!ptable.load(ptable_path)){
+                ptable.template generate<CubieCube, true>(
+                    [this](const CubieCube& cc){return index(cc);},
+                    [this](const unsigned &c, CubieCube& cc){from_index(c, cc);},
+                    HTM::moves, 3, 3 + NC + NE // weird tuning for switch depths, but it kinda works lol
+                );
+                ptable.write(ptable_path);
+            }
         }
     }
 
@@ -169,6 +171,11 @@ template<typename... Solvers>
 auto make_multistep_solver(Solvers... solvers) {
     return MultiStep<CubieCube, Solvers...>(solvers...);
 }
+
+struct L3CSolver{
+    Block<4, 0> top_corners;
+    L3CSolver();
+};
 
 extern Block<1, 3> b222;
 extern Block<1, 2> b223_ext;
