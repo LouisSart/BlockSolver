@@ -175,6 +175,9 @@ auto make_multistep_solver(Solvers... solvers) {
 struct L3CSolver{
     Block<4, 0> top_corners;
     L3CSolver();
+    unsigned estimate(const CubieCube&) const;
+    bool is_solved(const CubieCube&) const;
+    Solutions<CubieCube> solve(const Solutions<CubieCube> &) const;
 };
 
 extern Block<1, 3> b222;
@@ -185,3 +188,4 @@ extern BlockSolver<Block<1, 3>> b222_solver;
 extern BlockSolver<Block<1, 3>, Block<1, 2>> b223_solver;
 extern BlockSolver<Block<1, 3>, Block<1, 2>, Block<1, 2>> xxcross_solver;
 extern BlockSolver<Block<1, 3>, Block<1, 2>, Block<1, 2>, Block<0, 4>> edge_solver;
+extern L3CSolver l3c_solver;

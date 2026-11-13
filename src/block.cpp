@@ -45,9 +45,26 @@ L3CSolver::L3CSolver() : top_corners{{ULF, URF, URB, ULB}, {}, "f2l-1_to_l3c", t
         top_corners.ptable.template generate<CubieCube, true>(
             [this](const CubieCube& cc){return top_corners.index(cc);},
             [this](const unsigned &c, CubieCube& cc){top_corners.from_index(c, cc);},
-            HTM::moves, 3, 4, // weird tuning for switch depths, but it kinda works lol
-            180 // 180 3-corner cycles are set to depth zero
+            HTM::moves, 3, 4, 180 // 180 3-corner cycles are set to depth zero
         );
         top_corners.ptable.write(top_corners.ptable_path);
     }
+
 }
+
+bool L3CSolver::is_solved(const CubieCube& cc) const {
+    return edge_solver.is_solved(cc) && (top_corners.ptable[top_corners.index(cc)] == 0);
+}
+
+unsigned L3CSolver::estimate(const CubieCube& cc) const {
+    return std::max(edge_solver.estimate(cc), top_corners.ptable.estimate(top_corners.index(cc)));
+}
+
+Solutions<CubieCube> L3CSolver::solve(const Solutions<CubieCube> &roots) const {
+    return IDAstar<false, CubieCube>(roots,
+        [&](const CubieCube &cc) -> unsigned {return estimate(cc);},
+        [&](const CubieCube &cc) -> bool {return is_solved(cc);},
+        expand, 30);
+}
+
+L3CSolver l3c_solver;

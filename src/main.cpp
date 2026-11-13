@@ -15,13 +15,13 @@ int main (int argc, const char* argv[]){
     if (strcmp(argv[1], "fourstep") == 0) {
 
         auto root = make_root(CubieCube(scramble));
-        auto multistep = make_multistep_solver(b222_solver, b223_solver, xxcross_solver, edge_solver);
+        auto multistep = make_multistep_solver(b222_solver, b223_solver, xxcross_solver, l3c_solver);
         multistep.solve({root}).show<Move>();
 
     } else if (strcmp(argv[1], "threestep") == 0) {
 
         auto root = make_root(CubieCube(scramble));
-        auto multistep = make_multistep_solver(b222_solver, xxcross_solver, edge_solver);
+        auto multistep = make_multistep_solver(b222_solver, xxcross_solver, l3c_solver);
         multistep.solve({root}).show<Move>();
 
     };
